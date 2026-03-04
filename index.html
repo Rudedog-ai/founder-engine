@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="description" content="Founder Engine - AI-powered company intelligence platform">
+    <title>Founder Engine</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiRm91bmRlciBFbmdpbmUiLCJzaG9ydF9uYW1lIjoiRm91bmRlciIsImRlc2NyaXB0aW9uIjoiQUktcG93ZXJlZCBjb21wYW55IGludGVsbGlnZW5jZSBwbGF0Zm9ybSIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5IjoiIHN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwZiIsInRoZW1lX2NvbG9yIjoiIzZjNWNlNyIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaWGgwY0hNNkx5OWxlR0Z0Y0d4bExtSmtiV2x1UUhObGNuWmxJaTgrUEM5MGMyTmZabXhsYmpwMFoyTmZaMjl2WjJ4bElqNDgrUEM5aDJaWGgwY0hNNkx5OWxlR0Z0Y0d4bExtSmtiV2x1UUhObGNuWmxJaTgrUEM5MGMyVnlkbWN1WTI5dFBnPT0iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%236c5ce7' width='192' height='192' rx='44'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dy='.3em' font-weight='bold'>F</text></svg>">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --surface-2: #1a1a24;
+            --border: #2a2a3a;
+            --text: #e8e8ef;
+            --text-dim: #8888a0;
+            --accent: #6c5ce7;
+            --green: #00d2a0;
+            --orange: #f0a050;
+            --red: #ff6b6b;
+            --gap: 1rem;
+            --gap-2: 0.5rem;
+            --radius: 12px;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, system-ui, -webkit-system-font, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: var(--surface);
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .screen {
+            display: none;
+            padding-bottom: 80px;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--gap);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: var(--gap-2);
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--gap-2);
+        }
+
+        p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-dim);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .card.interactive {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .card.interactive:hover {
+            border-color: var(--accent);
+            background: var(--surface-2);
+        }
+
+        .card.interactive:active {
+            transform: scale(0.98);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            background: var(--surface);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-bottom: var(--gap-2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: var(--gap);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        /* Layout */
+        .screen-content {
+            padding: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header-bar {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--gap);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-bar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            color: var(--text);
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0;
+            padding: 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            gap: 4px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-radius: 0;
+        }
+
+        .nav-item:hover {
+            color: var(--accent);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Dashboard specifics */
+        .intelligence-ring {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto var(--gap);
+        }
+
+        .ring-label {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: var(--gap);
+        }
+
+        .topic-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        @media (min-width: 600px) {
+            .topic-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .topic-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .topic-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--gap);
+            text-align: center;
+        }
+
+        .topic-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: var(--gap-2);
+        }
+
+        .completeness-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--surface-2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: var(--gap-2);
+        }
+
+        .completeness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            border-radius: 3px;
+            transition: width 0.6s ease;
+            width: 0%;
+        }
+
+        .completeness-percent {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--green);
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            margin-top: var(--gap);
+        }
+
+        .activity-item {
+            padding: var(--gap-2);
+            border-left: 3px solid var(--accent);
+            background: var(--surface-2);
+            margin-bottom: var(--gap-2);
+            border-radius: 2px;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: var(--gap);
+            padding: var(--gap);
+            color: var(--text-dim);
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        @media (max-width: 600px) {
+            .toast-container {
+                left: 20px;
+                right: 20px;
+            }
+        }
+
+        .toast {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: var(--radius);
+            padding: var(--gap);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: var(--gap);
+            animation: slideIn 0.3s ease;
+            min-width: 300px;
+        }
+
+        .toast.success {
+            border-left-color: var(--green);
+        }
+
+        .toast.error {
+            border-left-color: var(--red);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--gap);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--gap);
+            padding-bottom: var(--gap);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-accent {
+            background: rgba(108, 92, 231, 0.2);
+            color: var(--accent);
+        }
+
+        .badge-green {
+            background: rgba(0, 210, 160, 0.2);
+            color: var(--green);
+        }
+
+        .badge-orange {
+            background: rgba(240, 160, 80, 0.2);
+            color: var(--orange);
+        }
+
+        /* Drag & Drop */
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: var(--gap);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--surface-2);
+        }
+
+        .drop-zone:hover {
+            border-color: var(--accent);
+            background: var(--surface);
+        }
+
+        .drop-zone.active {
+            border-color: var(--accent);
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        /* Progress */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--surface-2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: var(--gap-2);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Expandable sections */
+        .expandable {
+            cursor: pointer;
+        }
+
+        .expandable-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--gap);
+            background: var(--surface-2);
+            border-radius: var(--radius);
+            user-select: none;
+        }
+
+        .expandable-header:hover {
+            background: var(--border);
+        }
+
+        .expand-icon {
+            transition: transform 0.2s ease;
+        }
+
+        .expandable.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .expandable.expanded .expandable-content {
+            max-height: 1000px;
+        }
+
+        .expandable-body {
+            padding: var(--gap);
+            border-left: 2px solid var(--accent);
+        }
+
+        /* Recommendation cards */
+        .recommendation-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--gap);
+            margin-bottom: var(--gap);
+        }
+
+        .recommendation-header {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--gap-2);
+            margin-bottom: var(--gap-2);
+        }
+
+        .recommendation-badges {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .recommendation-status {
+            display: flex;
+            gap: var(--gap-2);
+            margin-top: var(--gap);
+            padding-top: var(--gap);
+            border-top: 1px solid var(--border);
+        }
+
+        /* Mic button animation */
+        .mic-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--gap);
+            transition: all 0.2s ease;
+            box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.7);
+        }
+
+        .mic-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 10px rgba(108, 92, 231, 0.3);
+        }
+
+        .mic-button.active {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 20px rgba(108, 92, 231, 0.3);
+            }
+        }
+
+        /* Copy button */
+        .copy-text {
+            display: flex;
+            align-items: center;
+            gap: var(--gap-2);
+            padding: var(--gap-2);
+            background: var(--surface-2);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            margin-bottom: var(--gap-2);
+        }
+
+        .copy-text:hover {
+            border-color: var(--accent);
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0;
+        }
+
+        /* Team member item */
+        .team-member {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--gap);
+            margin-bottom: var(--gap);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .team-member-info h3 {
+            margin: 0 0 4px 0;
+        }
+
+        .team-member-role {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .team-member-invite {
+            font-size: 0.75rem;
+            color: var(--green);
+            margin-top: 4px;
+        }
+
+        /* List styles */
+        .list-item {
+            padding: var(--gap-2);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Pull to refresh */
+        .pull-to-refresh {
+            height: 0;
+            overflow: hidden;
+            transition: height 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .pull-to-refresh.active {
+            height: 60px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .screen-content {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-bar {
+                padding: 1rem;
+            }
+
+            .topic-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Status indicator */
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-dot.pending {
+            background: var(--orange);
+        }
+
+        .status-dot.in-progress {
+            background: var(--accent);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-dot.completed {
+            background: var(--green);
+        }
+
+        /* File list */
+        .file-item {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--gap);
+            margin-bottom: var(--gap-2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .file-size {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .file-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        /* Knowledge Screen Styles */
+        .knowledge-topic {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: var(--gap);
+            overflow: hidden;
+        }
+
+        .knowledge-topic-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--gap);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .knowledge-topic-header:hover {
+            background: var(--surface);
+        }
+
+        .knowledge-topic-header span:first-child {
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+        }
+
+        .knowledge-topic-count {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-right: 12px;
+            background: var(--surface);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .knowledge-chevron {
+            color: var(--text-dim);
+            transition: transform 0.2s;
+            display: inline-block;
+            width: 16px;
+        }
+
+        .knowledge-topic.expanded .knowledge-chevron {
+            transform: rotate(90deg);
+        }
+
+        .knowledge-topic-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .knowledge-topic.expanded .knowledge-topic-body {
+            max-height: 2000px;
+        }
+
+        .knowledge-entry {
+            padding: var(--gap);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .knowledge-key {
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 0.95rem;
+        }
+
+        .knowledge-value {
+            color: var(--text);
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .confidence-high {
+            background: rgba(0, 210, 160, 0.2);
+            color: var(--green);
+        }
+
+        .confidence-medium {
+            background: rgba(240, 160, 80, 0.2);
+            color: var(--orange);
+        }
+
+        .confidence-low {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--red);
+        }
+
+        /* Call History Screen Styles */
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: var(--gap);
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--text-dim);
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .filter-tab:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .filter-tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .session-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: var(--gap);
+            padding: var(--gap);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .session-card:hover {
+            border-color: var(--accent);
+            background: var(--surface);
+        }
+
+        .session-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--gap);
+        }
+
+        .session-chevron {
+            color: var(--text-dim);
+            transition: transform 0.2s;
+            flex-shrink: 0;
+            display: inline-block;
+            width: 16px;
+        }
+
+        .session-card.expanded .session-chevron {
+            transform: rotate(90deg);
+        }
+
+        .session-card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 0;
+        }
+
+        .session-card.expanded .session-card-body {
+            max-height: 500px;
+            margin-top: var(--gap);
+            padding-top: var(--gap);
+            border-top: 1px solid var(--border);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: var(--surface);
+            color: var(--text-dim);
+        }
+
+        .badge-accent {
+            background: rgba(108, 92, 231, 0.2);
+            color: var(--accent);
+        }
+
+        .badge-green {
+            background: rgba(0, 210, 160, 0.2);
+            color: var(--green);
+        }
+
+        .topic-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            background: var(--surface);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Welcome/Onboarding Screen -->
+            <div class="screen active" id="screen-welcome">
+                <div class="screen-content">
+                    <div style="text-align: center; padding: 2rem 0;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">🚀</div>
+                        <h1>Founder Engine</h1>
+                        <p style="color: var(--text-dim); margin-bottom: 2rem;">AI-powered intelligence for scaling your company</p>
+                    </div>
+
+                    <div class="card" style="max-width: 500px; margin: 0 auto;">
+                        <h2>Get Started</h2>
+
+                        <form id="onboarding-form">
+                            <div class="form-group">
+                                <label>Company Name *</label>
+                                <input type="text" id="onboard-company-name" placeholder="e.g. Acme Corp" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Your Name *</label>
+                                <input type="text" id="onboard-founder-name" placeholder="e.g. Jane Doe" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Your Email *</label>
+                                <input type="email" id="onboard-founder-email" placeholder="jane@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Industry (optional)</label>
+                                <input type="text" id="onboard-industry" placeholder="e.g. SaaS, E-commerce">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Website URL *</label>
+                                <input type="url" id="onboard-website-url" placeholder="https://example.com" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block" id="onboard-submit">
+                                Create Account
+                            </button>
+                        </form>
+
+                        <div id="onboarding-scraping" style="display: none; margin-top: var(--gap); text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem; animation: pulse 1.5s infinite;">🔍</div>
+                            <h3 style="margin-bottom: var(--gap-2);">Researching your business...</h3>
+                            <p style="color: var(--text-dim); font-size: 0.9rem;">Angus is learning about your company</p>
+                            <div style="margin-top: 1rem;">
+                                <div class="spinner" style="display: inline-block;"></div>
+                            </div>
+                        </div>
+
+                        <div id="onboarding-result" style="display: none; margin-top: var(--gap);">
+                            <div id="scraping-summary" style="background: var(--surface-2); border-radius: var(--radius); padding: var(--gap); margin-bottom: var(--gap); display: none;">
+                                <h3 style="margin-bottom: 0.5rem; color: var(--green);">✓ Business Research Complete</h3>
+                                <p style="color: var(--text-dim); font-size: 0.9rem;" id="scraping-summary-text"></p>
+                            </div>
+
+                            <h3 style="margin-bottom: var(--gap-2);">Your Onboarding Links</h3>
+
+                            <div style="margin-bottom: var(--gap);">
+                                <p style="font-size: 0.85rem; margin-bottom: 4px;">Email Inbox:</p>
+                                <div class="copy-text">
+                                    <span id="inbox-address" style="flex: 1; overflow: hidden; text-overflow: ellipsis;">Loading...</span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('inbox-address')">📋</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p style="font-size: 0.85rem; margin-bottom: 4px;">Onboarding Link:</p>
+                                <div class="copy-text">
+                                    <span id="onboarding-link" style="flex: 1; overflow: hidden; text-overflow: ellipsis;">Loading...</span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('onboarding-link')">📋</button>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-primary btn-block" id="start-first-call" style="margin-top: var(--gap);">
+                                🎤 Start Your First Call
+                            </button>
+
+                            <button type="button" class="btn btn-secondary btn-block" id="goto-dashboard" style="margin-top: var(--gap-2);">
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Screen -->
+            <div class="screen" id="screen-dashboard">
+                <div class="screen-content">
+                    <div class="pull-to-refresh" id="pull-to-refresh">
+                        <span>⬇️ Refreshing...</span>
+                    </div>
+
+                    <div style="margin-bottom: var(--gap);">
+                        <p style="color: var(--text-dim); margin-bottom: 0.5rem;">Welcome back,</p>
+                        <h1 id="dashboard-company-name">Company Name</h1>
+                    </div>
+
+                    <!-- Intelligence Score -->
+                    <div class="card" style="text-align: center;">
+                        <svg class="intelligence-ring" id="intelligence-ring" viewBox="0 0 160 160">
+                            <!-- Background circle -->
+                            <circle cx="80" cy="80" r="70" fill="none" stroke="var(--border)" stroke-width="8"/>
+                            <!-- Animated circle -->
+                            <circle cx="80" cy="80" r="70" fill="none" stroke="url(#ringGradient)" stroke-width="8" stroke-dasharray="440" stroke-dashoffset="440" id="ring-progress"/>
+                            <!-- Percentage text -->
+                            <text x="80" y="75" text-anchor="middle" font-size="32" font-weight="bold" fill="var(--accent)" id="ring-percent">0%</text>
+                            <text x="80" y="95" text-anchor="middle" font-size="12" fill="var(--text-dim)" id="ring-label">Gathering Data</text>
+                            <defs>
+                                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:var(--accent);stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:var(--green);stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+
+                        <div class="ring-label">
+                            Intelligence Score: <span id="intelligence-tier">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Topics -->
+                    <div>
+                        <h2 style="margin-bottom: var(--gap);">Knowledge Areas</h2>
+                        <div class="topic-grid" id="topic-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div style="margin-bottom: var(--gap);">
+                        <h2 style="margin-bottom: var(--gap);">Quick Actions</h2>
+                        <button class="btn btn-primary btn-block" onclick="switchScreen('voice')">🎤 Start Voice Session</button>
+                        <button class="btn btn-secondary btn-block" onclick="switchScreen('upload')">📄 Upload Documents</button>
+                        <button class="btn btn-secondary btn-block" onclick="switchScreen('team')">👥 Invite Team</button>
+                    </div>
+
+                    <!-- Activity Feed -->
+                    <div>
+                        <h2 style="margin-bottom: var(--gap);">Recent Activity</h2>
+                        <div id="activity-feed">
+                            <p style="color: var(--text-dim);">Loading activity...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Session Screen -->
+            <div class="screen" id="screen-voice">
+                <div class="screen-content">
+                    <h1>Voice Session</h1>
+
+                    <!-- Pre-Call Screen -->
+                    <div id="voice-precall" class="card" style="padding: 2rem; text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">🎤</div>
+                        <h2 id="voice-company-name" style="margin-bottom: 0.5rem;">Loading...</h2>
+                        <p style="color: var(--text-dim); margin-bottom: 2rem; font-size: 1.1rem;" id="voice-angus-message">Angus has reviewed your website and is ready to chat</p>
+
+                        <div style="background: var(--surface-2); border-radius: var(--radius); padding: var(--gap); margin-bottom: 2rem;">
+                            <p style="color: var(--text-dim); font-size: 0.9rem;">Duration estimate</p>
+                            <p style="font-size: 1.3rem; font-weight: 600; color: var(--accent);">~10-15 minutes</p>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-block" id="voice-start-btn" style="padding: 1rem; font-size: 1.1rem;">
+                            Start Call
+                        </button>
+                    </div>
+
+                    <!-- Active Call Screen -->
+                    <div id="voice-active" style="display: none;">
+                        <div class="card" style="padding: 2rem;">
+                            <!-- ElevenLabs Conversational AI Widget -->
+                            <elevenlabs-convai id="elevenlabs-widget" agent-id="agent_1901kjxbr6xte40bw8dyeyhjwgze"></elevenlabs-convai>
+
+                            <div id="voice-session-status" style="margin-top: var(--gap); padding-top: var(--gap); border-top: 1px solid var(--border); color: var(--text-dim); text-align: center;">
+                                <p>🔴 Recording... (auto-saved)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Test Transcript (Optional)</h2>
+                        <p style="color: var(--text-dim); margin-bottom: var(--gap);">Paste or type a transcript below for testing:</p>
+                        <textarea id="transcript-input" placeholder="Paste your meeting transcript here..." style="min-height: 150px; margin-bottom: var(--gap);"></textarea>
+
+                        <div class="form-group">
+                            <label>Session Type (optional)</label>
+                            <select id="session-type">
+                                <option value="">Auto-detect</option>
+                                <option value="customer_interview">Customer Interview</option>
+                                <option value="investor_pitch">Investor Pitch</option>
+                                <option value="team_standup">Team Standup</option>
+                                <option value="board_meeting">Board Meeting</option>
+                                <option value="general">General Discussion</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary btn-block" id="process-transcript-btn">
+                            Process Transcript
+                        </button>
+
+                        <div id="transcript-result" style="display: none; margin-top: var(--gap);">
+                            <h3>Extracted Data Points</h3>
+                            <div id="extracted-data" style="margin-top: var(--gap);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Upload Screen -->
+            <div class="screen" id="screen-upload">
+                <div class="screen-content">
+                    <h1>Upload Documents</h1>
+
+                    <div class="card">
+                        <h2>Email Inbox</h2>
+                        <p style="color: var(--text-dim); margin-bottom: var(--gap);">Forward files to your dedicated inbox address:</p>
+                        <div class="copy-text">
+                            <span id="upload-inbox" style="flex: 1;">Loading...</span>
+                            <button type="button" class="copy-btn" onclick="copyToClipboard('upload-inbox')">📋</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Upload Document</h2>
+                        <div class="drop-zone" id="drop-zone">
+                            <div style="margin-bottom: var(--gap);">
+                                <div style="font-size: 2rem; margin-bottom: var(--gap-2);">📁</div>
+                                <p>Drag & drop files here</p>
+                            </div>
+                            <p style="color: var(--text-dim); font-size: 0.85rem;">or</p>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="document.getElementById('file-input').click()">
+                                Select Files
+                            </button>
+                            <input type="file" id="file-input" style="display: none;" multiple>
+                        </div>
+
+                        <div id="file-list" style="margin-top: var(--gap);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Management Screen -->
+            <div class="screen" id="screen-team">
+                <div class="screen-content">
+                    <h1>Team Management</h1>
+
+                    <button class="btn btn-primary btn-block" onclick="openInviteModal()">
+                        ➕ Invite Team Member
+                    </button>
+
+                    <div id="team-list" style="margin-top: var(--gap);">
+                        <p style="color: var(--text-dim);">Loading team...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Knowledge Base Screen -->
+            <div class="screen" id="screen-knowledge">
+                <div class="screen-content">
+                    <h1>Knowledge Base</h1>
+                    <p style="color: var(--text-dim); margin-bottom: var(--gap);" id="knowledge-count">0 data points</p>
+
+                    <div id="knowledge-topics">
+                        <p style="color: var(--text-dim);">Loading knowledge base...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call History Screen -->
+            <div class="screen" id="screen-calls">
+                <div class="screen-content">
+                    <h1>Call History</h1>
+                    <p style="color: var(--text-dim); margin-bottom: var(--gap);" id="calls-count">0 sessions</p>
+
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" onclick="filterCalls('all')">All</button>
+                        <button class="filter-tab" onclick="filterCalls('founder')">Founder</button>
+                        <button class="filter-tab" onclick="filterCalls('team')">Team</button>
+                    </div>
+
+                    <div id="calls-list">
+                        <p style="color: var(--text-dim);">Loading call history...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- More Screen (Recommendations + Gaps + Settings) -->
+            <div class="screen" id="screen-more">
+                <div class="screen-content">
+                    <h1>More</h1>
+
+                    <!-- Quick Access Section -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-bottom: var(--gap);">
+                        <button class="btn btn-secondary btn-block" onclick="switchScreen('upload')" style="text-align: center;">
+                            📄 Upload Documents
+                        </button>
+                        <button class="btn btn-secondary btn-block" onclick="switchScreen('team')" style="text-align: center;">
+                            👥 Team Management
+                        </button>
+                    </div>
+
+                    <!-- Recommendations Tab -->
+                    <div id="recommendations-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--gap);">
+                            <h2>Recommendations</h2>
+                            <button class="btn btn-secondary btn-small" id="generate-recommendations-btn">
+                                🔄 Generate
+                            </button>
+                        </div>
+                        <div id="recommendations-list">
+                            <p style="color: var(--text-dim);">Loading recommendations...</p>
+                        </div>
+                    </div>
+
+                    <!-- Gap Analysis Tab -->
+                    <div id="gaps-section" style="margin-top: var(--gap);">
+                        <h2 style="margin-bottom: var(--gap);">Gap Analysis</h2>
+                        <div id="gaps-list">
+                            <p style="color: var(--text-dim);">Loading gaps...</p>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div id="settings-section" style="margin-top: var(--gap);">
+                        <h2 style="margin-bottom: var(--gap);">Settings</h2>
+                        <div class="card">
+                            <h3>Company Settings</h3>
+                            <p style="color: var(--text-dim); margin-bottom: var(--gap);">Manage your account and integration details</p>
+
+                            <div style="margin-bottom: var(--gap);">
+                                <label style="display: block; color: var(--text-dim); font-size: 0.85rem; margin-bottom: 4px;">Company Email</label>
+                                <div class="copy-text">
+                                    <span id="settings-inbox" style="flex: 1;">Loading...</span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('settings-inbox')">📋</button>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: var(--gap);">
+                                <label style="display: block; color: var(--text-dim); font-size: 0.85rem; margin-bottom: 4px;">Onboarding Link</label>
+                                <div class="copy-text">
+                                    <span id="settings-link" style="flex: 1;">Loading...</span>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('settings-link')">📋</button>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-secondary btn-block" onclick="resetApp()">
+                                Reset & Start Over
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchScreen('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-item" onclick="switchScreen('voice')">
+                <span class="nav-icon">🎤</span>
+                <span>Voice</span>
+            </button>
+            <button class="nav-item" onclick="switchScreen('knowledge')">
+                <span class="nav-icon">🧠</span>
+                <span>Knowledge</span>
+            </button>
+            <button class="nav-item" onclick="switchScreen('calls')">
+                <span class="nav-icon">📞</span>
+                <span>Calls</span>
+            </button>
+            <button class="nav-item" onclick="switchScreen('more')">
+                <span class="nav-icon">⚙️</span>
+                <span>More</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Invite Modal -->
+    <div class="modal-overlay" id="invite-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Invite Team Member</h2>
+                <button type="button" class="modal-close" onclick="closeInviteModal()">✕</button>
+            </div>
+
+            <form id="invite-form">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="invite-name" placeholder="e.g. Sarah Smith" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Role *</label>
+                    <input type="text" id="invite-role" placeholder="e.g. CFO, Head of Marketing" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email (optional)</label>
+                    <input type="email" id="invite-email" placeholder="sarah@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Topics to Cover (optional)</label>
+                    <textarea id="invite-topics" placeholder="e.g. Revenue model, financial forecasting" style="min-height: 80px;"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    Send Invite
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://elevenlabs.io/convai-widget/index.js" async></script>
+
+    <script>
+        // Configuration
+        const SUPABASE_URL = 'https://qzlicsovnldozbnmahsa.supabase.co';
+        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bGljc292bmxkb3pibm1haHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NTQwNjEsImV4cCI6MjA4ODIzMDA2MX0.vNIFau61Y5abqOi6m4KitFZNTym7f4Pj2X4emq4SWkM';
+        const FUNCTIONS_BASE = 'https://qzlicsovnldozbnmahsa.supabase.co/functions/v1';
+
+        // App State
+        let appState = {
+            company_id: null,
+            company_data: null,
+            session_duration: 0,
+            session_start: null
+        };
+
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+        // Topic mapping for friendly names
+        const topicLabels = {
+            'business_fundamentals': 'Business Basics',
+            'revenue_financials': 'Revenue & Financials',
+            'customers': 'Customers & Market',
+            'team_operations': 'Team & Operations',
+            'marketing_sales': 'Marketing & Sales',
+            'technology_systems': 'Tech & Systems',
+            'founder_headspace': 'Founder Vision'
+        };
+
+        // ============ UI Utilities ============
+
+        function switchScreen(screenName) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+            // Show selected screen
+            const screen = document.getElementById(`screen-${screenName}`);
+            if (screen) {
+                screen.classList.add('active');
+            }
+
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item')?.classList.add('active');
+
+            // Load data for screen
+            if (screenName === 'dashboard') {
+                loadDashboard();
+            } else if (screenName === 'voice') {
+                appState.session_start = Date.now();
+                // Initialize voice session pre-call screen
+                initializeVoiceSession();
+            } else if (screenName === 'knowledge') {
+                loadKnowledgeScreen();
+            } else if (screenName === 'calls') {
+                loadCallHistory();
+            } else if (screenName === 'more') {
+                loadMoreScreen();
+            } else {
+                // End transcript session if switching away from voice
+                if (transcriptState.isActive || transcriptState.isRecording) {
+                    saveTranscriptProgress(true);
+                    endTranscriptSession();
+                }
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icon = type === 'success' ? '✓' : '✕';
+            toast.innerHTML = `
+                <span>${icon}</span>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard!', 'success');
+            });
+        }
+
+        function openInviteModal() {
+            document.getElementById('invite-modal').classList.add('active');
+        }
+
+        function closeInviteModal() {
+            document.getElementById('invite-modal').classList.remove('active');
+            document.getElementById('invite-form').reset();
+        }
+
+        function resetApp() {
+            if (confirm('This will clear all local data. Are you sure?')) {
+                appState = {
+                    company_id: null,
+                    company_data: null,
+                    session_duration: 0,
+                    session_start: null
+                };
+                switchToWelcome();
+                showToast('App reset successfully');
+            }
+        }
+
+        function switchToWelcome() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-welcome').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        }
+
+        // ============ API Calls ============
+
+        async function callEdgeFunction(functionName, body, method = 'POST') {
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'apikey': ANON_KEY,
+                    'Authorization': `Bearer ${ANON_KEY}`
+                };
+
+                const response = await fetch(`${FUNCTIONS_BASE}/${functionName}`, {
+                    method,
+                    headers,
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`API Error: ${error}`);
+                }
+
+                return await response.json();
+            } catch (err) {
+                console.error('API Error:', err);
+                showToast(err.message, 'error');
+                throw err;
+            }
+        }
+
+        async function onboardCompany(name, founder_name, founder_email, industry) {
+            try {
+                const result = await callEdgeFunction('onboard-company', {
+                    name,
+                    founder_name,
+                    founder_email,
+                    industry: industry || undefined
+                });
+
+                appState.company_id = result.company?.id || result.company_id;
+                appState.company_data = result;
+
+                return result;
+            } catch (err) {
+                showToast('Failed to onboard company', 'error');
+                throw err;
+            }
+        }
+
+        async function scrapeBusiness(company_id, website_url, company_name) {
+            try {
+                // The scrape-business endpoint does NOT require JWT verification
+                const response = await fetch(`${FUNCTIONS_BASE}/scrape-business`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': ANON_KEY
+                    },
+                    body: JSON.stringify({
+                        company_id,
+                        website_url,
+                        company_name
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.text();
+                    console.warn(`Scrape API Error: ${error}`);
+                    throw new Error(`Scrape failed: ${error}`);
+                }
+
+                return await response.json();
+            } catch (err) {
+                console.error('Scraping Error:', err);
+                // Don't show toast - scraping is optional
+                throw err;
+            }
+        }
+
+        async function getCompanyProfile() {
+            try {
+                if (!appState.company_id) return null;
+
+                const result = await callEdgeFunction('get-company-profile', {
+                    company_id: appState.company_id
+                });
+
+                appState.company_data = result;
+                return result;
+            } catch (err) {
+                console.error('Failed to load company profile:', err);
+                return null;
+            }
+        }
+
+        async function processTranscript(transcript, session_type) {
+            try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'apikey': ANON_KEY,
+                    'Authorization': `Bearer ${ANON_KEY}`
+                };
+
+                const response = await fetch(`${FUNCTIONS_BASE}/process-transcript`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        company_id: appState.company_id,
+                        transcript,
+                        session_type: session_type || undefined,
+                        speaker_role: 'founder'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to process transcript');
+                }
+
+                const result = await response.json();
+                return result;
+            } catch (err) {
+                showToast('Failed to process transcript', 'error');
+                throw err;
+            }
+        }
+
+        async function uploadDocument(file) {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('company_id', appState.company_id);
+                formData.append('uploaded_by', 'founder');
+
+                const headers = {
+                    'apikey': ANON_KEY,
+                    'Authorization': `Bearer ${ANON_KEY}`
+                };
+
+                const response = await fetch(`${FUNCTIONS_BASE}/upload-document`, {
+                    method: 'POST',
+                    headers,
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to upload document');
+                }
+
+                const result = await response.json();
+                return result;
+            } catch (err) {
+                showToast('Failed to upload document', 'error');
+                throw err;
+            }
+        }
+
+        async function inviteTeamMember(name, role, email, topics) {
+            try {
+                const result = await callEdgeFunction('invite-team-member', {
+                    company_id: appState.company_id,
+                    name,
+                    role,
+                    email: email || undefined,
+                    topics: topics || undefined
+                });
+
+                return result;
+            } catch (err) {
+                showToast('Failed to invite team member', 'error');
+                throw err;
+            }
+        }
+
+        async function generateRecommendations() {
+            try {
+                const result = await callEdgeFunction('generate-recommendations', {
+                    company_id: appState.company_id
+                });
+
+                return result;
+            } catch (err) {
+                showToast('Failed to generate recommendations', 'error');
+                throw err;
+            }
+        }
+
+        // ============ Screen Loading ============
+
+        async function loadDashboard() {
+            try {
+                const profile = await getCompanyProfile();
+                if (!profile) return;
+
+                const company = profile.company || {};
+
+                // Update company name
+                document.getElementById('dashboard-company-name').textContent = company.name || 'Your Company';
+
+                // Build gap lookup from array
+                const gapsArray = profile.gaps || [];
+                const gapAnalysis = {};
+                gapsArray.forEach(g => { gapAnalysis[g.topic] = g; });
+
+                // Use server-calculated score or compute from gaps
+                const avgCompleteness = company.intelligence_score || (gapsArray.length > 0
+                    ? Math.round(gapsArray.reduce((sum, g) => sum + (g.completeness_score || 0), 0) / gapsArray.length)
+                    : 0);
+
+                // Determine tier from server or compute
+                const tierMap = { getting_started: 'Getting Started', good: 'Good', great: 'Great', amazing: 'Amazing', expert: 'Expert' };
+                let tier = tierMap[company.intelligence_tier] || 'Getting Started';
+
+                // Update ring
+                animateIntelligenceRing(avgCompleteness);
+                document.getElementById('ring-percent').textContent = `${avgCompleteness}%`;
+                document.getElementById('ring-label').textContent = tier;
+                document.getElementById('intelligence-tier').textContent = tier;
+
+                // Render topics
+                const topicGrid = document.getElementById('topic-grid');
+                topicGrid.innerHTML = '';
+
+                const topicOrder = [
+                    'business_fundamentals',
+                    'revenue_financials',
+                    'customers',
+                    'team_operations',
+                    'marketing_sales',
+                    'technology_systems',
+                    'founder_headspace'
+                ];
+
+                topicOrder.forEach(topicKey => {
+                    const gap = gapAnalysis[topicKey] || {};
+                    const completeness = Math.round(gap.completeness_score || 0);
+
+                    const card = document.createElement('div');
+                    card.className = 'topic-card';
+                    card.innerHTML = `
+                        <div class="topic-name">${topicLabels[topicKey] || topicKey}</div>
+                        <div class="completeness-bar">
+                            <div class="completeness-fill" style="width: ${completeness}%;"></div>
+                        </div>
+                        <div class="completeness-percent">${completeness}%</div>
+                    `;
+                    topicGrid.appendChild(card);
+                });
+
+                // Render activity feed
+                const auditLog = profile.recent_activity || [];
+                const recentActivity = auditLog.slice(0, 5);
+
+                const feedHtml = recentActivity.length > 0
+                    ? recentActivity.map(log => `
+                        <div class="activity-item">
+                            <div>${log.action}</div>
+                            <div class="activity-time">${formatTime(log.created_at)}</div>
+                        </div>
+                    `).join('')
+                    : '<p style="color: var(--text-dim);">No activity yet. Get started by uploading documents or scheduling a voice session.</p>';
+
+                document.getElementById('activity-feed').innerHTML = feedHtml;
+
+            } catch (err) {
+                console.error('Failed to load dashboard:', err);
+            }
+        }
+
+        async function loadMoreScreen() {
+            try {
+                const profile = await getCompanyProfile();
+                if (!profile) return;
+
+                // Load recommendations
+                loadRecommendations(profile);
+
+                // Load gaps
+                loadGaps(profile);
+
+                // Load settings
+                loadSettings(profile);
+            } catch (err) {
+                console.error('Failed to load more screen:', err);
+            }
+        }
+
+        function loadRecommendations(profile) {
+            const recommendations = profile.recommendations || [];
+            const container = document.getElementById('recommendations-list');
+
+            if (recommendations.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-dim);">No recommendations yet. Generate recommendations to get started.</p>';
+                return;
+            }
+
+            const html = recommendations.map(rec => `
+                <div class="recommendation-card">
+                    <div class="recommendation-header">
+                        <div style="flex: 1;">
+                            <div class="recommendation-badges">
+                                ${rec.priority ? `<span class="badge badge-${rec.priority <= 3 ? 'orange' : 'accent'}">#${rec.priority}</span>` : ''}
+                                ${rec.constraint_type ? `<span class="badge badge-green">${rec.constraint_type}</span>` : ''}
+                            </div>
+                            <div class="recommendation-title">${rec.title}</div>
+                            <p style="color: var(--text-dim); font-size: 0.9rem; margin: 4px 0 0 0;">${rec.description}</p>
+                        </div>
+                    </div>
+                    <div class="recommendation-status">
+                        <select style="flex: 1;" onchange="updateRecommendationStatus('${rec.id}', this.value)">
+                            <option value="pending" ${rec.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="in_progress" ${rec.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="completed" ${rec.status === 'completed' ? 'selected' : ''}>Completed</option>
+                        </select>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        function loadGaps(profile) {
+            const gapsArray = profile.gaps || [];
+            const container = document.getElementById('gaps-list');
+
+            const html = gapsArray.map(topic => {
+                const topicKey = topic.topic;
+                const completeness = Math.round(topic.completeness_score || 0);
+                const missingAreas = (topic.missing_items || []).slice(0, 3);
+
+                return `
+                    <div class="expandable card" style="background: var(--surface); border: 1px solid var(--border);">
+                        <div class="expandable-header">
+                            <div>
+                                <div style="font-weight: 600;">${topicLabels[topicKey] || topicKey}</div>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">${completeness}% complete</div>
+                            </div>
+                            <div class="expand-icon">▼</div>
+                        </div>
+                        <div class="expandable-content">
+                            <div class="expandable-body">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${completeness}%;"></div>
+                                </div>
+                                ${missingAreas.length > 0 ? `
+                                    <div style="margin-bottom: var(--gap);">
+                                        <p style="color: var(--text-dim); margin-bottom: 8px;">Missing areas:</p>
+                                        <ul style="padding-left: 20px; color: var(--text-dim);">
+                                            ${missingAreas.map(area => `<li style="margin-bottom: 4px;">${area}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
+                                <button class="btn btn-secondary btn-small" onclick="switchScreen('upload')">
+                                    Upload Related Documents
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html || '<p style="color: var(--text-dim);">No gap analysis available yet.</p>';
+
+            // Add expandable functionality
+            document.querySelectorAll('.expandable-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    this.closest('.expandable').classList.toggle('expanded');
+                });
+            });
+        }
+
+        function loadSettings(profile) {
+            const company = profile.company || {};
+            document.getElementById('settings-inbox').textContent = company.email_inbox_address || 'Loading...';
+            document.getElementById('settings-link').textContent = company.onboarding_link || 'Loading...';
+        }
+
+        // ============ Event Listeners ============
+
+        // Onboarding form
+        document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('onboard-company-name').value;
+            const founder_name = document.getElementById('onboard-founder-name').value;
+            const founder_email = document.getElementById('onboard-founder-email').value;
+            const industry = document.getElementById('onboard-industry').value;
+            const website_url = document.getElementById('onboard-website-url').value;
+
+            try {
+                const btn = document.getElementById('onboard-submit');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Creating...';
+
+                // Step 1: Onboard the company
+                const result = await onboardCompany(name, founder_name, founder_email, industry);
+                const company_id = result.company?.id || result.company_id;
+
+                // Show scraping loader
+                document.getElementById('onboarding-form').style.display = 'none';
+                document.getElementById('onboarding-scraping').style.display = 'block';
+
+                // Step 2: Scrape the business website
+                try {
+                    const scrapeResult = await scrapeBusiness(company_id, website_url, name);
+
+                    // Store scraped knowledge in app state
+                    window.companyKnowledge = scrapeResult.company_summary || '';
+                    window.smartQuestions = scrapeResult.smart_questions || [];
+
+                    // Show scraping summary
+                    const dataPointsCount = scrapeResult.data_points_count || 0;
+                    document.getElementById('scraping-summary-text').textContent =
+                        `Found ${dataPointsCount} data points about your business. Angus is ready to discuss any aspect of ${name}.`;
+                    document.getElementById('scraping-summary').style.display = 'block';
+
+                } catch (scrapeErr) {
+                    console.warn('Scraping failed, continuing with onboarding:', scrapeErr);
+                    // Continue without scraping data - it's not critical
+                    window.companyKnowledge = '';
+                    window.smartQuestions = [];
+                }
+
+                // Show results
+                document.getElementById('inbox-address').textContent = result.email_inbox || result.company?.email_inbox_address || '';
+                document.getElementById('onboarding-link').textContent = result.onboarding_link || result.company?.onboarding_link || '';
+                document.getElementById('onboarding-scraping').style.display = 'none';
+                document.getElementById('onboarding-result').style.display = 'block';
+
+                showToast('Company created successfully!');
+
+            } catch (err) {
+                document.getElementById('onboard-submit').disabled = false;
+                document.getElementById('onboard-submit').textContent = 'Create Account';
+                document.getElementById('onboarding-scraping').style.display = 'none';
+                document.getElementById('onboarding-form').style.display = 'block';
+            }
+        });
+
+        document.getElementById('goto-dashboard').addEventListener('click', () => {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-dashboard').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+            loadDashboard();
+        });
+
+        // Start first call button from onboarding
+        const startFirstCallBtn = document.getElementById('start-first-call');
+        if (startFirstCallBtn) {
+            startFirstCallBtn.addEventListener('click', () => {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-voice').classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                initializeVoiceSession();
+            });
+        }
+
+        // Voice session initialization
+        function initializeVoiceSession() {
+            const profile = appState.company_data || {};
+            const companyName = profile.company?.name || profile.name || 'Your Company';
+
+            document.getElementById('voice-company-name').textContent = companyName;
+            document.getElementById('voice-angus-message').textContent =
+                'Angus has reviewed your website and is ready to chat';
+            document.getElementById('voice-precall').style.display = 'block';
+            document.getElementById('voice-active').style.display = 'none';
+        }
+
+        // Start call button
+        document.getElementById('voice-start-btn').addEventListener('click', () => {
+            // Hide pre-call, show active call
+            document.getElementById('voice-precall').style.display = 'none';
+            document.getElementById('voice-active').style.display = 'block';
+
+            // Initialize transcript recording
+            transcriptState.sessionId = generateSessionId();
+            transcriptState.isRecording = true;
+            startTranscriptAutoSave();
+
+            // Pass dynamic variables to ElevenLabs widget
+            passVariablesToWidget();
+
+            // Start periodic transcript auto-save
+            if (!transcriptState.autoSaveInterval) {
+                transcriptState.autoSaveInterval = setInterval(async () => {
+                    if (transcriptState.isRecording) {
+                        await saveTranscriptProgress(false);
+                    }
+                }, 15000); // Save every 15 seconds
+            }
+        });
+
+        // Pass variables to ElevenLabs widget
+        function passVariablesToWidget() {
+            const widget = document.getElementById('elevenlabs-widget');
+            if (widget) {
+                // Set custom context data
+                widget.dataset.companyKnowledge = window.companyKnowledge || '';
+                widget.dataset.smartQuestions = JSON.stringify(window.smartQuestions || []);
+
+                // Try to use widget API if available
+                if (window.ElevenLabsConvAI) {
+                    try {
+                        // Attempt to send variables to the widget's internal state
+                        if (widget.ElevenLabsAPI && widget.ElevenLabsAPI.setVariable) {
+                            widget.ElevenLabsAPI.setVariable('company_knowledge', window.companyKnowledge || '');
+                            widget.ElevenLabsAPI.setVariable('smart_questions', JSON.stringify(window.smartQuestions || []));
+                        }
+                    } catch (err) {
+                        console.log('Could not set widget variables directly (expected):', err);
+                    }
+                }
+            }
+        }
+
+        // Transcript processing
+        document.getElementById('process-transcript-btn').addEventListener('click', async () => {
+            const transcript = document.getElementById('transcript-input').value.trim();
+            const sessionType = document.getElementById('session-type').value;
+
+            if (!transcript) {
+                showToast('Please enter a transcript', 'error');
+                return;
+            }
+
+            try {
+                const btn = document.getElementById('process-transcript-btn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Processing...';
+
+                const result = await processTranscript(transcript, sessionType);
+
+                // Show results
+                const extractedHtml = result.extracted_data
+                    ? Object.entries(result.extracted_data).map(([key, value]) => `
+                        <div style="padding: 8px; background: var(--surface-2); border-radius: var(--radius); margin-bottom: 8px;">
+                            <div style="font-size: 0.85rem; color: var(--text-dim);">${key}</div>
+                            <div style="font-weight: 500;">${value}</div>
+                        </div>
+                    `).join('')
+                    : '<p style="color: var(--text-dim);">No data extracted</p>';
+
+                document.getElementById('extracted-data').innerHTML = extractedHtml;
+                document.getElementById('transcript-result').style.display = 'block';
+
+                showToast('Transcript processed successfully!');
+
+            } catch (err) {
+                // Error already shown in toast
+            } finally {
+                document.getElementById('process-transcript-btn').disabled = false;
+                document.getElementById('process-transcript-btn').textContent = 'Process Transcript';
+            }
+        });
+
+        // File upload
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('active');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('active');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        async function handleFiles(files) {
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = '';
+
+            for (const file of files) {
+                // Add file to list with loading status
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="file-status">
+                        <span class="spinner"></span>
+                        <span>Uploading...</span>
+                    </div>
+                `;
+                fileList.appendChild(fileItem);
+
+                try {
+                    await uploadDocument(file);
+                    fileItem.querySelector('.file-status').innerHTML = '<span style="color: var(--green);">✓ Uploaded</span>';
+                } catch (err) {
+                    fileItem.querySelector('.file-status').innerHTML = '<span style="color: var(--red);">✕ Failed</span>';
+                }
+            }
+
+            fileInput.value = '';
+        }
+
+        // Invite team member
+        document.getElementById('invite-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('invite-name').value;
+            const role = document.getElementById('invite-role').value;
+            const email = document.getElementById('invite-email').value;
+            const topics = document.getElementById('invite-topics').value;
+
+            try {
+                const result = await inviteTeamMember(name, role, email, topics);
+                showToast('Team member invited successfully!');
+                closeInviteModal();
+
+                // Reload team list
+                const profile = await getCompanyProfile();
+                if (profile) {
+                    loadTeamList(profile);
+                }
+            } catch (err) {
+                // Error already shown in toast
+            }
+        });
+
+        async function loadTeamList(profile) {
+            const team = profile.team || [];
+            const container = document.getElementById('team-list');
+
+            if (team.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-dim);">No team members yet. Invite team members to get started.</p>';
+                return;
+            }
+
+            const html = team.map(member => `
+                <div class="team-member">
+                    <div class="team-member-info">
+                        <h3>${member.name}</h3>
+                        <div class="team-member-role">${member.role}</div>
+                        ${member.invite_link ? `
+                            <div class="team-member-invite">
+                                <span class="status-dot pending"></span> Invite pending
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${member.invite_link ? `
+                        <button type="button" class="copy-btn" onclick="copyToClipboard('invite-${member.id}')" style="padding: 8px;">
+                            📋
+                        </button>
+                        <div id="invite-${member.id}" style="display: none;">${member.invite_link}</div>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Generate recommendations
+        document.getElementById('generate-recommendations-btn').addEventListener('click', async () => {
+            try {
+                const btn = document.getElementById('generate-recommendations-btn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> Generating...';
+
+                await generateRecommendations();
+
+                // Reload recommendations
+                const profile = await getCompanyProfile();
+                if (profile) {
+                    loadRecommendations(profile);
+                }
+
+                showToast('Recommendations generated successfully!');
+
+            } catch (err) {
+                // Error already shown in toast
+            } finally {
+                const btn = document.getElementById('generate-recommendations-btn');
+                btn.disabled = false;
+                btn.innerHTML = '🔄 Generate';
+            }
+        });
+
+        // Pull to refresh
+        let pullStart = 0;
+        const content = document.querySelector('.content');
+
+        content.addEventListener('touchstart', (e) => {
+            if (content.scrollTop === 0) {
+                pullStart = e.touches[0].clientY;
+            }
+        });
+
+        content.addEventListener('touchmove', (e) => {
+            if (content.scrollTop === 0 && pullStart) {
+                const pullDistance = e.touches[0].clientY - pullStart;
+                const pullEl = document.getElementById('pull-to-refresh');
+                if (pullDistance > 0) {
+                    pullEl.style.height = Math.min(pullDistance, 60) + 'px';
+                }
+            }
+        });
+
+        content.addEventListener('touchend', async () => {
+            const pullEl = document.getElementById('pull-to-refresh');
+            if (pullEl.offsetHeight > 40) {
+                pullEl.classList.add('active');
+                await loadDashboard();
+                setTimeout(() => {
+                    pullEl.classList.remove('active');
+                    pullEl.style.height = '0';
+                }, 1000);
+            }
+            pullStart = 0;
+        });
+
+        // Update upload inbox address
+        async function updateUploadInbox() {
+            if (appState.company_data) {
+                document.getElementById('upload-inbox').textContent = appState.company_data?.company?.email_inbox_address || appState.company_data?.email_inbox || '';
+            }
+        }
+
+        // ============ Utilities ============
+
+        function animateIntelligenceRing(percentage) {
+            const circle = document.getElementById('ring-progress');
+            const circumference = 440;
+            const offset = circumference - (percentage / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return 'just now';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (hours < 1) return 'just now';
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // ============ Initialization ============
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:application/javascript;base64,KCkgPT4ge30=', { scope: '/' }).catch(() => {
+                // Silent fail
+            });
+        }
+
+        // ============ Progressive Transcript Saving ============
+
+        // Transcript state
+        let transcriptState = {
+            currentTranscript: '',
+            sessionId: null,
+            isActive: false,
+            isRecording: false,
+            lastSaveTime: 0,
+            saveInterval: 15000, // 15 seconds
+            saveIntervalHandle: null,
+            autoSaveInterval: null
+        };
+
+        /**
+         * Initialize transcript saving for a voice session
+         */
+        function initializeTranscriptSaving() {
+            transcriptState.sessionId = generateSessionId();
+            transcriptState.isActive = true;
+            transcriptState.currentTranscript = '';
+            transcriptState.lastSaveTime = Date.now();
+
+            // Start periodic saving every 30 seconds
+            transcriptState.saveIntervalHandle = setInterval(() => {
+                if (transcriptState.isActive && transcriptState.currentTranscript) {
+                    saveTranscriptProgress();
+                }
+            }, transcriptState.saveInterval);
+
+            // Listen to ElevenLabs widget events
+            attachElevenLabsListeners();
+
+            console.log('Transcript saving initialized with session ID:', transcriptState.sessionId);
+        }
+
+        /**
+         * Attach listeners to ElevenLabs widget for transcript updates
+         */
+        function attachElevenLabsListeners() {
+            const convaiWidget = document.querySelector('elevenlabs-convai');
+
+            if (convaiWidget) {
+                // Listen for message events from the widget
+                window.addEventListener('message', (event) => {
+                    // Check if message is from ElevenLabs widget
+                    if (event.data && event.data.type === 'elevenlabs') {
+                        if (event.data.event === 'transcript') {
+                            // Update transcript buffer
+                            transcriptState.currentTranscript = event.data.transcript || '';
+                        } else if (event.data.event === 'end_call' || event.data.event === 'disconnect') {
+                            // Immediately save on disconnect
+                            saveTranscriptProgress(true);
+                            endTranscriptSession();
+                        } else if (event.data.event === 'error') {
+                            // Save on error before session ends
+                            saveTranscriptProgress(true);
+                        }
+                    }
+                });
+
+                // Alternative: Use widget's built-in event if available
+                if (convaiWidget.addEventListener) {
+                    convaiWidget.addEventListener('onTranscriptUpdate', (transcript) => {
+                        transcriptState.currentTranscript = transcript || '';
+                    });
+
+                    convaiWidget.addEventListener('onSessionEnd', () => {
+                        saveTranscriptProgress(true);
+                        endTranscriptSession();
+                    });
+
+                    convaiWidget.addEventListener('onError', () => {
+                        saveTranscriptProgress(true);
+                    });
+                }
+            }
+        }
+
+        /**
+         * Generate a unique session ID
+         */
+        function generateSessionId() {
+            return `session_${appState.company_id || 'unknown'}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        /**
+         * Save transcript progress to Supabase with localStorage backup
+         */
+        async function saveTranscriptProgress(isImmediate = false) {
+            if (!transcriptState.currentTranscript && !isImmediate) {
+                return;
+            }
+
+            const now = Date.now();
+            // Skip if not enough time has passed (unless immediate save on disconnect)
+            if (!isImmediate && (now - transcriptState.lastSaveTime) < (transcriptState.saveInterval * 0.8)) {
+                return;
+            }
+
+            transcriptState.lastSaveTime = now;
+
+            const transcriptData = {
+                session_id: transcriptState.sessionId,
+                company_id: appState.company_id,
+                transcript_content: transcriptState.currentTranscript,
+                session_type: document.getElementById('session-type')?.value || 'general',
+                saved_at: new Date().toISOString(),
+                is_final: isImmediate
+            };
+
+            try {
+                // First, save to localStorage as a backup buffer
+                saveToLocalBackup(transcriptData);
+
+                // Try to save to Supabase
+                const response = await fetch(`${FUNCTIONS_BASE}/save-transcript`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ANON_KEY}`
+                    },
+                    body: JSON.stringify(transcriptData)
+                });
+
+                if (response.ok) {
+                    console.log('Transcript progress saved to Supabase', {
+                        sessionId: transcriptState.sessionId,
+                        length: transcriptState.currentTranscript.length,
+                        timestamp: now
+                    });
+                    // Clear local backup on successful save
+                    clearLocalBackup(transcriptState.sessionId);
+                } else {
+                    console.warn('Failed to save to Supabase, relying on localStorage backup', response.status);
+                }
+            } catch (error) {
+                console.error('Error saving transcript progress:', error);
+                // Ensure we have localStorage backup if network fails
+                saveToLocalBackup(transcriptData);
+            }
+        }
+
+        /**
+         * Save transcript to localStorage as backup buffer
+         */
+        function saveToLocalBackup(transcriptData) {
+            try {
+                const backupKey = `transcript_backup_${transcriptData.session_id}`;
+                const backupList = JSON.parse(localStorage.getItem('transcript_backups') || '[]');
+
+                // Store the backup
+                localStorage.setItem(backupKey, JSON.stringify(transcriptData));
+
+                // Track this backup in a list
+                if (!backupList.includes(backupKey)) {
+                    backupList.push(backupKey);
+                    localStorage.setItem('transcript_backups', JSON.stringify(backupList));
+                }
+
+                console.log('Transcript backup saved to localStorage:', backupKey);
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+                // Handle quota exceeded by clearing old backups
+                if (error.name === 'QuotaExceededError') {
+                    clearOldestBackups();
+                    try {
+                        localStorage.setItem(`transcript_backup_${transcriptData.session_id}`, JSON.stringify(transcriptData));
+                    } catch (retryError) {
+                        console.error('Still unable to save to localStorage after cleanup:', retryError);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Clear a specific transcript backup from localStorage
+         */
+        function clearLocalBackup(sessionId) {
+            try {
+                const backupKey = `transcript_backup_${sessionId}`;
+                localStorage.removeItem(backupKey);
+
+                const backupList = JSON.parse(localStorage.getItem('transcript_backups') || '[]');
+                const filteredList = backupList.filter(key => key !== backupKey);
+                localStorage.setItem('transcript_backups', JSON.stringify(filteredList));
+            } catch (error) {
+                console.error('Error clearing local backup:', error);
+            }
+        }
+
+        /**
+         * Clear oldest backups when localStorage quota is exceeded
+         */
+        function clearOldestBackups() {
+            try {
+                const backupList = JSON.parse(localStorage.getItem('transcript_backups') || '[]');
+                // Remove the oldest 3 backups
+                const toRemove = backupList.slice(0, Math.min(3, backupList.length));
+                toRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                });
+
+                const updatedList = backupList.filter(key => !toRemove.includes(key));
+                localStorage.setItem('transcript_backups', JSON.stringify(updatedList));
+
+                console.log('Cleared oldest backups:', toRemove);
+            } catch (error) {
+                console.error('Error clearing old backups:', error);
+            }
+        }
+
+        /**
+         * Sync any pending transcripts from localStorage to Supabase
+         */
+        async function syncPendingTranscripts() {
+            try {
+                const backupList = JSON.parse(localStorage.getItem('transcript_backups') || '[]');
+
+                for (const backupKey of backupList) {
+                    const transcriptData = JSON.parse(localStorage.getItem(backupKey));
+
+                    if (transcriptData) {
+                        try {
+                            const response = await fetch(`${FUNCTIONS_BASE}/save-transcript`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${ANON_KEY}`
+                                },
+                                body: JSON.stringify(transcriptData)
+                            });
+
+                            if (response.ok) {
+                                // Successfully synced, remove from backup
+                                localStorage.removeItem(backupKey);
+                                const updatedList = backupList.filter(key => key !== backupKey);
+                                localStorage.setItem('transcript_backups', JSON.stringify(updatedList));
+                                console.log('Synced pending transcript:', transcriptData.session_id);
+                            }
+                        } catch (error) {
+                            console.error('Error syncing transcript backup:', backupKey, error);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error syncing pending transcripts:', error);
+            }
+        }
+
+        /**
+         * Start automatic transcript saving during active call
+         */
+        function startTranscriptAutoSave() {
+            // Clear any existing interval
+            if (transcriptState.autoSaveInterval) {
+                clearInterval(transcriptState.autoSaveInterval);
+            }
+
+            // Set up auto-save every 15 seconds
+            transcriptState.autoSaveInterval = setInterval(async () => {
+                if (transcriptState.isRecording) {
+                    try {
+                        await saveTranscriptProgress(false);
+                    } catch (err) {
+                        console.error('Error in auto-save:', err);
+                    }
+                }
+            }, 15000);
+
+            console.log('Transcript auto-save started for session:', transcriptState.sessionId);
+        }
+
+        /**
+         * End the current transcript session
+         */
+        function endTranscriptSession() {
+            transcriptState.isActive = false;
+            transcriptState.isRecording = false;
+
+            // Clear the intervals
+            if (transcriptState.saveIntervalHandle) {
+                clearInterval(transcriptState.saveIntervalHandle);
+                transcriptState.saveIntervalHandle = null;
+            }
+
+            if (transcriptState.autoSaveInterval) {
+                clearInterval(transcriptState.autoSaveInterval);
+                transcriptState.autoSaveInterval = null;
+            }
+
+            console.log('Transcript session ended:', transcriptState.sessionId);
+        }
+
+        // ============ Knowledge Base Screen ============
+
+        async function loadKnowledgeScreen() {
+            const profile = await getCompanyProfile();
+            if (!profile) return;
+
+            const knowledge = profile.knowledge || {};
+            const knowledgeRaw = profile.knowledge_raw || [];
+
+            // Update count
+            document.getElementById('knowledge-count').textContent = `${knowledgeRaw.length} data points`;
+
+            const container = document.getElementById('knowledge-topics');
+
+            if (knowledgeRaw.length === 0) {
+                container.innerHTML = '<div class="card"><p style="color: var(--text-dim); text-align: center; padding: 2rem 0;">No knowledge collected yet. Start a voice session or upload documents to build your knowledge base.</p></div>';
+                return;
+            }
+
+            // Build topic sections
+            const topicOrder = ['business_fundamentals', 'revenue_financials', 'customers', 'team_operations', 'marketing_sales', 'technology_systems', 'founder_headspace'];
+
+            let html = '';
+            topicOrder.forEach(topic => {
+                const entries = knowledge[topic] || [];
+                if (entries.length === 0) return;
+
+                html += `
+                    <div class="knowledge-topic" onclick="toggleKnowledgeTopic(this)">
+                        <div class="knowledge-topic-header">
+                            <span>${topicLabels[topic] || topic}</span>
+                            <span class="knowledge-topic-count">${entries.length}</span>
+                            <span class="knowledge-chevron">▸</span>
+                        </div>
+                        <div class="knowledge-topic-body">
+                            ${entries.map(e => `
+                                <div class="knowledge-entry">
+                                    <div class="knowledge-key">${formatKey(e.key)}</div>
+                                    <div class="knowledge-value">${e.value}</div>
+                                    <span class="confidence-badge confidence-${e.confidence || 'medium'}">${e.confidence || 'medium'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Check for entries with topics not in our standard list
+            Object.keys(knowledge).forEach(topic => {
+                if (!topicOrder.includes(topic)) {
+                    const entries = knowledge[topic];
+                    if (entries.length === 0) return;
+                    html += `
+                        <div class="knowledge-topic" onclick="toggleKnowledgeTopic(this)">
+                            <div class="knowledge-topic-header">
+                                <span>${topicLabels[topic] || topic}</span>
+                                <span class="knowledge-topic-count">${entries.length}</span>
+                                <span class="knowledge-chevron">▸</span>
+                            </div>
+                            <div class="knowledge-topic-body">
+                                ${entries.map(e => `
+                                    <div class="knowledge-entry">
+                                        <div class="knowledge-key">${formatKey(e.key)}</div>
+                                        <div class="knowledge-value">${e.value}</div>
+                                        <span class="confidence-badge confidence-${e.confidence || 'medium'}">${e.confidence || 'medium'}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleKnowledgeTopic(el) {
+            el.classList.toggle('expanded');
+        }
+
+        function formatKey(key) {
+            return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        // ============ Call History Screen ============
+
+        async function loadCallHistory() {
+            const profile = await getCompanyProfile();
+            if (!profile) return;
+
+            const sessions = profile.sessions || [];
+
+            document.getElementById('calls-count').textContent = `${sessions.length} sessions`;
+
+            const container = document.getElementById('calls-list');
+
+            if (sessions.length === 0) {
+                container.innerHTML = '<div class="card"><p style="color: var(--text-dim); text-align: center; padding: 2rem 0;">No calls yet. Start a voice session to begin building your intelligence.</p></div>';
+                return;
+            }
+
+            // Store sessions for filtering
+            window.allSessions = sessions;
+            renderCallList(sessions);
+        }
+
+        function filterCalls(filter) {
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            let filtered = window.allSessions || [];
+            if (filter === 'founder') {
+                filtered = filtered.filter(s => s.participant_role === 'founder' || !s.participant_role);
+            } else if (filter === 'team') {
+                filtered = filtered.filter(s => s.participant_role && s.participant_role !== 'founder');
+            }
+
+            renderCallList(filtered);
+        }
+
+        function renderCallList(sessions) {
+            const container = document.getElementById('calls-list');
+
+            if (sessions.length === 0) {
+                container.innerHTML = '<div class="card"><p style="color: var(--text-dim); text-align: center;">No sessions match this filter.</p></div>';
+                return;
+            }
+
+            container.innerHTML = sessions.map(s => {
+                const duration = s.duration_seconds ? formatDuration(s.duration_seconds) : 'N/A';
+                const date = new Date(s.created_at);
+                const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                const topics = s.topics_covered || [];
+
+                return `
+                    <div class="session-card card interactive" onclick="toggleSessionCard(this)">
+                        <div class="session-card-header">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <strong>${s.participant_name || 'Unknown'}</strong>
+                                    ${s.participant_role ? `<span class="badge badge-accent">${s.participant_role}</span>` : ''}
+                                    ${s.session_type ? `<span class="badge badge-green">${s.session_type}</span>` : ''}
+                                </div>
+                                <div style="display: flex; gap: 12px; color: var(--text-dim); font-size: 0.85rem;">
+                                    <span>📅 ${dateStr} ${timeStr}</span>
+                                    <span>⏱ ${duration}</span>
+                                    <span>📊 ${s.data_points_captured || 0} data points</span>
+                                </div>
+                            </div>
+                            <span class="session-chevron">▸</span>
+                        </div>
+                        <div class="session-card-body">
+                            ${s.summary ? `<p style="color: var(--text); margin-bottom: 8px;">${s.summary}</p>` : '<p style="color: var(--text-dim);">No summary available.</p>'}
+                            ${topics.length > 0 ? `
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;">
+                                    ${topics.map(t => `<span class="topic-tag">${topicLabels[t] || t}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleSessionCard(el) {
+            el.classList.toggle('expanded');
+        }
+
+        function formatDuration(seconds) {
+            if (seconds < 60) return `${seconds}s`;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            if (mins < 60) return `${mins}m ${secs}s`;
+            const hours = Math.floor(mins / 60);
+            return `${hours}h ${mins % 60}m`;
+        }
+
+        // Load company data on init
+        async function init() {
+            // Initialize voice context variables
+            window.companyKnowledge = '';
+            window.smartQuestions = [];
+
+            if (appState.company_id) {
+                await loadDashboard();
+            }
+
+            // Set up nav click handlers
+            document.querySelectorAll('.nav-item').forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+
+            // Sync any pending transcripts from previous sessions
+            syncPendingTranscripts();
+
+            // Set up voice session screen listener
+            document.addEventListener('screenChange', (e) => {
+                if (e.detail?.screen === 'voice') {
+                    initializeTranscriptSaving();
+                } else if (transcriptState.isActive) {
+                    saveTranscriptProgress(true);
+                    endTranscriptSession();
+                }
+            });
+        }
+
+        // Start app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

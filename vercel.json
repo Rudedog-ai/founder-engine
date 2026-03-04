@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "name": "founder-engine",
+  "routes": [
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
