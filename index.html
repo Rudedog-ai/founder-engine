@@ -1542,7 +1542,12 @@
         };
 
         // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, ANON_KEY);
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, ANON_KEY);
+        } catch (e) {
+            console.error('Supabase client failed to initialize:', e);
+        }
 
         // Topic mapping for friendly names
         const topicLabels = {
@@ -2030,6 +2035,7 @@
         // Onboarding form
         document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Form submitted');
 
             const name = document.getElementById('onboard-company-name').value;
             const founder_name = document.getElementById('onboard-founder-name').value;
@@ -2039,6 +2045,8 @@
             if (website_url && !website_url.startsWith('http')) {
                 website_url = 'https://' + website_url;
             }
+
+            console.log('Onboarding:', { name, founder_name, founder_email, industry, website_url });
 
             try {
                 const btn = document.getElementById('onboard-submit');
