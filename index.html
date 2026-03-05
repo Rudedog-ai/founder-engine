@@ -2625,13 +2625,17 @@
 
         // handleOnboardSubmit is defined in its own script block above the form
 
-        document.getElementById('goto-dashboard').addEventListener('click', () => {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen-dashboard').classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            document.querySelectorAll('.nav-item')[0].classList.add('active');
-            loadDashboard();
-        });
+        const gotoDashboardBtn = document.getElementById('goto-dashboard');
+        if (gotoDashboardBtn) {
+            gotoDashboardBtn.addEventListener('click', () => {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-dashboard').classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                const navItems = document.querySelectorAll('.nav-item');
+                if (navItems[0]) navItems[0].classList.add('active');
+                loadDashboard();
+            });
+        }
 
         // Start first call button from onboarding
         const startFirstCallBtn = document.getElementById('start-first-call');
@@ -2668,7 +2672,8 @@
         }
 
         // Start call button
-        document.getElementById('voice-start-btn').addEventListener('click', () => {
+        const voiceStartBtn = document.getElementById('voice-start-btn');
+        if (voiceStartBtn) voiceStartBtn.addEventListener('click', () => {
             loadElevenLabsScript();
             // Hide pre-call, show active call
             document.getElementById('voice-precall').style.display = 'none';
@@ -2716,7 +2721,8 @@
         }
 
         // Transcript processing
-        document.getElementById('process-transcript-btn').addEventListener('click', async () => {
+        const processTranscriptBtn = document.getElementById('process-transcript-btn');
+        if (processTranscriptBtn) processTranscriptBtn.addEventListener('click', async () => {
             const transcript = document.getElementById('transcript-input').value.trim();
             const sessionType = document.getElementById('session-type').value;
 
@@ -2759,22 +2765,24 @@
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('active');
-        });
+        if (dropZone) {
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('active');
+            });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('active');
-        });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('active');
+            });
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('active');
-            handleFiles(e.dataTransfer.files);
-        });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                handleFiles(e.dataTransfer.files);
+            });
+        }
 
-        fileInput.addEventListener('change', (e) => {
+        if (fileInput) fileInput.addEventListener('change', (e) => {
             handleFiles(e.target.files);
         });
 
@@ -2810,7 +2818,8 @@
         }
 
         // Invite team member
-        document.getElementById('invite-form').addEventListener('submit', async (e) => {
+        const inviteForm = document.getElementById('invite-form');
+        if (inviteForm) inviteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const name = document.getElementById('invite-name').value;
@@ -2866,7 +2875,8 @@
         }
 
         // Generate recommendations
-        document.getElementById('generate-recommendations-btn').addEventListener('click', async () => {
+        const genRecsBtn = document.getElementById('generate-recommendations-btn');
+        if (genRecsBtn) genRecsBtn.addEventListener('click', async () => {
             try {
                 const btn = document.getElementById('generate-recommendations-btn');
                 btn.disabled = true;
@@ -2895,13 +2905,13 @@
         let pullStart = 0;
         const content = document.querySelector('.content');
 
-        content.addEventListener('touchstart', (e) => {
+        if (content) content.addEventListener('touchstart', (e) => {
             if (content.scrollTop === 0) {
                 pullStart = e.touches[0].clientY;
             }
         });
 
-        content.addEventListener('touchmove', (e) => {
+        if (content) content.addEventListener('touchmove', (e) => {
             if (content.scrollTop === 0 && pullStart) {
                 const pullDistance = e.touches[0].clientY - pullStart;
                 const pullEl = document.getElementById('pull-to-refresh');
@@ -2911,7 +2921,7 @@
             }
         });
 
-        content.addEventListener('touchend', async () => {
+        if (content) content.addEventListener('touchend', async () => {
             const pullEl = document.getElementById('pull-to-refresh');
             if (pullEl.offsetHeight > 40) {
                 pullEl.classList.add('active');
