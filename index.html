@@ -1114,7 +1114,7 @@
                     <div class="card" style="max-width: 500px; margin: 0 auto;">
                         <h2>Get Started</h2>
 
-                        <form id="onboarding-form">
+                        <form id="onboarding-form" novalidate>
                             <div class="form-group">
                                 <label>Company Name *</label>
                                 <input type="text" id="onboard-company-name" placeholder="e.g. Acme Corp" required>
@@ -1382,9 +1382,9 @@
                     <p style="color: var(--text-dim); margin-bottom: var(--gap);" id="calls-count">0 sessions</p>
 
                     <div class="filter-tabs">
-                        <button class="filter-tab active" onclick="filterCalls('all')">All</button>
-                        <button class="filter-tab" onclick="filterCalls('founder')">Founder</button>
-                        <button class="filter-tab" onclick="filterCalls('team')">Team</button>
+                        <button class="filter-tab active" onclick="filterCalls('all', this)">All</button>
+                        <button class="filter-tab" onclick="filterCalls('founder', this)">Founder</button>
+                        <button class="filter-tab" onclick="filterCalls('team', this)">Team</button>
                     </div>
 
                     <div id="calls-list">
@@ -1525,6 +1525,24 @@
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
 
+    <!-- Debug banner - shows JS errors visibly -->
+    <div id="debug-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:99999; background:#ff4444; color:white; padding:12px; font-size:14px; font-family:monospace; max-height:200px; overflow:auto;"></div>
+
+    <!-- Global error handler - must be FIRST script -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            var banner = document.getElementById('debug-banner');
+            banner.style.display = 'block';
+            banner.innerHTML += '<div>ERROR: ' + msg + ' (line ' + line + ')</div>';
+            return false;
+        };
+        window.addEventListener('unhandledrejection', function(e) {
+            var banner = document.getElementById('debug-banner');
+            banner.style.display = 'block';
+            banner.innerHTML += '<div>PROMISE ERROR: ' + (e.reason?.message || e.reason || 'unknown') + '</div>';
+        });
+    </script>
+
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://elevenlabs.io/convai-widget/index.js" async></script>
@@ -1576,7 +1594,13 @@
 
             // Update nav
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            event.target.closest('.nav-item')?.classList.add('active');
+            // Highlight the matching nav item by screen name
+            const navScreenMap = { dashboard: 0, voice: 1, knowledge: 2, calls: 3, more: 4 };
+            const navIndex = navScreenMap[screenName];
+            if (navIndex !== undefined) {
+                const navItems = document.querySelectorAll('.nav-item');
+                if (navItems[navIndex]) navItems[navIndex].classList.add('active');
+            }
 
             // Load data for screen
             if (screenName === 'dashboard') {
@@ -1976,6 +2000,18 @@
             container.innerHTML = html;
         }
 
+        async function updateRecommendationStatus(recId, status) {
+            try {
+                await callEdgeFunction('generate-recommendations', {
+                    company_id: appState.company_id,
+                    update_status: { id: recId, status }
+                });
+                showToast('Status updated');
+            } catch (err) {
+                console.error('Failed to update recommendation status:', err);
+            }
+        }
+
         function loadGaps(profile) {
             const gapsArray = profile.gaps || [];
             const container = document.getElementById('gaps-list');
@@ -2035,8 +2071,17 @@
         // ============ Event Listeners ============
 
         // Onboarding form
-        document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
+        console.log('[INIT] Registering onboarding form handler...');
+        const onboardingForm = document.getElementById('onboarding-form');
+        if (!onboardingForm) {
+            console.error('[INIT] CRITICAL: onboarding-form element not found!');
+        } else {
+            console.log('[INIT] onboarding-form found, attaching submit listener');
+        }
+
+        onboardingForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('[FORM] Submit event fired!');
 
             const errorDiv = document.getElementById('onboard-error');
             errorDiv.style.display = 'none';
@@ -2850,10 +2895,10 @@
             renderCallList(sessions);
         }
 
-        function filterCalls(filter) {
+        function filterCalls(filter, el) {
             // Update active tab
             document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            if (el) el.classList.add('active');
 
             let filtered = window.allSessions || [];
             if (filter === 'founder') {
