@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070b14">
+    <title>Founder Engine - Design Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #070b14;
+            --surface: #0c1220;
+            --surface-2: #111a2e;
+            --surface-3: #162036;
+            --border: #1a2a4a;
+            --text: #e2e8f0;
+            --text-dim: #64748b;
+            --text-muted: #3a4a6a;
+            --cyan: #00e5ff;
+            --cyan-dim: #0088aa;
+            --cyan-glow: rgba(0, 229, 255, 0.15);
+            --green: #00d4a1;
+            --red: #ff4757;
+            --orange: #f0a050;
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        html, body {
+            width: 100%; height: 100%;
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body { display: flex; flex-direction: column; }
+
+        .container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px 100px;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            padding: 16px 20px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan-dim), var(--cyan));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.85rem;
+            color: var(--bg);
+        }
+
+        .header-greeting {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .header-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .header-icon {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        /* ===== Intelligence Score ===== */
+        .score-card {
+            background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin: 12px 0 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -20%;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .score-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+        }
+
+        .score-tier {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--cyan);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            font-weight: 500;
+        }
+
+        .score-value {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .score-value span {
+            font-size: 1.5rem;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .score-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .score-bar-container {
+            margin-top: 20px;
+            height: 4px;
+            background: var(--surface-3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            width: 52%;
+            background: linear-gradient(90deg, var(--cyan-dim), var(--cyan));
+            border-radius: 2px;
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        /* ===== Topic Cards ===== */
+        .section-title {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+            margin: 24px 0 12px;
+        }
+
+        .topic-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .topic-row {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            gap: 14px;
+        }
+
+        .topic-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .topic-icon.blue { background: rgba(0, 229, 255, 0.1); }
+        .topic-icon.green { background: rgba(0, 212, 161, 0.1); }
+        .topic-icon.orange { background: rgba(240, 160, 80, 0.1); }
+        .topic-icon.purple { background: rgba(108, 92, 231, 0.1); }
+
+        .topic-info { flex: 1; min-width: 0; }
+
+        .topic-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .topic-bar {
+            height: 3px;
+            background: var(--surface-3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .topic-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 1s ease;
+        }
+
+        .topic-fill.cyan { background: var(--cyan); }
+        .topic-fill.green { background: var(--green); }
+        .topic-fill.orange { background: var(--orange); }
+        .topic-fill.purple { background: #6c5ce7; }
+
+        .topic-percent {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 500;
+            flex-shrink: 0;
+            min-width: 32px;
+            text-align: right;
+        }
+
+        /* ===== Activity Feed ===== */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(26, 42, 74, 0.5);
+        }
+
+        .activity-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .activity-dot.cyan { background: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow); }
+        .activity-dot.green { background: var(--green); }
+
+        .activity-text {
+            flex: 1;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .activity-text strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        /* ===== Quick Actions ===== */
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .action-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.97);
+            border-color: var(--cyan-dim);
+        }
+
+        .action-btn .icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
+
+        .action-btn .icon.cyan-bg {
+            background: rgba(0, 229, 255, 0.1);
+        }
+
+        .action-btn .icon.green-bg {
+            background: rgba(0, 212, 161, 0.1);
+        }
+
+        .action-primary {
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.08), rgba(0, 136, 170, 0.08));
+            border-color: rgba(0, 229, 255, 0.2);
+        }
+
+        /* ===== Bottom Nav ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(7, 11, 20, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(26, 42, 74, 0.5);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            padding: 6px 0 env(safe-area-inset-bottom, 8px);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0 4px;
+            gap: 4px;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-muted);
+            transition: color 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-item.active {
+            color: var(--cyan);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 24px; height: 2px;
+            background: var(--cyan);
+            border-radius: 1px;
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        .nav-icon {
+            font-size: 1.3rem;
+            line-height: 1;
+        }
+
+        .nav-label {
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== Utility ===== */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+            opacity: 0.5;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .badge-cyan {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--cyan);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+        }
+
+        .badge-green {
+            background: rgba(0, 212, 161, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(0, 212, 161, 0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="avatar">RF</div>
+            <div>
+                <div class="header-greeting">Good morning</div>
+                <div class="header-name">Ruari</div>
+            </div>
+        </div>
+        <div class="header-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="container">
+
+        <!-- Intelligence Score -->
+        <div class="score-card">
+            <div class="score-header">
+                <div class="score-label">Intelligence Score</div>
+                <div class="score-tier">Great</div>
+            </div>
+            <div class="score-value">52<span>%</span></div>
+            <div class="score-subtitle">56 data points collected across 7 topics</div>
+            <div class="score-bar-container">
+                <div class="score-bar"></div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="actions-row">
+            <button class="action-btn action-primary">
+                <div class="icon cyan-bg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                </div>
+                Start Call
+            </button>
+            <button class="action-btn">
+                <div class="icon green-bg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                Upload Doc
+            </button>
+        </div>
+
+        <!-- Topics -->
+        <div class="section-title">Knowledge Coverage</div>
+        <div class="topic-grid">
+            <div class="topic-row">
+                <div class="topic-icon blue">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div class="topic-info">
+                    <div class="topic-name">Business Basics</div>
+                    <div class="topic-bar"><div class="topic-fill cyan" style="width: 75%;"></div></div>
+                </div>
+                <div class="topic-percent">75%</div>
+            </div>
+            <div class="topic-row">
+                <div class="topic-icon green">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div class="topic-info">
+                    <div class="topic-name">Revenue & Financials</div>
+                    <div class="topic-bar"><div class="topic-fill green" style="width: 30%;"></div></div>
+                </div>
+                <div class="topic-percent">30%</div>
+            </div>
+            <div class="topic-row">
+                <div class="topic-icon orange">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="topic-info">
+                    <div class="topic-name">Customers & Market</div>
+                    <div class="topic-bar"><div class="topic-fill orange" style="width: 45%;"></div></div>
+                </div>
+                <div class="topic-percent">45%</div>
+            </div>
+            <div class="topic-row">
+                <div class="topic-icon purple">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6c5ce7" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </div>
+                <div class="topic-info">
+                    <div class="topic-name">Tech & Systems</div>
+                    <div class="topic-bar"><div class="topic-fill purple" style="width: 20%;"></div></div>
+                </div>
+                <div class="topic-percent">20%</div>
+            </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="section-title">Recent Activity</div>
+        <div>
+            <div class="activity-item">
+                <div class="activity-dot cyan"></div>
+                <div class="activity-text"><strong>Business researched</strong> via Perplexity - 56 data points</div>
+                <div class="activity-time">2m ago</div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-dot green"></div>
+                <div class="activity-text"><strong>Company onboarded</strong> - OYNB Ltd</div>
+                <div class="activity-time">5m ago</div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-dot cyan"></div>
+                <div class="activity-text"><strong>Smart questions</strong> generated for first call</div>
+                <div class="activity-time">5m ago</div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Sample badges -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="badge badge-cyan">AI Researched</span>
+            <span class="badge badge-green">56 Data Points</span>
+            <span class="badge badge-cyan">10 Citations</span>
+        </div>
+
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <div class="nav-item active">
+            <div class="nav-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            </div>
+            <div class="nav-label">Dashboard</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+            </div>
+            <div class="nav-label">Voice</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <div class="nav-label">Knowledge</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div class="nav-label">Calls</div>
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <div class="nav-label">More</div>
+        </div>
+    </nav>
+
+</body>
+</html>
