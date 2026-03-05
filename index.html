@@ -1168,7 +1168,7 @@
                                 var scrapeResp = await fetch(FBASE + '/scrape-business', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json', 'apikey': AKEY },
-                                    body: JSON.stringify({ company_id: company_id, website_url: website, company_name: cname })
+                                    body: JSON.stringify({ company_id: company_id, website_url: website, company_name: cname, founder_name: fname })
                                 });
                                 if (scrapeResp.ok) {
                                     var scrapeData = await scrapeResp.json();
@@ -1818,7 +1818,7 @@
             }
         }
 
-        async function scrapeBusiness(company_id, website_url, company_name) {
+        async function scrapeBusiness(company_id, website_url, company_name, founder_name) {
             try {
                 // The scrape-business endpoint does NOT require JWT verification
                 const response = await fetch(`${FUNCTIONS_BASE}/scrape-business`, {
@@ -1830,7 +1830,8 @@
                     body: JSON.stringify({
                         company_id,
                         website_url,
-                        company_name
+                        company_name,
+                        founder_name
                     })
                 });
 
