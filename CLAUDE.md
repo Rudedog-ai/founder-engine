@@ -46,7 +46,7 @@ Claude API (intelligence extraction from transcripts + research)
 
 - **Project ID**: qzlicsovnldozbnmahsa
 - **Project URL**: https://qzlicsovnldozbnmahsa.supabase.co
-- **Anon Key**: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bGljc292bmxkb3pibm1haHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NTYzNTEsImV4cCI6MjA4ODIzMjM1MX0.kpPbOFMmixDMw3i1cZPBsAVINt3NR9_xTs6mIBtXfF0
+- **Anon Key**: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bGljc292bmxkb3pibm1haHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NTQwNjEsImV4cCI6MjA4ODIzMDA2MX0.vNIFau61Y5abqOi6m4KitFZNTym7f4Pj2X4emq4SWkM
 
 ## Supabase Edge Function Secrets (set via dashboard Settings -> Edge Functions)
 

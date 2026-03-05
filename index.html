@@ -1449,6 +1449,14 @@
 
                             // Store in global state if main script loaded
                             if (window.appState) { window.appState.company_id = company_id; window.appState.company_data = result; }
+                            // Persist session to localStorage
+                            try {
+                                localStorage.setItem('fe_company_id', company_id);
+                                var _femail = document.getElementById('onboard-founder-email').value.trim();
+                                if (_femail) localStorage.setItem('fe_email', _femail);
+                                var _cname = document.getElementById('onboard-company-name').value.trim();
+                                if (_cname) localStorage.setItem('fe_company_name', _cname);
+                            } catch(e) { console.warn('localStorage save failed:', e); }
 
                             // Show scraping loader
                             document.getElementById('onboarding-form').style.display = 'none';
@@ -1484,6 +1492,60 @@
                             btn.textContent = 'Create Account';
                             document.getElementById('onboarding-scraping').style.display = 'none';
                             document.getElementById('onboarding-form').style.display = 'block';
+                        }
+                    };
+
+                    // Returning user login by email
+                    window.loginByEmail = async function() {
+                        var FBASE = 'https://qzlicsovnldozbnmahsa.supabase.co/functions/v1';
+                        var AKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bGljc292bmxkb3pibm1haHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NTQwNjEsImV4cCI6MjA4ODIzMDA2MX0.vNIFau61Y5abqOi6m4KitFZNTym7f4Pj2X4emq4SWkM';
+                        var emailInput = document.getElementById('login-email');
+                        var errorDiv = document.getElementById('login-error');
+                        var btn = document.getElementById('login-submit');
+                        errorDiv.style.display = 'none';
+
+                        var email = emailInput.value.trim();
+                        if (!email || email.indexOf('@') === -1) {
+                            errorDiv.textContent = 'Please enter a valid email address';
+                            errorDiv.style.display = 'block';
+                            return;
+                        }
+
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner"></span> Looking up...';
+
+                        try {
+                            var resp = await fetch(FBASE + '/get-company-profile', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'apikey': AKEY, 'Authorization': 'Bearer ' + AKEY },
+                                body: JSON.stringify({ founder_email: email })
+                            });
+
+                            if (!resp.ok) {
+                                var errBody = await resp.json().catch(function() { return {}; });
+                                throw new Error(errBody.error || 'No account found with that email');
+                            }
+                            var result = await resp.json();
+                            var company = result.company;
+                            if (!company || !company.id) throw new Error('No company found for that email');
+
+                            // Restore session
+                            if (window.appState) {
+                                window.appState.company_id = company.id;
+                                window.appState.company_data = result;
+                            }
+                            localStorage.setItem('fe_company_id', company.id);
+                            localStorage.setItem('fe_email', email);
+                            localStorage.setItem('fe_company_name', company.name || '');
+
+                            // Switch to dashboard
+                            if (window.switchScreen) window.switchScreen('dashboard');
+                        } catch(err) {
+                            errorDiv.textContent = err.message || 'Login failed. Please try again.';
+                            errorDiv.style.display = 'block';
+                        } finally {
+                            btn.disabled = false;
+                            btn.textContent = 'Sign In';
                         }
                     };
                     </script>
@@ -1572,6 +1634,16 @@
                             <button type="button" class="btn btn-secondary btn-block" id="goto-dashboard" style="margin-top: var(--gap-2);">
                                 Go to Dashboard
                             </button>
+                        </div>
+
+                        <!-- Returning user login -->
+                        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--sea);">
+                            <h3 style="margin-bottom: var(--gap); text-align: center; color: var(--text-dim); font-weight: 400; font-size: 0.9rem;">Already have an account?</h3>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="email" id="login-email" placeholder="Your email address" style="flex: 1;">
+                                <button type="button" class="btn btn-secondary" id="login-submit" onclick="loginByEmail()" style="white-space: nowrap; padding: 0.65rem 1rem;">Sign In</button>
+                            </div>
+                            <div id="login-error" style="display: none; background: rgba(255,107,107,0.1); border: 1px solid var(--red); border-radius: var(--radius); padding: 0.75rem; margin-top: var(--gap-2); color: var(--red); font-size: 0.85rem;"></div>
                         </div>
                     </div>
                 </div>
@@ -2058,6 +2130,9 @@
                     endTranscriptSession();
                 }
             }
+
+            // Dispatch screenChange event for listeners
+            document.dispatchEvent(new CustomEvent('screenChange', { detail: { screen: screenName } }));
         }
 
         function showToast(message, type = 'success') {
@@ -2106,6 +2181,9 @@
                     session_duration: 0,
                     session_start: null
                 };
+                localStorage.removeItem('fe_company_id');
+                localStorage.removeItem('fe_email');
+                localStorage.removeItem('fe_company_name');
                 switchToWelcome();
                 showToast('App reset successfully');
             }
@@ -2159,6 +2237,9 @@
                 appState.company_id = result.company?.id || result.company_id;
                 appState.company_data = result;
 
+                // Persist session
+                try { localStorage.setItem('fe_company_id', appState.company_id); } catch(e) {}
+
                 return result;
             } catch (err) {
                 showToast('Failed to onboard company', 'error');
@@ -2209,6 +2290,7 @@
                 return result;
             } catch (err) {
                 console.error('Failed to load company profile:', err);
+                showToast('Failed to load your data. Check your connection.', 'error');
                 return null;
             }
         }
@@ -2993,10 +3075,11 @@
                 saveToLocalBackup(transcriptData);
 
                 // Try to save to Supabase
-                const response = await fetch(`${FUNCTIONS_BASE}/save-transcript`, {
+                const response = await fetch(`${FUNCTIONS_BASE}/process-transcript`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'apikey': ANON_KEY,
                         'Authorization': `Bearer ${ANON_KEY}`
                     },
                     body: JSON.stringify(transcriptData)
@@ -3101,10 +3184,11 @@
 
                     if (transcriptData) {
                         try {
-                            const response = await fetch(`${FUNCTIONS_BASE}/save-transcript`, {
+                            const response = await fetch(`${FUNCTIONS_BASE}/process-transcript`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'apikey': ANON_KEY,
                                     'Authorization': `Bearer ${ANON_KEY}`
                                 },
                                 body: JSON.stringify(transcriptData)
@@ -3356,6 +3440,18 @@
             window.companyKnowledge = '';
             window.smartQuestions = [];
 
+            // Restore session from localStorage
+            const savedCompanyId = localStorage.getItem('fe_company_id');
+            if (savedCompanyId && !appState.company_id) {
+                appState.company_id = savedCompanyId;
+                // Switch to dashboard
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-dashboard').classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                const navItems = document.querySelectorAll('.nav-item');
+                if (navItems[0]) navItems[0].classList.add('active');
+            }
+
             if (appState.company_id) {
                 await loadDashboard();
             }
@@ -3369,11 +3465,11 @@
             });
 
             // Sync any pending transcripts from previous sessions
-            syncPendingTranscripts();
+            syncPendingTranscripts().catch(e => console.warn('Sync failed:', e));
 
             // Set up voice session screen listener
             document.addEventListener('screenChange', (e) => {
-                if (e.detail?.screen === 'voice') {
+                if (e.detail && e.detail.screen === 'voice') {
                     initializeTranscriptSaving();
                 } else if (transcriptState.isActive) {
                     saveTranscriptProgress(true);
