@@ -1,5 +1,5 @@
 # Founder Onboarding Intelligence Engine
-### Last Updated: 5 March 2026
+### Last Updated: 6 March 2026
 
 ---
 
@@ -68,7 +68,7 @@ Claude API (intelligence extraction from transcripts + research)
 
 - **Team**: team_2RdwDjC6QzaZ3OzoVsHaLlPn (Ruari's projects)
 - **Existing projects**: brokeragentapp, minimoguls
-- **Founder Engine**: NOT YET DEPLOYED — deploy the founder-engine/ folder (index.html + vercel.json)
+- **Founder Engine**: DEPLOYED at https://founder-engine-seven.vercel.app — auto-deploys from GitHub `main` branch (Rudedog-ai/founder-engine)
 
 ## Claude API
 
@@ -208,43 +208,37 @@ The voice agent's prompt follows the "come prepared" philosophy:
 | File | Purpose |
 |------|---------|
 | `index.html` | The full PWA (~117KB), ready for Vercel deployment |
-| `vercel.json` | Vercel config with SPA routing |
+| `design-preview.html` | Design preview — ocean theme, proposed UI components, live at `/design-preview.html` |
+| `vercel.json` | Vercel config with SPA rewrites (serves static files first, then falls back to index.html) |
 
 ---
 
 # 9. IMMEDIATE TODO
 
-1. **Add PERPLEXITY_API_KEY as Supabase edge function secret**
-   - Supabase dashboard -> Settings -> Edge Functions -> Secrets -> Add
-   - Name: `PERPLEXITY_API_KEY`
-   - Value: (get from Supabase dashboard or ask Ruari)
-
-2. **Deploy PWA to Vercel**
-   - `cd founder-engine && npx vercel --prod`
-
-3. **Test Perplexity research pipeline**
-   - Open test-scrape.html in browser -> click "Run Perplexity Research" -> verify data points
-
-4. **Test full end-to-end flow**
-   - Open PWA -> onboard new test company with real website URL
-   - Verify Perplexity research runs during onboarding
-   - Start voice call -> verify Angus comes prepared
-   - After call -> verify transcript extraction + new knowledge points
-
-5. **Voice agent LLM**
-   - Currently Qwen3-30B-A3B (too weak). Switch back to Gemini 2.5 Flash or Claude in ElevenLabs agent settings.
+1. **Complete design redesign** — Apply ocean theme from `design-preview.html` to `index.html`
+2. **Voice agent LLM** — Currently Qwen3-30B-A3B (too weak). Switch back to Gemini 2.5 Flash or Claude in ElevenLabs agent settings.
+3. **Custom domain** — check founderengine.ai or similar
+4. **Test with a real founder** (not test data)
 
 ---
 
 # 10. DEVELOPMENT ROADMAP
 
-## Phase 1 — Polish & Launch (next session)
-- Deploy to Vercel and get live URL
+## Phase 1 — Design Redesign & Launch (in progress)
+- **DEPLOYED**: Live at https://founder-engine-seven.vercel.app (auto-deploys from GitHub main branch)
+- **Onboarding flow**: Working — company name, founder name, email, website URL → Perplexity research → knowledge extraction
+- **Perplexity research**: Broadened to search company name + founder name across all public sources (not just website URL)
+- **Design redesign** (in progress):
+  - Ocean/sea theme — stormy-to-calm metaphor (chaos to clarity)
+  - Color palette: deep ocean blues, teals, seafoam, cyan glow (`--deep: #020b18` through `--glow: #00f0ff`)
+  - Front page = signup/onboarding screen with ocean video background
+  - Dashboard = separate screen, no ocean hero, compact layout
+  - CSS animated ocean preview at `/design-preview.html` (waves, light rays, bioluminescent particles)
+  - Font: Inter, frosted glass effects, thin-stroke icons
+  - Mobile-first, fintech-level polish
+  - Free ocean videos sourced from Mixkit CDN (royalty-free, e.g. `https://assets.mixkit.co/videos/4059/4059-720.mp4`)
 - Custom domain — check founderengine.ai or similar
-- Test with a real founder (not test data)
 - Fix voice quality — ElevenLabs voice settings, speed, emotion level
-- Error handling — proper error states, offline detection, retry logic
-- Loading states — skeleton screens instead of "Loading..." text
 
 ## Phase 2 — Authentication & Multi-tenancy
 - Supabase Auth — login/signup (email magic link or Google OAuth)
