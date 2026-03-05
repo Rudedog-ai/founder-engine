@@ -2069,6 +2069,18 @@
             session_start: null
         };
 
+        // Transcript state (must be declared early — referenced in switchScreen)
+        let transcriptState = {
+            currentTranscript: '',
+            sessionId: null,
+            isActive: false,
+            isRecording: false,
+            lastSaveTime: 0,
+            saveInterval: 15000,
+            saveIntervalHandle: null,
+            autoSaveInterval: null
+        };
+
         // Initialize Supabase client
         let supabase;
         try {
@@ -2960,18 +2972,6 @@
         }
 
         // ============ Progressive Transcript Saving ============
-
-        // Transcript state
-        let transcriptState = {
-            currentTranscript: '',
-            sessionId: null,
-            isActive: false,
-            isRecording: false,
-            lastSaveTime: 0,
-            saveInterval: 15000, // 15 seconds
-            saveIntervalHandle: null,
-            autoSaveInterval: null
-        };
 
         /**
          * Initialize transcript saving for a voice session
