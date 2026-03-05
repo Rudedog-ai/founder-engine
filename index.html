@@ -1975,7 +1975,8 @@
         window.addEventListener('unhandledrejection', function(e) {
             var banner = document.getElementById('debug-banner');
             banner.style.display = 'block';
-            banner.innerHTML += '<div>PROMISE ERROR: ' + (e.reason?.message || e.reason || 'unknown') + '</div>';
+            var reason = e.reason && e.reason.message ? e.reason.message : (e.reason || 'unknown');
+            banner.innerHTML += '<div>PROMISE ERROR: ' + reason + '</div>';
         });
     </script>
 
@@ -2528,7 +2529,7 @@
 
         // ============ Event Listeners ============
 
-        // handleOnboardSubmit is defined in its own <script> block above the form
+        // handleOnboardSubmit is defined in its own script block above the form
 
         document.getElementById('goto-dashboard').addEventListener('click', () => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
