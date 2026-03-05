@@ -3,50 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0a0a0f">
+    <meta name="theme-color" content="#020b18">
     <meta name="description" content="Founder Engine - AI-powered company intelligence platform">
     <title>Founder Engine</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- PWA Manifest -->
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiRm91bmRlciBFbmdpbmUiLCJzaG9ydF9uYW1lIjoiRm91bmRlciIsImRlc2NyaXB0aW9uIjoiQUktcG93ZXJlZCBjb21wYW55IGludGVsbGlnZW5jZSBwbGF0Zm9ybSIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5IjoiIHN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBhMGEwZiIsInRoZW1lX2NvbG9yIjoiIzZjNWNlNyIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaWGgwY0hNNkx5OWxlR0Z0Y0d4bExtSmtiV2x1UUhObGNuWmxJaTgrUEM5MGMyTmZabXhsYmpwMFoyTmZaMjl2WjJ4bElqNDgrUEM5aDJaWGgwY0hNNkx5OWxlR0Z0Y0d4bExtSmtiV2x1UUhObGNuWmxJaTgrUEM5MGMyVnlkbWN1WTI5dFBnPT0iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCJ9XX0=">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%236c5ce7' width='192' height='192' rx='44'/><text x='50%' y='50%' font-size='100' fill='white' text-anchor='middle' dy='.3em' font-weight='bold'>F</text></svg>">
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiRm91bmRlciBFbmdpbmUiLCJzaG9ydF9uYW1lIjoiRm91bmRlciIsImRlc2NyaXB0aW9uIjoiQUktcG93ZXJlZCBjb21wYW55IGludGVsbGlnZW5jZSBwbGF0Zm9ybSIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMDIwYjE4IiwidGhlbWVfY29sb3IiOiIjMDBmMGZmIn0=">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230a2240' width='192' height='192' rx='44'/><text x='50%25' y='50%25' font-size='100' fill='%2300f0ff' text-anchor='middle' dy='.3em' font-weight='bold'>F</text></svg>">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #0a0a0f;
-            --surface: #13131a;
-            --surface-2: #1a1a24;
-            --border: #2a2a3a;
-            --text: #e8e8ef;
-            --text-dim: #8888a0;
-            --accent: #6c5ce7;
-            --green: #00d2a0;
-            --orange: #f0a050;
-            --red: #ff6b6b;
+            /* Ocean palette */
+            --deep: #020b18;
+            --abyss: #051525;
+            --ocean: #0a2240;
+            --sea: #0d3055;
+            --wave: #135a7a;
+            --surf: #1a8a9a;
+            --foam: #22d1c3;
+            --glow: #00f0ff;
+            --biolum: #00e5c8;
+            --coral: #ff6b6b;
+            --sand: #f4d9a0;
+            --text: #d4e5f7;
+            --text-dim: #6b8db5;
+            --text-muted: #2e4a6e;
+            --radius: 16px;
+            --radius-sm: 12px;
+
+            /* Backward-compat aliases */
+            --bg: var(--deep);
+            --surface: var(--abyss);
+            --surface-2: var(--ocean);
+            --border: var(--sea);
+            --accent: var(--glow);
+            --green: var(--biolum);
+            --orange: var(--sand);
+            --red: var(--coral);
             --gap: 1rem;
             --gap-2: 0.5rem;
-            --radius: 12px;
         }
 
         html, body {
-            width: 100%;
-            height: 100%;
-            font-family: -apple-system, system-ui, -webkit-system-font, 'Segoe UI', sans-serif;
-            background: var(--bg);
+            width: 100%; height: 100%;
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--deep);
             color: var(--text);
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        body {
-            display: flex;
-            flex-direction: column;
-        }
+        body { display: flex; flex-direction: column; }
 
         .container {
             flex: 1;
@@ -61,22 +74,13 @@
             overflow-x: hidden;
         }
 
-        .content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .content::-webkit-scrollbar-track {
-            background: var(--surface);
-        }
-
-        .content::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
+        .content::-webkit-scrollbar { width: 4px; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: var(--sea); border-radius: 2px; }
 
         .screen {
             display: none;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
 
         .screen.active {
@@ -85,25 +89,30 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes pulse {
+        @keyframes pulse-glow {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
         }
 
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Typography */
         h1 {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 1.8rem;
+            font-weight: 600;
             margin-bottom: var(--gap);
+            letter-spacing: -0.5px;
         }
 
         h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 600;
             margin-bottom: var(--gap-2);
         }
 
@@ -121,11 +130,22 @@
 
         /* Cards */
         .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--abyss) 0%, var(--ocean) 100%);
+            border: 1px solid var(--sea);
             border-radius: var(--radius);
             padding: var(--gap);
             margin-bottom: var(--gap);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -60%; right: -30%;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.04) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .card.interactive {
@@ -134,8 +154,8 @@
         }
 
         .card.interactive:hover {
-            border-color: var(--accent);
-            background: var(--surface-2);
+            border-color: var(--wave);
+            background: linear-gradient(135deg, var(--ocean) 0%, rgba(13, 48, 85, 0.8) 100%);
         }
 
         .card.interactive:active {
@@ -149,34 +169,40 @@
             justify-content: center;
             gap: 8px;
             padding: 0.75rem 1.5rem;
-            border-radius: var(--radius);
+            border-radius: 60px;
             border: none;
             font-size: 0.95rem;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             font-family: inherit;
         }
 
         .btn-primary {
-            background: var(--accent);
-            color: white;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(34, 209, 195, 0.15));
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: var(--glow);
+            backdrop-filter: blur(10px);
         }
 
         .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(34, 209, 195, 0.25));
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
         }
 
         .btn-secondary {
-            background: var(--surface-2);
+            background: var(--abyss);
             color: var(--text);
-            border: 1px solid var(--border);
+            border: 1px solid var(--sea);
         }
 
         .btn-secondary:hover {
-            border-color: var(--accent);
-            background: var(--surface);
+            border-color: var(--wave);
+            background: var(--ocean);
         }
 
         .btn-small {
@@ -190,7 +216,7 @@
         }
 
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
         }
 
@@ -201,18 +227,20 @@
 
         .form-group label {
             display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: 500;
             margin-bottom: 6px;
-            color: var(--text);
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         input, textarea, select {
             width: 100%;
-            padding: 0.75rem;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-radius: var(--radius-sm);
             color: var(--text);
             font-family: inherit;
             font-size: 1rem;
@@ -221,21 +249,25 @@
 
         input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+            border-color: var(--wave);
+            box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.08);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
         }
 
         /* Layout */
         .screen-content {
-            padding: 1.5rem;
+            padding: 1.25rem;
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
         }
 
         .header-bar {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
+            padding: 1.25rem;
+            border-bottom: 1px solid rgba(10, 34, 64, 0.6);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -246,7 +278,7 @@
 
         .header-bar h1 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
         }
 
         .header-actions {
@@ -255,37 +287,35 @@
         }
 
         .icon-btn {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-radius: 50%;
             cursor: pointer;
-            color: var(--text);
+            color: var(--text-dim);
             font-size: 1.2rem;
             transition: all 0.2s ease;
         }
 
         .icon-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
+            border-color: var(--wave);
+            color: var(--glow);
         }
 
         /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
+            bottom: 0; left: 0; right: 0;
+            background: rgba(2, 11, 24, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(10, 34, 64, 0.6);
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 0;
-            padding: 0;
+            padding: 6px 0 env(safe-area-inset-bottom, 8px);
             z-index: 100;
         }
 
@@ -294,34 +324,134 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 8px;
+            padding: 8px 0 4px;
             gap: 4px;
             cursor: pointer;
             border: none;
             background: none;
-            color: var(--text-dim);
-            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.65rem;
             font-weight: 500;
-            transition: all 0.2s ease;
-            border-radius: 0;
+            letter-spacing: 0.3px;
+            transition: color 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
         }
 
-        .nav-item:hover {
-            color: var(--accent);
-        }
+        .nav-item:hover { color: var(--text-dim); }
 
-        .nav-item.active {
-            color: var(--accent);
+        .nav-item.active { color: var(--glow); }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 24px; height: 2px;
+            background: var(--glow);
+            border-radius: 1px;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
         }
 
         .nav-icon {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
+            line-height: 1;
         }
 
-        /* Dashboard specifics */
+        /* Dashboard - Score Card */
+        .score-card {
+            background: linear-gradient(135deg, var(--abyss) 0%, var(--ocean) 100%);
+            border: 1px solid var(--sea);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: -60%; right: -30%;
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .score-card::after {
+            content: '';
+            position: absolute;
+            bottom: -40%; left: -20%;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(34, 209, 195, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .score-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+
+        .score-tier {
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(0, 240, 255, 0.08);
+            color: var(--glow);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            font-weight: 500;
+        }
+
+        .score-value {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--text), var(--glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-value span {
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+
+        .score-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .score-bar-container {
+            margin-top: 20px;
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--wave), var(--foam), var(--glow));
+            border-radius: 2px;
+            box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+            transition: width 0.6s ease;
+        }
+
+        /* Dashboard - Intelligence Ring (legacy support) */
         .intelligence-ring {
-            width: 160px;
-            height: 160px;
+            width: 160px; height: 160px;
             margin: 0 auto var(--gap);
         }
 
@@ -332,15 +462,76 @@
             margin-bottom: var(--gap);
         }
 
-        .topic-grid {
+        /* Section Title */
+        .section-title {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            margin: 28px 0 14px;
+        }
+
+        /* Quick Actions */
+        .actions-row {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: var(--gap);
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .action-btn {
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-radius: var(--radius-sm);
+            padding: 16px 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.97);
+            border-color: var(--wave);
+        }
+
+        .action-btn .icon {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .action-btn .icon.sea-bg {
+            background: rgba(0, 240, 255, 0.08);
+        }
+
+        .action-btn .icon.teal-bg {
+            background: rgba(34, 209, 195, 0.08);
+        }
+
+        .action-primary {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.06), rgba(26, 138, 154, 0.1));
+            border-color: rgba(0, 240, 255, 0.15);
+        }
+
+        /* Topics */
+        .topic-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
             margin-bottom: var(--gap);
         }
 
         @media (min-width: 600px) {
             .topic-grid {
+                display: grid;
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -352,40 +543,53 @@
         }
 
         .topic-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: var(--gap);
-            text-align: center;
+            display: flex;
+            align-items: center;
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            gap: 14px;
+        }
+
+        .topic-card .topic-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            background: rgba(0, 240, 255, 0.08);
         }
 
         .topic-name {
             font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: var(--gap-2);
+            font-weight: 500;
+            margin-bottom: 6px;
         }
 
         .completeness-bar {
             width: 100%;
-            height: 6px;
-            background: var(--surface-2);
-            border-radius: 3px;
+            height: 3px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 2px;
             overflow: hidden;
-            margin-bottom: var(--gap-2);
+            margin-bottom: 0;
         }
 
         .completeness-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--green));
-            border-radius: 3px;
+            background: linear-gradient(90deg, var(--wave), var(--glow));
+            border-radius: 2px;
             transition: width 0.6s ease;
             width: 0%;
         }
 
         .completeness-percent {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--green);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            flex-shrink: 0;
+            min-width: 32px;
+            text-align: right;
         }
 
         /* Activity Feed */
@@ -394,31 +598,39 @@
         }
 
         .activity-item {
-            padding: var(--gap-2);
-            border-left: 3px solid var(--accent);
-            background: var(--surface-2);
-            margin-bottom: var(--gap-2);
-            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(10, 34, 64, 0.8);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--glow);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+            flex-shrink: 0;
         }
 
         .activity-time {
-            font-size: 0.8rem;
-            color: var(--text-dim);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
         }
 
         /* Loading Spinner */
         .spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
+            width: 20px; height: 20px;
+            border: 2px solid var(--sea);
+            border-top-color: var(--glow);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         .loading {
@@ -434,24 +646,20 @@
         /* Toast Notifications */
         .toast-container {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 20px; right: 20px;
             z-index: 1000;
             max-width: 400px;
         }
 
         @media (max-width: 600px) {
-            .toast-container {
-                left: 20px;
-                right: 20px;
-            }
+            .toast-container { left: 20px; right: 20px; }
         }
 
         .toast {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--accent);
-            border-radius: var(--radius);
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-left: 4px solid var(--glow);
+            border-radius: var(--radius-sm);
             padding: var(--gap);
             margin-bottom: 10px;
             display: flex;
@@ -459,49 +667,35 @@
             gap: var(--gap);
             animation: slideIn 0.3s ease;
             min-width: 300px;
+            backdrop-filter: blur(10px);
         }
 
-        .toast.success {
-            border-left-color: var(--green);
-        }
-
-        .toast.error {
-            border-left-color: var(--red);
-        }
+        .toast.success { border-left-color: var(--biolum); }
+        .toast.error { border-left-color: var(--coral); }
 
         @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(2, 11, 24, 0.85);
+            backdrop-filter: blur(8px);
             z-index: 200;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
 
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--abyss), var(--ocean));
+            border: 1px solid var(--sea);
             border-radius: var(--radius);
             padding: var(--gap);
             width: 100%;
@@ -512,14 +706,8 @@
         }
 
         @keyframes slideUp {
-            from {
-                transform: translateY(40px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal-header {
@@ -528,7 +716,7 @@
             align-items: center;
             margin-bottom: var(--gap);
             padding-bottom: var(--gap);
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--sea);
         }
 
         .modal-close {
@@ -538,67 +726,67 @@
             font-size: 1.5rem;
             cursor: pointer;
             padding: 0;
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .modal-close:hover {
-            color: var(--text);
-        }
+        .modal-close:hover { color: var(--text); }
 
         /* Badge */
         .badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
         }
 
         .badge-accent {
-            background: rgba(108, 92, 231, 0.2);
-            color: var(--accent);
+            background: rgba(0, 240, 255, 0.08);
+            color: var(--glow);
+            border: 1px solid rgba(0, 240, 255, 0.12);
         }
 
         .badge-green {
-            background: rgba(0, 210, 160, 0.2);
-            color: var(--green);
+            background: rgba(34, 209, 195, 0.08);
+            color: var(--foam);
+            border: 1px solid rgba(34, 209, 195, 0.12);
         }
 
         .badge-orange {
-            background: rgba(240, 160, 80, 0.2);
-            color: var(--orange);
+            background: rgba(244, 217, 160, 0.1);
+            color: var(--sand);
+            border: 1px solid rgba(244, 217, 160, 0.12);
         }
 
         /* Drag & Drop */
         .drop-zone {
-            border: 2px dashed var(--border);
+            border: 2px dashed var(--sea);
             border-radius: var(--radius);
             padding: var(--gap);
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            background: var(--surface-2);
+            background: var(--abyss);
         }
 
         .drop-zone:hover {
-            border-color: var(--accent);
-            background: var(--surface);
+            border-color: var(--wave);
+            background: var(--ocean);
         }
 
         .drop-zone.active {
-            border-color: var(--accent);
-            background: rgba(108, 92, 231, 0.1);
+            border-color: var(--glow);
+            background: rgba(0, 240, 255, 0.04);
         }
 
         /* Progress */
         .progress-bar {
             width: 100%;
             height: 4px;
-            background: var(--surface-2);
+            background: rgba(255,255,255,0.04);
             border-radius: 2px;
             overflow: hidden;
             margin-bottom: var(--gap-2);
@@ -606,37 +794,32 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--green));
+            background: linear-gradient(90deg, var(--wave), var(--foam), var(--glow));
             border-radius: 2px;
             transition: width 0.3s ease;
         }
 
         /* Expandable sections */
-        .expandable {
-            cursor: pointer;
-        }
+        .expandable { cursor: pointer; }
 
         .expandable-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: var(--gap);
-            background: var(--surface-2);
-            border-radius: var(--radius);
+            background: var(--abyss);
+            border-radius: var(--radius-sm);
             user-select: none;
         }
 
-        .expandable-header:hover {
-            background: var(--border);
-        }
+        .expandable-header:hover { background: var(--ocean); }
 
         .expand-icon {
             transition: transform 0.2s ease;
+            color: var(--text-dim);
         }
 
-        .expandable.expanded .expand-icon {
-            transform: rotate(180deg);
-        }
+        .expandable.expanded .expand-icon { transform: rotate(180deg); }
 
         .expandable-content {
             max-height: 0;
@@ -644,19 +827,17 @@
             transition: max-height 0.3s ease;
         }
 
-        .expandable.expanded .expandable-content {
-            max-height: 1000px;
-        }
+        .expandable.expanded .expandable-content { max-height: 1000px; }
 
         .expandable-body {
             padding: var(--gap);
-            border-left: 2px solid var(--accent);
+            border-left: 2px solid var(--wave);
         }
 
         /* Recommendation cards */
         .recommendation-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--abyss), var(--ocean));
+            border: 1px solid var(--sea);
             border-radius: var(--radius);
             padding: var(--gap);
             margin-bottom: var(--gap);
@@ -685,43 +866,38 @@
             gap: var(--gap-2);
             margin-top: var(--gap);
             padding-top: var(--gap);
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--sea);
         }
 
         /* Mic button animation */
         .mic-button {
-            width: 120px;
-            height: 120px;
+            width: 120px; height: 120px;
             border-radius: 50%;
-            background: var(--accent);
-            border: none;
-            color: white;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(34, 209, 195, 0.15));
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            color: var(--glow);
             font-size: 3rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto var(--gap);
-            transition: all 0.2s ease;
-            box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.7);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.4);
         }
 
         .mic-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 0 10px rgba(108, 92, 231, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
         }
 
         .mic-button.active {
-            animation: pulse 2s infinite;
+            animation: pulse-mic 2s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.7);
-            }
-            50% {
-                box-shadow: 0 0 0 20px rgba(108, 92, 231, 0.3);
-            }
+        @keyframes pulse-mic {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(0, 240, 255, 0.1); }
         }
 
         /* Copy button */
@@ -729,24 +905,22 @@
             display: flex;
             align-items: center;
             gap: var(--gap-2);
-            padding: var(--gap-2);
-            background: var(--surface-2);
-            border-radius: var(--radius);
+            padding: var(--gap-2) 0.75rem;
+            background: var(--abyss);
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            font-family: monospace;
-            font-size: 0.85rem;
-            border: 1px solid var(--border);
+            font-family: 'Inter', monospace;
+            font-size: 0.8rem;
+            border: 1px solid var(--sea);
             margin-bottom: var(--gap-2);
         }
 
-        .copy-text:hover {
-            border-color: var(--accent);
-        }
+        .copy-text:hover { border-color: var(--wave); }
 
         .copy-btn {
             background: none;
             border: none;
-            color: var(--accent);
+            color: var(--glow);
             cursor: pointer;
             font-size: 1rem;
             padding: 0;
@@ -754,9 +928,9 @@
 
         /* Team member item */
         .team-member {
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-radius: var(--radius-sm);
             padding: var(--gap);
             margin-bottom: var(--gap);
             display: flex;
@@ -764,9 +938,7 @@
             align-items: flex-start;
         }
 
-        .team-member-info h3 {
-            margin: 0 0 4px 0;
-        }
+        .team-member-info h3 { margin: 0 0 4px 0; }
 
         .team-member-role {
             font-size: 0.85rem;
@@ -775,22 +947,20 @@
 
         .team-member-invite {
             font-size: 0.75rem;
-            color: var(--green);
+            color: var(--foam);
             margin-top: 4px;
         }
 
         /* List styles */
         .list-item {
             padding: var(--gap-2);
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(10, 34, 64, 0.6);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .list-item:last-child {
-            border-bottom: none;
-        }
+        .list-item:last-child { border-bottom: none; }
 
         /* Pull to refresh */
         .pull-to-refresh {
@@ -804,56 +974,33 @@
             font-size: 0.85rem;
         }
 
-        .pull-to-refresh.active {
-            height: 60px;
-        }
+        .pull-to-refresh.active { height: 60px; }
 
         /* Responsive */
         @media (max-width: 600px) {
-            .screen-content {
-                padding: 1rem;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .header-bar {
-                padding: 1rem;
-            }
-
-            .topic-grid {
-                grid-template-columns: 1fr;
-            }
+            .screen-content { padding: 1rem; }
+            h1 { font-size: 1.5rem; }
+            .header-bar { padding: 1rem; }
+            .topic-grid { flex-direction: column; }
         }
 
         /* Status indicator */
         .status-dot {
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 8px; height: 8px;
             border-radius: 50%;
             margin-right: 6px;
         }
 
-        .status-dot.pending {
-            background: var(--orange);
-        }
-
-        .status-dot.in-progress {
-            background: var(--accent);
-            animation: pulse 1.5s infinite;
-        }
-
-        .status-dot.completed {
-            background: var(--green);
-        }
+        .status-dot.pending { background: var(--sand); }
+        .status-dot.in-progress { background: var(--glow); animation: pulse-glow 1.5s infinite; }
+        .status-dot.completed { background: var(--biolum); }
 
         /* File list */
         .file-item {
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-radius: var(--radius-sm);
             padding: var(--gap);
             margin-bottom: var(--gap-2);
             display: flex;
@@ -861,19 +1008,9 @@
             justify-content: space-between;
         }
 
-        .file-info {
-            flex: 1;
-        }
-
-        .file-name {
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .file-size {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-        }
+        .file-info { flex: 1; }
+        .file-name { font-weight: 500; margin-bottom: 4px; }
+        .file-size { font-size: 0.85rem; color: var(--text-dim); }
 
         .file-status {
             display: flex;
@@ -885,10 +1022,10 @@
 
         /* Knowledge Screen Styles */
         .knowledge-topic {
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: var(--gap);
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--gap-2);
             overflow: hidden;
         }
 
@@ -902,9 +1039,7 @@
             transition: background 0.2s;
         }
 
-        .knowledge-topic-header:hover {
-            background: var(--surface);
-        }
+        .knowledge-topic-header:hover { background: var(--ocean); }
 
         .knowledge-topic-header span:first-child {
             font-weight: 600;
@@ -913,12 +1048,13 @@
         }
 
         .knowledge-topic-count {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: var(--text-dim);
             margin-right: 12px;
-            background: var(--surface);
-            padding: 2px 8px;
-            border-radius: 4px;
+            background: rgba(0, 240, 255, 0.06);
+            padding: 2px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
         }
 
         .knowledge-chevron {
@@ -944,7 +1080,7 @@
 
         .knowledge-entry {
             padding: var(--gap);
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--sea);
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -952,39 +1088,44 @@
 
         .knowledge-key {
             font-weight: 600;
-            color: var(--accent);
-            font-size: 0.95rem;
+            color: var(--glow);
+            font-size: 0.9rem;
         }
 
         .knowledge-value {
             color: var(--text);
             line-height: 1.5;
             word-break: break-word;
+            font-size: 0.9rem;
         }
 
         .confidence-badge {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
             text-transform: uppercase;
             width: fit-content;
+            letter-spacing: 0.5px;
         }
 
         .confidence-high {
-            background: rgba(0, 210, 160, 0.2);
-            color: var(--green);
+            background: rgba(34, 209, 195, 0.08);
+            color: var(--foam);
+            border: 1px solid rgba(34, 209, 195, 0.12);
         }
 
         .confidence-medium {
-            background: rgba(240, 160, 80, 0.2);
-            color: var(--orange);
+            background: rgba(244, 217, 160, 0.08);
+            color: var(--sand);
+            border: 1px solid rgba(244, 217, 160, 0.12);
         }
 
         .confidence-low {
-            background: rgba(255, 107, 107, 0.2);
-            color: var(--red);
+            background: rgba(255, 107, 107, 0.08);
+            color: var(--coral);
+            border: 1px solid rgba(255, 107, 107, 0.12);
         }
 
         /* Call History Screen Styles */
@@ -997,40 +1138,40 @@
 
         .filter-tab {
             padding: 8px 16px;
-            border: 1px solid var(--border);
-            background: var(--surface-2);
-            border-radius: 20px;
+            border: 1px solid var(--sea);
+            background: var(--abyss);
+            border-radius: 60px;
             cursor: pointer;
             color: var(--text-dim);
             transition: all 0.2s;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .filter-tab:hover {
-            background: var(--surface);
+            background: var(--ocean);
             color: var(--text);
         }
 
         .filter-tab.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--glow);
+            border-color: rgba(0, 240, 255, 0.3);
         }
 
         .session-card {
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: var(--gap);
+            background: var(--abyss);
+            border: 1px solid var(--sea);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--gap-2);
             padding: var(--gap);
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .session-card:hover {
-            border-color: var(--accent);
-            background: var(--surface);
+            border-color: var(--wave);
+            background: var(--ocean);
         }
 
         .session-card-header {
@@ -1063,38 +1204,181 @@
             max-height: 500px;
             margin-top: var(--gap);
             padding-top: var(--gap);
-            border-top: 1px solid var(--border);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            background: var(--surface);
-            color: var(--text-dim);
-        }
-
-        .badge-accent {
-            background: rgba(108, 92, 231, 0.2);
-            color: var(--accent);
-        }
-
-        .badge-green {
-            background: rgba(0, 210, 160, 0.2);
-            color: var(--green);
+            border-top: 1px solid var(--sea);
         }
 
         .topic-tag {
             display: inline-block;
             padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            background: var(--surface);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            background: rgba(0, 240, 255, 0.06);
             color: var(--text-dim);
-            border: 1px solid var(--border);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        /* Water divider */
+        .water-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--wave), var(--surf), var(--wave), transparent);
+            margin: 24px 0;
+            opacity: 0.4;
+        }
+
+        /* Ocean welcome screen */
+        .ocean-welcome {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 40px 24px;
+        }
+
+        .ocean-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, #020810 0%, #041428 15%, #062038 30%, #0a3355 50%, #0e4a6e 65%, #136878 78%, #1a8a8a 90%, #22b0a0 100%);
+        }
+
+        .wave {
+            position: absolute;
+            left: 0; right: 0;
+            height: 120px;
+            opacity: 0.3;
+        }
+
+        .wave-1 {
+            bottom: 15%;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%2300f0ff' d='M0,60 C360,120 720,0 1080,60 C1260,90 1380,75 1440,60 L1440,120 L0,120Z'/%3E%3C/svg%3E") repeat-x;
+            background-size: 900px 120px;
+            animation: wave-drift 8s linear infinite;
+        }
+
+        .wave-2 {
+            bottom: 10%;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%2300e5c8' d='M0,80 C240,20 480,100 720,60 C960,20 1200,90 1440,50 L1440,120 L0,120Z'/%3E%3C/svg%3E") repeat-x;
+            background-size: 1100px 120px;
+            animation: wave-drift 12s linear infinite reverse;
+            opacity: 0.2;
+        }
+
+        .wave-3 {
+            bottom: 5%;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%231a8a9a' d='M0,40 C320,100 640,20 960,70 C1120,95 1300,45 1440,70 L1440,120 L0,120Z'/%3E%3C/svg%3E") repeat-x;
+            background-size: 1300px 120px;
+            animation: wave-drift 15s linear infinite;
+            opacity: 0.25;
+        }
+
+        @keyframes wave-drift {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 900px; }
+        }
+
+        .particles {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--glow);
+            animation: float-up linear infinite;
+        }
+
+        .particle:nth-child(1) { width: 3px; height: 3px; left: 15%; bottom: -10%; animation-duration: 9s; animation-delay: 0s; opacity: 0.6; }
+        .particle:nth-child(2) { width: 2px; height: 2px; left: 35%; bottom: -10%; animation-duration: 12s; animation-delay: 2s; opacity: 0.4; }
+        .particle:nth-child(3) { width: 4px; height: 4px; left: 55%; bottom: -10%; animation-duration: 10s; animation-delay: 4s; opacity: 0.5; }
+        .particle:nth-child(4) { width: 2px; height: 2px; left: 75%; bottom: -10%; animation-duration: 14s; animation-delay: 1s; opacity: 0.3; }
+        .particle:nth-child(5) { width: 3px; height: 3px; left: 25%; bottom: -10%; animation-duration: 11s; animation-delay: 6s; opacity: 0.5; }
+        .particle:nth-child(6) { width: 2px; height: 2px; left: 65%; bottom: -10%; animation-duration: 13s; animation-delay: 3s; opacity: 0.4; }
+        .particle:nth-child(7) { width: 3px; height: 3px; left: 45%; bottom: -10%; animation-duration: 8s; animation-delay: 5s; opacity: 0.6; }
+        .particle:nth-child(8) { width: 2px; height: 2px; left: 85%; bottom: -10%; animation-duration: 15s; animation-delay: 7s; opacity: 0.3; }
+
+        @keyframes float-up {
+            0% { transform: translateY(0) scale(0); opacity: 0; }
+            10% { opacity: 1; transform: translateY(-10vh) scale(1); }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-110vh) scale(0.5); opacity: 0; }
+        }
+
+        .light-rays {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden;
+        }
+
+        .ray {
+            position: absolute;
+            top: -20%;
+            width: 2px;
+            height: 60%;
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.15), transparent);
+            transform: rotate(15deg);
+            animation: ray-shimmer 4s ease-in-out infinite;
+        }
+
+        .ray:nth-child(1) { left: 20%; animation-delay: 0s; width: 3px; }
+        .ray:nth-child(2) { left: 40%; animation-delay: 1.5s; height: 50%; transform: rotate(10deg); }
+        .ray:nth-child(3) { left: 65%; animation-delay: 0.8s; width: 4px; transform: rotate(20deg); }
+        .ray:nth-child(4) { left: 80%; animation-delay: 2.2s; height: 45%; transform: rotate(12deg); }
+
+        @keyframes ray-shimmer {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .ocean-welcome-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .ocean-logo {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--glow);
+            font-weight: 500;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .ocean-title {
+            font-size: 2rem;
+            font-weight: 300;
+            line-height: 1.2;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .ocean-title strong {
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--glow), var(--biolum));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ocean-sub {
+            font-size: 1rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 32px;
+            max-width: 340px;
+        }
+
+        .ocean-form-card {
+            position: relative;
+            z-index: 10;
+            background: rgba(5, 21, 37, 0.8);
+            border: 1px solid rgba(13, 48, 85, 0.6);
+            border-radius: var(--radius);
+            padding: 24px;
+            backdrop-filter: blur(16px);
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -1104,11 +1388,18 @@
         <div class="content">
             <!-- Welcome/Onboarding Screen -->
             <div class="screen active" id="screen-welcome">
-                <div class="screen-content">
-                    <div style="text-align: center; padding: 2rem 0;">
-                        <div style="font-size: 4rem; margin-bottom: 1rem;">🚀</div>
-                        <h1>Founder Engine</h1>
-                        <p style="color: var(--text-dim); margin-bottom: 2rem;">AI-powered intelligence for scaling your company</p>
+                <div class="ocean-welcome">
+                    <div class="ocean-bg"></div>
+                    <div class="light-rays"><div class="ray"></div><div class="ray"></div><div class="ray"></div><div class="ray"></div></div>
+                    <div class="particles"><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div></div>
+                    <div class="wave wave-1"></div>
+                    <div class="wave wave-2"></div>
+                    <div class="wave wave-3"></div>
+
+                    <div class="ocean-welcome-content">
+                        <div class="ocean-logo">Founder Engine</div>
+                        <h1 class="ocean-title">Navigate the<br><strong>depths of your business</strong></h1>
+                        <p class="ocean-sub">AI-powered intelligence that surfaces what matters. From chaos to clarity.</p>
                     </div>
 
                     <script>
@@ -1197,8 +1488,8 @@
                     };
                     </script>
 
-                    <div class="card" style="max-width: 500px; margin: 0 auto;">
-                        <h2>Get Started</h2>
+                    <div class="ocean-form-card" style="max-width: 500px; margin: 0 auto;">
+                        <h2 style="margin-bottom: var(--gap);">Get Started</h2>
 
                         <div id="onboarding-form">
                             <div class="form-group">
@@ -1235,7 +1526,9 @@
                         </div>
 
                         <div id="onboarding-scraping" style="display: none; margin-top: var(--gap); text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 1rem; animation: pulse 1.5s infinite;">🔍</div>
+                            <div style="font-size: 2rem; margin-bottom: 1rem; animation: pulse-glow 1.5s infinite;">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            </div>
                             <h3 style="margin-bottom: var(--gap-2);">Researching your business...</h3>
                             <p style="color: var(--text-dim); font-size: 0.9rem;">Angus is learning about your company</p>
                             <div style="margin-top: 1rem;">
@@ -1245,30 +1538,35 @@
 
                         <div id="onboarding-result" style="display: none; margin-top: var(--gap);">
                             <div id="scraping-summary" style="background: var(--surface-2); border-radius: var(--radius); padding: var(--gap); margin-bottom: var(--gap); display: none;">
-                                <h3 style="margin-bottom: 0.5rem; color: var(--green);">✓ Business Research Complete</h3>
+                                <h3 style="margin-bottom: 0.5rem; color: var(--biolum);">Business Research Complete</h3>
                                 <p style="color: var(--text-dim); font-size: 0.9rem;" id="scraping-summary-text"></p>
                             </div>
 
                             <h3 style="margin-bottom: var(--gap-2);">Your Onboarding Links</h3>
 
                             <div style="margin-bottom: var(--gap);">
-                                <p style="font-size: 0.85rem; margin-bottom: 4px;">Email Inbox:</p>
+                                <p style="font-size: 0.8rem; margin-bottom: 4px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Email Inbox</p>
                                 <div class="copy-text">
                                     <span id="inbox-address" style="flex: 1; overflow: hidden; text-overflow: ellipsis;">Loading...</span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('inbox-address')">📋</button>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('inbox-address')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    </button>
                                 </div>
                             </div>
 
                             <div>
-                                <p style="font-size: 0.85rem; margin-bottom: 4px;">Onboarding Link:</p>
+                                <p style="font-size: 0.8rem; margin-bottom: 4px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Onboarding Link</p>
                                 <div class="copy-text">
                                     <span id="onboarding-link" style="flex: 1; overflow: hidden; text-overflow: ellipsis;">Loading...</span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('onboarding-link')">📋</button>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('onboarding-link')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    </button>
                                 </div>
                             </div>
 
                             <button type="button" class="btn btn-primary btn-block" id="start-first-call" style="margin-top: var(--gap);">
-                                🎤 Start Your First Call
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                                Start Your First Call
                             </button>
 
                             <button type="button" class="btn btn-secondary btn-block" id="goto-dashboard" style="margin-top: var(--gap-2);">
@@ -1283,59 +1581,73 @@
             <div class="screen" id="screen-dashboard">
                 <div class="screen-content">
                     <div class="pull-to-refresh" id="pull-to-refresh">
-                        <span>⬇️ Refreshing...</span>
+                        <span>Refreshing...</span>
                     </div>
 
-                    <div style="margin-bottom: var(--gap);">
-                        <p style="color: var(--text-dim); margin-bottom: 0.5rem;">Welcome back,</p>
-                        <h1 id="dashboard-company-name">Company Name</h1>
+                    <!-- Header -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--wave), var(--foam)); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; color: var(--deep);" id="dashboard-avatar">FE</div>
+                            <div>
+                                <div style="font-size: 0.8rem; color: var(--text-dim);">Welcome back</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;" id="dashboard-company-name">Company Name</div>
+                            </div>
+                        </div>
+                        <div class="icon-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </div>
                     </div>
 
-                    <!-- Intelligence Score -->
-                    <div class="card" style="text-align: center;">
-                        <svg class="intelligence-ring" id="intelligence-ring" viewBox="0 0 160 160">
-                            <!-- Background circle -->
-                            <circle cx="80" cy="80" r="70" fill="none" stroke="var(--border)" stroke-width="8"/>
-                            <!-- Animated circle -->
+                    <!-- Intelligence Score Card -->
+                    <div class="score-card">
+                        <div class="score-header">
+                            <div class="score-label">Intelligence Score</div>
+                            <div class="score-tier" id="intelligence-tier">--</div>
+                        </div>
+                        <div class="score-value" id="ring-percent">0<span>%</span></div>
+                        <div class="score-subtitle" id="ring-label">Gathering data</div>
+                        <div class="score-bar-container">
+                            <div class="score-bar" id="score-bar-fill" style="width: 0%;"></div>
+                        </div>
+                        <!-- Hidden SVG ring for backward compat -->
+                        <svg class="intelligence-ring" id="intelligence-ring" viewBox="0 0 160 160" style="display: none;">
+                            <circle cx="80" cy="80" r="70" fill="none" stroke="var(--sea)" stroke-width="8"/>
                             <circle cx="80" cy="80" r="70" fill="none" stroke="url(#ringGradient)" stroke-width="8" stroke-dasharray="440" stroke-dashoffset="440" id="ring-progress"/>
-                            <!-- Percentage text -->
-                            <text x="80" y="75" text-anchor="middle" font-size="32" font-weight="bold" fill="var(--accent)" id="ring-percent">0%</text>
-                            <text x="80" y="95" text-anchor="middle" font-size="12" fill="var(--text-dim)" id="ring-label">Gathering Data</text>
                             <defs>
                                 <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:var(--accent);stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:var(--green);stop-opacity:1" />
+                                    <stop offset="0%" style="stop-color:var(--wave);stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:var(--glow);stop-opacity:1" />
                                 </linearGradient>
                             </defs>
                         </svg>
-
-                        <div class="ring-label">
-                            Intelligence Score: <span id="intelligence-tier">--</span>
-                        </div>
-                    </div>
-
-                    <!-- Topics -->
-                    <div>
-                        <h2 style="margin-bottom: var(--gap);">Knowledge Areas</h2>
-                        <div class="topic-grid" id="topic-grid">
-                            <!-- Populated by JS -->
-                        </div>
                     </div>
 
                     <!-- Quick Actions -->
-                    <div style="margin-bottom: var(--gap);">
-                        <h2 style="margin-bottom: var(--gap);">Quick Actions</h2>
-                        <button class="btn btn-primary btn-block" onclick="switchScreen('voice')">🎤 Start Voice Session</button>
-                        <button class="btn btn-secondary btn-block" onclick="switchScreen('upload')">📄 Upload Documents</button>
-                        <button class="btn btn-secondary btn-block" onclick="switchScreen('team')">👥 Invite Team</button>
+                    <div class="actions-row">
+                        <button class="action-btn action-primary" onclick="switchScreen('voice')">
+                            <div class="icon sea-bg">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                            </div>
+                            Start Call
+                        </button>
+                        <button class="action-btn" onclick="switchScreen('upload')">
+                            <div class="icon teal-bg">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--foam)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            Upload Doc
+                        </button>
+                    </div>
+
+                    <!-- Topics -->
+                    <div class="section-title">Knowledge Coverage</div>
+                    <div class="topic-grid" id="topic-grid">
+                        <!-- Populated by JS -->
                     </div>
 
                     <!-- Activity Feed -->
-                    <div>
-                        <h2 style="margin-bottom: var(--gap);">Recent Activity</h2>
-                        <div id="activity-feed">
-                            <p style="color: var(--text-dim);">Loading activity...</p>
-                        </div>
+                    <div class="section-title">Recent Activity</div>
+                    <div id="activity-feed">
+                        <p style="color: var(--text-dim);">Loading activity...</p>
                     </div>
                 </div>
             </div>
@@ -1343,20 +1655,25 @@
             <!-- Voice Session Screen -->
             <div class="screen" id="screen-voice">
                 <div class="screen-content">
-                    <h1>Voice Session</h1>
+                    <div class="section-title" style="margin-top: 0;">Voice Session</div>
 
                     <!-- Pre-Call Screen -->
                     <div id="voice-precall" class="card" style="padding: 2rem; text-align: center;">
-                        <div style="font-size: 4rem; margin-bottom: 1rem;">🎤</div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <div class="mic-button" style="pointer-events: none; width: 80px; height: 80px; font-size: 1.5rem;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                            </div>
+                        </div>
                         <h2 id="voice-company-name" style="margin-bottom: 0.5rem;">Loading...</h2>
-                        <p style="color: var(--text-dim); margin-bottom: 2rem; font-size: 1.1rem;" id="voice-angus-message">Angus has reviewed your website and is ready to chat</p>
+                        <p style="color: var(--text-dim); margin-bottom: 2rem; font-size: 0.95rem;" id="voice-angus-message">Angus has reviewed your website and is ready to chat</p>
 
-                        <div style="background: var(--surface-2); border-radius: var(--radius); padding: var(--gap); margin-bottom: 2rem;">
-                            <p style="color: var(--text-dim); font-size: 0.9rem;">Duration estimate</p>
-                            <p style="font-size: 1.3rem; font-weight: 600; color: var(--accent);">~10-15 minutes</p>
+                        <div style="background: var(--abyss); border: 1px solid var(--sea); border-radius: var(--radius-sm); padding: var(--gap); margin-bottom: 2rem;">
+                            <p style="color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Duration estimate</p>
+                            <p style="font-size: 1.3rem; font-weight: 300; color: var(--glow); margin-top: 4px;">~10-15 minutes</p>
                         </div>
 
-                        <button type="button" class="btn btn-primary btn-block" id="voice-start-btn" style="padding: 1rem; font-size: 1.1rem;">
+                        <button type="button" class="btn btn-primary btn-block" id="voice-start-btn" style="padding: 1rem; font-size: 1rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
                             Start Call
                         </button>
                     </div>
@@ -1367,8 +1684,11 @@
                             <!-- ElevenLabs Conversational AI Widget -->
                             <elevenlabs-convai id="elevenlabs-widget" agent-id="agent_1901kjxbr6xte40bw8dyeyhjwgze"></elevenlabs-convai>
 
-                            <div id="voice-session-status" style="margin-top: var(--gap); padding-top: var(--gap); border-top: 1px solid var(--border); color: var(--text-dim); text-align: center;">
-                                <p>🔴 Recording... (auto-saved)</p>
+                            <div id="voice-session-status" style="margin-top: var(--gap); padding-top: var(--gap); border-top: 1px solid var(--sea); color: var(--text-dim); text-align: center;">
+                                <p style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--coral); display: inline-block; animation: pulse-glow 1.5s infinite;"></span>
+                                    Recording... (auto-saved)
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -1405,25 +1725,29 @@
             <!-- Document Upload Screen -->
             <div class="screen" id="screen-upload">
                 <div class="screen-content">
-                    <h1>Upload Documents</h1>
+                    <div class="section-title" style="margin-top: 0;">Upload Documents</div>
 
                     <div class="card">
-                        <h2>Email Inbox</h2>
-                        <p style="color: var(--text-dim); margin-bottom: var(--gap);">Forward files to your dedicated inbox address:</p>
+                        <h3>Email Inbox</h3>
+                        <p style="color: var(--text-dim); margin-bottom: var(--gap); font-size: 0.85rem;">Forward files to your dedicated inbox address:</p>
                         <div class="copy-text">
                             <span id="upload-inbox" style="flex: 1;">Loading...</span>
-                            <button type="button" class="copy-btn" onclick="copyToClipboard('upload-inbox')">📋</button>
+                            <button type="button" class="copy-btn" onclick="copyToClipboard('upload-inbox')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            </button>
                         </div>
                     </div>
 
                     <div class="card">
-                        <h2>Upload Document</h2>
+                        <h3>Upload Document</h3>
                         <div class="drop-zone" id="drop-zone">
                             <div style="margin-bottom: var(--gap);">
-                                <div style="font-size: 2rem; margin-bottom: var(--gap-2);">📁</div>
-                                <p>Drag & drop files here</p>
+                                <div style="margin-bottom: var(--gap-2);">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+                                </div>
+                                <p style="color: var(--text-dim);">Drag & drop files here</p>
                             </div>
-                            <p style="color: var(--text-dim); font-size: 0.85rem;">or</p>
+                            <p style="color: var(--text-muted); font-size: 0.8rem;">or</p>
                             <button type="button" class="btn btn-secondary btn-small" onclick="document.getElementById('file-input').click()">
                                 Select Files
                             </button>
@@ -1438,10 +1762,11 @@
             <!-- Team Management Screen -->
             <div class="screen" id="screen-team">
                 <div class="screen-content">
-                    <h1>Team Management</h1>
+                    <div class="section-title" style="margin-top: 0;">Team Management</div>
 
                     <button class="btn btn-primary btn-block" onclick="openInviteModal()">
-                        ➕ Invite Team Member
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Invite Team Member
                     </button>
 
                     <div id="team-list" style="margin-top: var(--gap);">
@@ -1453,8 +1778,8 @@
             <!-- Knowledge Base Screen -->
             <div class="screen" id="screen-knowledge">
                 <div class="screen-content">
-                    <h1>Knowledge Base</h1>
-                    <p style="color: var(--text-dim); margin-bottom: var(--gap);" id="knowledge-count">0 data points</p>
+                    <div class="section-title" style="margin-top: 0;">Knowledge Base</div>
+                    <p style="color: var(--text-dim); margin-bottom: var(--gap); font-size: 0.85rem;" id="knowledge-count">0 data points</p>
 
                     <div id="knowledge-topics">
                         <p style="color: var(--text-dim);">Loading knowledge base...</p>
@@ -1465,8 +1790,8 @@
             <!-- Call History Screen -->
             <div class="screen" id="screen-calls">
                 <div class="screen-content">
-                    <h1>Call History</h1>
-                    <p style="color: var(--text-dim); margin-bottom: var(--gap);" id="calls-count">0 sessions</p>
+                    <div class="section-title" style="margin-top: 0;">Call History</div>
+                    <p style="color: var(--text-dim); margin-bottom: var(--gap); font-size: 0.85rem;" id="calls-count">0 sessions</p>
 
                     <div class="filter-tabs">
                         <button class="filter-tab active" onclick="filterCalls('all', this)">All</button>
@@ -1483,24 +1808,30 @@
             <!-- More Screen (Recommendations + Gaps + Settings) -->
             <div class="screen" id="screen-more">
                 <div class="screen-content">
-                    <h1>More</h1>
+                    <div class="section-title" style="margin-top: 0;">More</div>
 
                     <!-- Quick Access Section -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-bottom: var(--gap);">
-                        <button class="btn btn-secondary btn-block" onclick="switchScreen('upload')" style="text-align: center;">
-                            📄 Upload Documents
+                    <div class="actions-row" style="margin-bottom: var(--gap);">
+                        <button class="action-btn" onclick="switchScreen('upload')">
+                            <div class="icon teal-bg">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--foam)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            Upload Docs
                         </button>
-                        <button class="btn btn-secondary btn-block" onclick="switchScreen('team')" style="text-align: center;">
-                            👥 Team Management
+                        <button class="action-btn" onclick="switchScreen('team')">
+                            <div class="icon sea-bg">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            Team
                         </button>
                     </div>
 
                     <!-- Recommendations Tab -->
                     <div id="recommendations-section">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--gap);">
-                            <h2>Recommendations</h2>
+                            <div class="section-title" style="margin: 0;">Recommendations</div>
                             <button class="btn btn-secondary btn-small" id="generate-recommendations-btn">
-                                🔄 Generate
+                                Generate
                             </button>
                         </div>
                         <div id="recommendations-list">
@@ -1510,7 +1841,7 @@
 
                     <!-- Gap Analysis Tab -->
                     <div id="gaps-section" style="margin-top: var(--gap);">
-                        <h2 style="margin-bottom: var(--gap);">Gap Analysis</h2>
+                        <div class="section-title">Gap Analysis</div>
                         <div id="gaps-list">
                             <p style="color: var(--text-dim);">Loading gaps...</p>
                         </div>
@@ -1518,26 +1849,32 @@
 
                     <!-- Settings Tab -->
                     <div id="settings-section" style="margin-top: var(--gap);">
-                        <h2 style="margin-bottom: var(--gap);">Settings</h2>
+                        <div class="section-title">Settings</div>
                         <div class="card">
                             <h3>Company Settings</h3>
-                            <p style="color: var(--text-dim); margin-bottom: var(--gap);">Manage your account and integration details</p>
+                            <p style="color: var(--text-dim); margin-bottom: var(--gap); font-size: 0.85rem;">Manage your account and integration details</p>
 
                             <div style="margin-bottom: var(--gap);">
-                                <label style="display: block; color: var(--text-dim); font-size: 0.85rem; margin-bottom: 4px;">Company Email</label>
+                                <label style="display: block; color: var(--text-dim); font-size: 0.75rem; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">Company Email</label>
                                 <div class="copy-text">
                                     <span id="settings-inbox" style="flex: 1;">Loading...</span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('settings-inbox')">📋</button>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('settings-inbox')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    </button>
                                 </div>
                             </div>
 
                             <div style="margin-bottom: var(--gap);">
-                                <label style="display: block; color: var(--text-dim); font-size: 0.85rem; margin-bottom: 4px;">Onboarding Link</label>
+                                <label style="display: block; color: var(--text-dim); font-size: 0.75rem; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">Onboarding Link</label>
                                 <div class="copy-text">
                                     <span id="settings-link" style="flex: 1;">Loading...</span>
-                                    <button type="button" class="copy-btn" onclick="copyToClipboard('settings-link')">📋</button>
+                                    <button type="button" class="copy-btn" onclick="copyToClipboard('settings-link')">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    </button>
                                 </div>
                             </div>
+
+                            <div class="water-divider"></div>
 
                             <button class="btn btn-secondary btn-block" onclick="resetApp()">
                                 Reset & Start Over
@@ -1551,23 +1888,33 @@
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchScreen('dashboard')">
-                <span class="nav-icon">📊</span>
+                <span class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                </span>
                 <span>Dashboard</span>
             </button>
             <button class="nav-item" onclick="switchScreen('voice')">
-                <span class="nav-icon">🎤</span>
+                <span class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                </span>
                 <span>Voice</span>
             </button>
             <button class="nav-item" onclick="switchScreen('knowledge')">
-                <span class="nav-icon">🧠</span>
+                <span class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </span>
                 <span>Knowledge</span>
             </button>
             <button class="nav-item" onclick="switchScreen('calls')">
-                <span class="nav-icon">📞</span>
+                <span class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </span>
                 <span>Calls</span>
             </button>
             <button class="nav-item" onclick="switchScreen('more')">
-                <span class="nav-icon">⚙️</span>
+                <span class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </span>
                 <span>More</span>
             </button>
         </nav>
@@ -1628,7 +1975,8 @@
         window.addEventListener('unhandledrejection', function(e) {
             var banner = document.getElementById('debug-banner');
             banner.style.display = 'block';
-            banner.innerHTML += '<div>PROMISE ERROR: ' + (e.reason?.message || e.reason || 'unknown') + '</div>';
+            var reason = e.reason && e.reason.message ? e.reason.message : (e.reason || 'unknown');
+            banner.innerHTML += '<div>PROMISE ERROR: ' + reason + '</div>';
         });
     </script>
 
@@ -1982,11 +2330,16 @@
                 const tierMap = { getting_started: 'Getting Started', good: 'Good', great: 'Great', amazing: 'Amazing', expert: 'Expert' };
                 let tier = tierMap[company.intelligence_tier] || 'Getting Started';
 
-                // Update ring
+                // Update score card
                 animateIntelligenceRing(avgCompleteness);
-                document.getElementById('ring-percent').textContent = `${avgCompleteness}%`;
-                document.getElementById('ring-label').textContent = tier;
+                document.getElementById('ring-percent').innerHTML = `${avgCompleteness}<span>%</span>`;
+                document.getElementById('ring-label').textContent = `${gapsArray.reduce((sum, g) => sum + (g.captured_data_points || 0), 0)} data points across ${gapsArray.length} topics`;
                 document.getElementById('intelligence-tier').textContent = tier;
+                const scoreBar = document.getElementById('score-bar-fill');
+                if (scoreBar) scoreBar.style.width = `${avgCompleteness}%`;
+                // Update avatar initials
+                const avatarEl = document.getElementById('dashboard-avatar');
+                if (avatarEl && company.name) avatarEl.textContent = company.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
                 // Render topics
                 const topicGrid = document.getElementById('topic-grid');
@@ -2002,6 +2355,16 @@
                     'founder_headspace'
                 ];
 
+                const topicIcons = {
+                    'business_fundamentals': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+                    'revenue_financials': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--foam)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+                    'customers': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--surf)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+                    'team_operations': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--wave)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+                    'marketing_sales': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+                    'technology_systems': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--foam)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09"/></svg>',
+                    'founder_headspace': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--surf)" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 12 18.469a3.374 3.374 0 0 0-.986-2.386l-.548-.547z"/></svg>'
+                };
+
                 topicOrder.forEach(topicKey => {
                     const gap = gapAnalysis[topicKey] || {};
                     const completeness = Math.round(gap.completeness_score || 0);
@@ -2009,9 +2372,14 @@
                     const card = document.createElement('div');
                     card.className = 'topic-card';
                     card.innerHTML = `
-                        <div class="topic-name">${topicLabels[topicKey] || topicKey}</div>
-                        <div class="completeness-bar">
-                            <div class="completeness-fill" style="width: ${completeness}%;"></div>
+                        <div class="topic-icon" style="background: rgba(0, 240, 255, 0.08);">
+                            ${topicIcons[topicKey] || ''}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="topic-name">${topicLabels[topicKey] || topicKey}</div>
+                            <div class="completeness-bar">
+                                <div class="completeness-fill" style="width: ${completeness}%;"></div>
+                            </div>
                         </div>
                         <div class="completeness-percent">${completeness}%</div>
                     `;
@@ -2025,7 +2393,8 @@
                 const feedHtml = recentActivity.length > 0
                     ? recentActivity.map(log => `
                         <div class="activity-item">
-                            <div>${log.action}</div>
+                            <div class="activity-dot"></div>
+                            <div style="flex: 1; font-size: 0.85rem; color: var(--text-dim);">${log.action}</div>
                             <div class="activity-time">${formatTime(log.created_at)}</div>
                         </div>
                     `).join('')
@@ -2160,7 +2529,7 @@
 
         // ============ Event Listeners ============
 
-        // handleOnboardSubmit is defined in its own <script> block above the form
+        // handleOnboardSubmit is defined in its own script block above the form
 
         document.getElementById('goto-dashboard').addEventListener('click', () => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -2424,7 +2793,7 @@
             } finally {
                 const btn = document.getElementById('generate-recommendations-btn');
                 btn.disabled = false;
-                btn.innerHTML = '🔄 Generate';
+                btn.innerHTML = 'Generate';
             }
         });
 
