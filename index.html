@@ -1531,6 +1531,8 @@
     <!-- Global error handler - must be FIRST script -->
     <script>
         window.onerror = function(msg, url, line, col, error) {
+            // Ignore cross-origin script errors (ElevenLabs widget etc.)
+            if (msg === 'Script error.' && line === 0) return true;
             var banner = document.getElementById('debug-banner');
             banner.style.display = 'block';
             banner.innerHTML += '<div>ERROR: ' + msg + ' (line ' + line + ')</div>';
@@ -1545,7 +1547,6 @@
 
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
-    <script src="https://elevenlabs.io/convai-widget/index.js" async crossorigin="anonymous"></script>
 
     <script>
         // Configuration
@@ -1710,13 +1711,14 @@
             }
         }
 
-        async function onboardCompany(name, founder_name, founder_email, industry) {
+        async function onboardCompany(name, founder_name, founder_email, industry, website) {
             try {
                 const result = await callEdgeFunction('onboard-company', {
                     name,
                     founder_name,
                     founder_email,
-                    industry: industry || undefined
+                    industry: industry || undefined,
+                    website: website || undefined
                 });
 
                 appState.company_id = result.company?.id || result.company_id;
@@ -2071,15 +2073,12 @@
         // ============ Event Listeners ============
 
         // Onboarding form
-        console.log('[INIT] Registering onboarding form handler...');
         const onboardingForm = document.getElementById('onboarding-form');
         if (!onboardingForm) {
-            console.error('[INIT] CRITICAL: onboarding-form element not found!');
-        } else {
-            console.log('[INIT] onboarding-form found, attaching submit listener');
+            console.error('onboarding-form element not found');
         }
 
-        onboardingForm.addEventListener('submit', async (e) => {
+        onboardingForm && onboardingForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             console.log('[FORM] Submit event fired!');
 
@@ -2116,7 +2115,7 @@
                 btn.innerHTML = '<span class="spinner"></span> Creating...';
 
                 // Step 1: Onboard the company
-                const result = await onboardCompany(name, founder_name, founder_email, industry);
+                const result = await onboardCompany(name, founder_name, founder_email, industry, website_url);
                 const company_id = result.company?.id || result.company_id;
 
                 if (!company_id) {
@@ -2192,8 +2191,20 @@
             document.getElementById('voice-active').style.display = 'none';
         }
 
+        // Lazy-load ElevenLabs widget script (deferred to avoid "Script error" on page load)
+        let elevenLabsLoaded = false;
+        function loadElevenLabsScript() {
+            if (elevenLabsLoaded) return;
+            elevenLabsLoaded = true;
+            const s = document.createElement('script');
+            s.src = 'https://elevenlabs.io/convai-widget/index.js';
+            s.async = true;
+            document.body.appendChild(s);
+        }
+
         // Start call button
         document.getElementById('voice-start-btn').addEventListener('click', () => {
+            loadElevenLabsScript();
             // Hide pre-call, show active call
             document.getElementById('voice-precall').style.display = 'none';
             document.getElementById('voice-active').style.display = 'block';
