@@ -21,8 +21,6 @@
             --foam: #22d1c3;
             --glow: #00f0ff;
             --biolum: #00e5c8;
-            --coral: #ff6b6b;
-            --sand: #f4d9a0;
             --text: #d4e5f7;
             --text-dim: #6b8db5;
             --text-muted: #2e4a6e;
@@ -40,251 +38,234 @@
         }
 
         /* ==============================
-           SECTION 1: OCEAN LANDING PAGE
+           SIGNUP / FRONT PAGE
            ============================== */
 
-        .landing {
+        .signup-page {
             min-height: 100vh;
+            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            position: relative;
             overflow: hidden;
-            padding: 40px 24px 60px;
         }
 
-        /* Animated ocean background */
-        .ocean-bg {
+        /* Two-video ocean: stormy left, calm right */
+        .ocean-videos {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .ocean-video-wrap {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .ocean-video-wrap video {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: cover;
+        }
+
+        /* Blend zone between the two videos */
+        .ocean-video-wrap.storm::after {
+            content: '';
+            position: absolute;
+            top: 0; right: -40px; bottom: 0;
+            width: 80px;
+            background: linear-gradient(90deg, transparent, var(--deep));
+            z-index: 2;
+        }
+
+        .ocean-video-wrap.calm::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -40px; bottom: 0;
+            width: 80px;
+            background: linear-gradient(90deg, var(--deep), transparent);
+            z-index: 2;
+        }
+
+        /* Dark overlay so text is readable */
+        .ocean-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(
                 180deg,
-                #020810 0%,
-                #041428 15%,
-                #062038 30%,
-                #0a3355 50%,
-                #0e4a6e 65%,
-                #136878 78%,
-                #1a8a8a 90%,
-                #22b0a0 100%
+                rgba(2, 11, 24, 0.3) 0%,
+                rgba(2, 11, 24, 0.15) 30%,
+                rgba(2, 11, 24, 0.4) 60%,
+                rgba(2, 11, 24, 0.92) 85%,
+                rgba(2, 11, 24, 1) 100%
             );
+            z-index: 3;
         }
 
-        /* Wave layers */
-        .wave {
-            position: absolute;
-            left: 0; right: 0;
-            height: 120px;
-            opacity: 0.3;
-        }
-
-        .wave-1 {
-            bottom: 35%;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%2300f0ff' d='M0,60 C360,120 720,0 1080,60 C1260,90 1380,75 1440,60 L1440,120 L0,120Z'/%3E%3C/svg%3E") repeat-x;
-            background-size: 900px 120px;
-            animation: wave-drift 8s linear infinite;
-        }
-
-        .wave-2 {
-            bottom: 30%;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%2300e5c8' d='M0,80 C240,20 480,100 720,60 C960,20 1200,90 1440,50 L1440,120 L0,120Z'/%3E%3C/svg%3E") repeat-x;
-            background-size: 1100px 120px;
-            animation: wave-drift 12s linear infinite reverse;
-            opacity: 0.2;
-        }
-
-        .wave-3 {
-            bottom: 25%;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%231a8a9a' d='M0,40 C320,100 640,20 960,70 C1120,95 1300,45 1440,70 L1440,120 L0,120Z'/%3E%3C/svg%3E") repeat-x;
-            background-size: 1300px 120px;
-            animation: wave-drift 15s linear infinite;
-            opacity: 0.25;
-        }
-
-        @keyframes wave-drift {
-            0% { background-position-x: 0; }
-            100% { background-position-x: 900px; }
-        }
-
-        /* Bioluminescent particles */
-        .particles {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            background: var(--glow);
-            animation: float-up linear infinite;
-        }
-
-        .particle:nth-child(1) { width: 3px; height: 3px; left: 15%; bottom: -10%; animation-duration: 9s; animation-delay: 0s; opacity: 0.6; }
-        .particle:nth-child(2) { width: 2px; height: 2px; left: 35%; bottom: -10%; animation-duration: 12s; animation-delay: 2s; opacity: 0.4; }
-        .particle:nth-child(3) { width: 4px; height: 4px; left: 55%; bottom: -10%; animation-duration: 10s; animation-delay: 4s; opacity: 0.5; }
-        .particle:nth-child(4) { width: 2px; height: 2px; left: 75%; bottom: -10%; animation-duration: 14s; animation-delay: 1s; opacity: 0.3; }
-        .particle:nth-child(5) { width: 3px; height: 3px; left: 25%; bottom: -10%; animation-duration: 11s; animation-delay: 6s; opacity: 0.5; }
-        .particle:nth-child(6) { width: 2px; height: 2px; left: 65%; bottom: -10%; animation-duration: 13s; animation-delay: 3s; opacity: 0.4; }
-        .particle:nth-child(7) { width: 3px; height: 3px; left: 45%; bottom: -10%; animation-duration: 8s; animation-delay: 5s; opacity: 0.6; }
-        .particle:nth-child(8) { width: 2px; height: 2px; left: 85%; bottom: -10%; animation-duration: 15s; animation-delay: 7s; opacity: 0.3; }
-        .particle:nth-child(9) { width: 4px; height: 4px; left: 10%; bottom: -10%; animation-duration: 10s; animation-delay: 8s; opacity: 0.5; }
-        .particle:nth-child(10) { width: 2px; height: 2px; left: 90%; bottom: -10%; animation-duration: 11s; animation-delay: 2s; opacity: 0.35; }
-
-        @keyframes float-up {
-            0% { transform: translateY(0) scale(0); opacity: 0; }
-            10% { opacity: 1; transform: translateY(-10vh) scale(1); }
-            90% { opacity: 0.5; }
-            100% { transform: translateY(-110vh) scale(0.5); opacity: 0; }
-        }
-
-        /* Deep light rays */
-        .light-rays {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            overflow: hidden;
-        }
-
-        .ray {
-            position: absolute;
-            top: -20%;
-            width: 2px;
-            height: 60%;
-            background: linear-gradient(180deg, rgba(0, 240, 255, 0.15), transparent);
-            transform: rotate(15deg);
-            animation: ray-shimmer 4s ease-in-out infinite;
-        }
-
-        .ray:nth-child(1) { left: 20%; animation-delay: 0s; width: 3px; }
-        .ray:nth-child(2) { left: 40%; animation-delay: 1.5s; height: 50%; transform: rotate(10deg); }
-        .ray:nth-child(3) { left: 65%; animation-delay: 0.8s; width: 4px; transform: rotate(20deg); }
-        .ray:nth-child(4) { left: 80%; animation-delay: 2.2s; height: 45%; transform: rotate(12deg); }
-
-        @keyframes ray-shimmer {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
-
-        /* Landing content */
-        .landing-content {
+        /* Signup content */
+        .signup-content {
             position: relative;
             z-index: 10;
+            padding: 0 24px 40px;
         }
 
-        .landing-logo {
-            font-size: 0.75rem;
+        .signup-logo {
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 5px;
             color: var(--glow);
             font-weight: 500;
-            margin-bottom: 20px;
-            opacity: 0.8;
-        }
-
-        .landing-title {
-            font-size: 2.2rem;
-            font-weight: 300;
-            line-height: 1.2;
             margin-bottom: 12px;
-            letter-spacing: -0.5px;
+            opacity: 0.7;
         }
 
-        .landing-title strong {
+        .signup-title {
+            font-size: 1.8rem;
+            font-weight: 300;
+            line-height: 1.25;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .signup-title strong {
             font-weight: 600;
             background: linear-gradient(135deg, var(--glow), var(--biolum));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .landing-sub {
-            font-size: 1rem;
+        .signup-sub {
+            font-size: 0.9rem;
             color: var(--text-dim);
-            line-height: 1.6;
-            margin-bottom: 36px;
-            max-width: 340px;
+            line-height: 1.5;
+            margin-bottom: 28px;
         }
 
-        .landing-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 16px 32px;
+        /* Form */
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form-field {
+            position: relative;
+        }
+
+        .form-field input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: rgba(5, 21, 37, 0.8);
+            border: 1px solid rgba(13, 48, 85, 0.6);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .form-field input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-field input:focus {
+            border-color: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.06);
+        }
+
+        .form-field .field-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .signup-btn {
+            margin-top: 8px;
+            padding: 16px;
             background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(34, 209, 195, 0.15));
             border: 1px solid rgba(0, 240, 255, 0.3);
-            border-radius: 60px;
+            border-radius: var(--radius-sm);
             color: var(--glow);
             font-family: inherit;
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             transition: all 0.3s;
+            letter-spacing: 0.5px;
         }
 
-        .landing-btn:active {
-            transform: scale(0.97);
+        .signup-btn:active {
+            transform: scale(0.98);
             background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(34, 209, 195, 0.25));
         }
 
-        .landing-scroll {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--text-muted);
+        .signup-terms {
+            text-align: center;
             font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            animation: bob 2s ease-in-out infinite;
+            color: var(--text-muted);
+            margin-top: 16px;
+            line-height: 1.5;
         }
 
-        @keyframes bob {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(6px); }
+        .signup-terms a {
+            color: var(--text-dim);
+            text-decoration: none;
         }
 
         /* ==============================
            DIVIDER
            ============================== */
-        .section-divider {
-            height: 80px;
-            background: linear-gradient(180deg, #22b0a0, var(--deep));
-            position: relative;
+        .page-break {
+            padding: 40px 24px;
+            text-align: center;
+            background: var(--deep);
+            border-top: 1px solid var(--ocean);
         }
 
-        .section-divider::after {
-            content: 'SCROLL DOWN FOR DASHBOARD';
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+        .page-break-label {
             font-size: 0.65rem;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
             color: var(--text-muted);
-            white-space: nowrap;
+        }
+
+        .page-break-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 8px;
         }
 
         /* ==============================
-           SECTION 2: DASHBOARD
+           DASHBOARD (compact)
            ============================== */
 
         .app-section {
             background: var(--deep);
-            min-height: 100vh;
             padding-bottom: 100px;
         }
 
-        .container {
-            padding: 0 20px;
-        }
+        .container { padding: 0 20px; }
 
         /* Header */
         .header {
-            padding: 16px 20px 12px;
+            padding: 14px 20px 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -293,30 +274,30 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .avatar {
-            width: 38px; height: 38px;
+            width: 34px; height: 34px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--wave), var(--foam));
             display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 0.85rem;
+            font-weight: 600; font-size: 0.75rem;
             color: var(--deep);
         }
 
         .header-greeting {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-dim);
         }
 
         .header-name {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
         }
 
         .header-icon {
-            width: 40px; height: 40px;
+            width: 36px; height: 36px;
             border-radius: 50%;
             background: var(--abyss);
             border: 1px solid var(--ocean);
@@ -324,128 +305,110 @@
             color: var(--text-dim);
         }
 
-        /* Score Card */
+        /* Score Card - compact */
         .score-card {
             background: linear-gradient(135deg, var(--abyss) 0%, var(--ocean) 100%);
             border: 1px solid var(--sea);
             border-radius: var(--radius);
-            padding: 24px;
-            margin: 12px 20px 20px;
+            padding: 18px 20px;
+            margin: 8px 20px 14px;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 18px;
         }
 
         .score-card::before {
             content: '';
             position: absolute;
-            top: -60%; right: -30%;
-            width: 250px; height: 250px;
-            background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 70%);
+            top: -50%; right: -20%;
+            width: 160px; height: 160px;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.06) 0%, transparent 70%);
             pointer-events: none;
         }
 
-        .score-card::after {
-            content: '';
+        .score-ring {
+            position: relative;
+            width: 64px; height: 64px;
+            flex-shrink: 0;
+        }
+
+        .score-ring svg {
+            width: 64px; height: 64px;
+            transform: rotate(-90deg);
+        }
+
+        .score-ring .bg { stroke: rgba(255,255,255,0.04); }
+        .score-ring .fill {
+            stroke: url(#scoreGrad);
+            stroke-dasharray: 176;
+            stroke-dashoffset: 84;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .score-number {
             position: absolute;
-            bottom: -40%; left: -20%;
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, rgba(34, 209, 195, 0.06) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        .score-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-
-        .score-label {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 500;
-        }
-
-        .score-tier {
-            font-size: 0.7rem;
-            padding: 4px 12px;
-            border-radius: 20px;
-            background: rgba(0, 240, 255, 0.08);
-            color: var(--glow);
-            border: 1px solid rgba(0, 240, 255, 0.15);
-            font-weight: 500;
-        }
-
-        .score-value {
-            font-size: 3.5rem;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
             font-weight: 300;
-            letter-spacing: -2px;
-            line-height: 1;
-            margin-bottom: 8px;
             background: linear-gradient(135deg, var(--text), var(--glow));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .score-value span {
-            font-size: 1.5rem;
-            font-weight: 400;
+        .score-number span { font-size: 0.7rem; }
+
+        .score-details { flex: 1; }
+
+        .score-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .score-tier {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(0, 240, 255, 0.06);
+            color: var(--glow);
+            border: 1px solid rgba(0, 240, 255, 0.12);
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 6px;
         }
 
         .score-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-        }
-
-        .score-bar-container {
-            margin-top: 20px;
-            height: 4px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .score-bar {
-            height: 100%;
-            width: 52%;
-            background: linear-gradient(90deg, var(--wave), var(--foam), var(--glow));
-            border-radius: 2px;
-            box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
-        }
-
-        /* Section titles */
-        .section-title {
             font-size: 0.75rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 500;
-            margin: 28px 0 14px;
+            color: var(--text-muted);
         }
 
-        /* Quick Actions */
+        /* Quick Actions - compact */
         .actions-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 16px 0;
+            gap: 8px;
+            margin: 0 0 14px;
         }
 
         .action-btn {
             background: var(--abyss);
             border: 1px solid var(--ocean);
             border-radius: var(--radius-sm);
-            padding: 16px 14px;
+            padding: 12px;
             color: var(--text);
             font-family: inherit;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: all 0.2s;
         }
 
@@ -455,29 +418,34 @@
         }
 
         .action-btn .icon {
-            width: 34px; height: 34px;
-            border-radius: 10px;
+            width: 30px; height: 30px;
+            border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
         }
 
-        .action-btn .icon.sea-bg {
-            background: rgba(0, 240, 255, 0.08);
-        }
-
-        .action-btn .icon.teal-bg {
-            background: rgba(34, 209, 195, 0.08);
-        }
+        .action-btn .icon.sea-bg { background: rgba(0, 240, 255, 0.06); }
+        .action-btn .icon.teal-bg { background: rgba(34, 209, 195, 0.06); }
 
         .action-primary {
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.06), rgba(26, 138, 154, 0.1));
-            border-color: rgba(0, 240, 255, 0.15);
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.04), rgba(26, 138, 154, 0.08));
+            border-color: rgba(0, 240, 255, 0.12);
         }
 
-        /* Topics */
+        /* Section titles */
+        .section-title {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            margin: 20px 0 10px;
+        }
+
+        /* Topics - compact */
         .topic-grid {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .topic-row {
@@ -486,78 +454,74 @@
             background: var(--abyss);
             border: 1px solid var(--ocean);
             border-radius: var(--radius-sm);
-            padding: 14px 16px;
-            gap: 14px;
+            padding: 10px 14px;
+            gap: 12px;
         }
 
         .topic-icon {
-            width: 36px; height: 36px;
-            border-radius: 10px;
+            width: 32px; height: 32px;
+            border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
 
-        .topic-icon.i1 { background: rgba(0, 240, 255, 0.08); }
-        .topic-icon.i2 { background: rgba(34, 209, 195, 0.08); }
-        .topic-icon.i3 { background: rgba(26, 138, 154, 0.1); }
-        .topic-icon.i4 { background: rgba(19, 90, 122, 0.15); }
+        .topic-icon.i1 { background: rgba(0, 240, 255, 0.06); }
+        .topic-icon.i2 { background: rgba(34, 209, 195, 0.06); }
+        .topic-icon.i3 { background: rgba(26, 138, 154, 0.08); }
+        .topic-icon.i4 { background: rgba(19, 90, 122, 0.1); }
 
         .topic-info { flex: 1; min-width: 0; }
 
         .topic-name {
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             font-weight: 500;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
         .topic-bar {
             height: 3px;
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.03);
             border-radius: 2px;
             overflow: hidden;
         }
 
-        .topic-fill {
-            height: 100%;
-            border-radius: 2px;
-        }
-
+        .topic-fill { height: 100%; border-radius: 2px; }
         .topic-fill.f1 { background: linear-gradient(90deg, var(--wave), var(--glow)); }
         .topic-fill.f2 { background: linear-gradient(90deg, var(--wave), var(--foam)); }
         .topic-fill.f3 { background: linear-gradient(90deg, var(--ocean), var(--surf)); }
         .topic-fill.f4 { background: linear-gradient(90deg, var(--ocean), var(--wave)); }
 
         .topic-percent {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-dim);
             font-weight: 500;
             flex-shrink: 0;
-            min-width: 32px;
+            min-width: 30px;
             text-align: right;
         }
 
-        /* Activity */
+        /* Activity - compact */
         .activity-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 0;
-            border-bottom: 1px solid rgba(10, 34, 64, 0.8);
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(10, 34, 64, 0.6);
         }
 
         .activity-dot {
-            width: 8px; height: 8px;
+            width: 6px; height: 6px;
             border-radius: 50%;
             flex-shrink: 0;
         }
 
-        .activity-dot.d1 { background: var(--glow); box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+        .activity-dot.d1 { background: var(--glow); box-shadow: 0 0 8px rgba(0, 240, 255, 0.25); }
         .activity-dot.d2 { background: var(--foam); }
         .activity-dot.d3 { background: var(--surf); }
 
         .activity-text {
             flex: 1;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-dim);
         }
 
@@ -567,47 +531,22 @@
         }
 
         .activity-time {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
             flex-shrink: 0;
-        }
-
-        /* Badges */
-        .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px; }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.7rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-
-        .badge-glow {
-            background: rgba(0, 240, 255, 0.06);
-            color: var(--glow);
-            border: 1px solid rgba(0, 240, 255, 0.12);
-        }
-
-        .badge-foam {
-            background: rgba(34, 209, 195, 0.06);
-            color: var(--foam);
-            border: 1px solid rgba(34, 209, 195, 0.12);
         }
 
         /* Bottom Nav */
         .bottom-nav {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            background: rgba(2, 11, 24, 0.9);
+            background: rgba(2, 11, 24, 0.92);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border-top: 1px solid rgba(10, 34, 64, 0.6);
+            border-top: 1px solid rgba(10, 34, 64, 0.5);
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            padding: 6px 0 env(safe-area-inset-bottom, 8px);
+            padding: 5px 0 env(safe-area-inset-bottom, 6px);
             z-index: 100;
         }
 
@@ -616,8 +555,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 8px 0 4px;
-            gap: 4px;
+            padding: 6px 0 3px;
+            gap: 3px;
             cursor: pointer;
             position: relative;
             color: var(--text-muted);
@@ -625,96 +564,110 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .nav-item.active {
-            color: var(--glow);
-        }
+        .nav-item.active { color: var(--glow); }
 
         .nav-item.active::before {
             content: '';
             position: absolute;
             top: 0; left: 50%;
             transform: translateX(-50%);
-            width: 24px; height: 2px;
+            width: 20px; height: 2px;
             background: var(--glow);
             border-radius: 1px;
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
         }
 
-        .nav-icon { font-size: 1.3rem; line-height: 1; }
+        .nav-icon { font-size: 1.2rem; line-height: 1; }
 
         .nav-label {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 500;
             letter-spacing: 0.3px;
-        }
-
-        /* Water surface divider */
-        .water-divider {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--wave), var(--surf), var(--wave), transparent);
-            margin: 24px 0;
-            opacity: 0.4;
         }
     </style>
 </head>
 <body>
 
-    <!-- ========== OCEAN LANDING PAGE ========== -->
-    <section class="landing">
-        <div class="ocean-bg"></div>
+    <!-- ========== SIGNUP SCREEN WITH OCEAN VIDEO ========== -->
+    <section class="signup-page">
 
-        <!-- Light rays from surface -->
-        <div class="light-rays">
-            <div class="ray"></div>
-            <div class="ray"></div>
-            <div class="ray"></div>
-            <div class="ray"></div>
+        <!-- Split ocean video background -->
+        <div class="ocean-videos">
+            <div class="ocean-video-wrap storm">
+                <video autoplay muted loop playsinline>
+                    <source src="https://assets.mixkit.co/videos/4059/4059-720.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="ocean-video-wrap calm">
+                <video autoplay muted loop playsinline>
+                    <source src="https://assets.mixkit.co/videos/34363/34363-720.mp4" type="video/mp4">
+                </video>
+            </div>
         </div>
 
-        <!-- Bioluminescent particles -->
-        <div class="particles">
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-        </div>
+        <!-- Dark overlay for readability -->
+        <div class="ocean-overlay"></div>
 
-        <!-- Waves -->
-        <div class="wave wave-1"></div>
-        <div class="wave wave-2"></div>
-        <div class="wave wave-3"></div>
-
-        <!-- Content -->
-        <div class="landing-content">
-            <div class="landing-logo">Founder Engine</div>
-            <h1 class="landing-title">
-                Navigate the<br><strong>depths of your business</strong>
+        <!-- Signup form content -->
+        <div class="signup-content">
+            <div class="signup-logo">Founder Engine</div>
+            <h1 class="signup-title">
+                From storm<br>to <strong>clarity</strong>
             </h1>
-            <p class="landing-sub">
-                AI-powered intelligence that surfaces what matters. From chaos to clarity.
+            <p class="signup-sub">
+                AI-powered business intelligence. We research your company before we even speak.
             </p>
-            <button class="landing-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
-                Start Discovery Call
-            </button>
-        </div>
 
-        <div class="landing-scroll">
-            <span>Explore</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            <div class="signup-form">
+                <div class="form-field">
+                    <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <input type="text" placeholder="Company name" value="One Year No Beer">
+                </div>
+                <div class="form-field">
+                    <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <input type="text" placeholder="Your name" value="Ruari Fairbairns">
+                </div>
+                <div class="form-field">
+                    <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    <input type="email" placeholder="Email" value="ruari@oynb.co">
+                </div>
+                <div class="form-field">
+                    <svg class="field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <input type="url" placeholder="Website URL (optional)" value="oynb.com">
+                </div>
+
+                <button class="signup-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Begin Discovery
+                </button>
+            </div>
+
+            <div class="signup-terms">
+                We'll research your company using AI before your first call.<br>
+                No lazy questions. We come prepared.
+            </div>
         </div>
     </section>
 
-    <div class="section-divider"></div>
+    <!-- Separator -->
+    <div class="page-break">
+        <div class="page-break-label">Dashboard Preview</div>
+        <div class="page-break-desc">What you see after onboarding</div>
+    </div>
 
-    <!-- ========== DASHBOARD ========== -->
+    <!-- ========== COMPACT DASHBOARD ========== -->
     <section class="app-section">
+
+        <!-- SVG gradient defs -->
+        <svg width="0" height="0">
+            <defs>
+                <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="var(--wave)"/>
+                    <stop offset="50%" stop-color="var(--foam)"/>
+                    <stop offset="100%" stop-color="var(--glow)"/>
+                </linearGradient>
+            </defs>
+        </svg>
 
         <div class="header">
             <div class="header-left">
@@ -725,20 +678,23 @@
                 </div>
             </div>
             <div class="header-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </div>
         </div>
 
-        <!-- Score Card -->
+        <!-- Compact Score Card with Ring -->
         <div class="score-card">
-            <div class="score-header">
+            <div class="score-ring">
+                <svg viewBox="0 0 64 64">
+                    <circle class="bg" cx="32" cy="32" r="28" fill="none" stroke-width="3"/>
+                    <circle class="fill" cx="32" cy="32" r="28" fill="none" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <div class="score-number">52<span>%</span></div>
+            </div>
+            <div class="score-details">
                 <div class="score-label">Intelligence Score</div>
                 <div class="score-tier">Great</div>
-            </div>
-            <div class="score-value">52<span>%</span></div>
-            <div class="score-subtitle">56 data points across 7 topics</div>
-            <div class="score-bar-container">
-                <div class="score-bar"></div>
+                <div class="score-subtitle">56 data points across 7 topics</div>
             </div>
         </div>
 
@@ -748,13 +704,13 @@
             <div class="actions-row">
                 <button class="action-btn action-primary">
                     <div class="icon sea-bg">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
                     </div>
                     Start Call
                 </button>
                 <button class="action-btn">
                     <div class="icon teal-bg">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--foam)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--foam)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     </div>
                     Upload Doc
                 </button>
@@ -765,7 +721,7 @@
             <div class="topic-grid">
                 <div class="topic-row">
                     <div class="topic-icon i1">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--glow)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                     </div>
                     <div class="topic-info">
                         <div class="topic-name">Business Basics</div>
@@ -775,7 +731,7 @@
                 </div>
                 <div class="topic-row">
                     <div class="topic-icon i2">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--foam)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--foam)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     </div>
                     <div class="topic-info">
                         <div class="topic-name">Revenue & Financials</div>
@@ -785,7 +741,7 @@
                 </div>
                 <div class="topic-row">
                     <div class="topic-icon i3">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--surf)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--surf)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                     </div>
                     <div class="topic-info">
                         <div class="topic-name">Customers & Market</div>
@@ -795,7 +751,7 @@
                 </div>
                 <div class="topic-row">
                     <div class="topic-icon i4">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--wave)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--wave)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     </div>
                     <div class="topic-info">
                         <div class="topic-name">Tech & Systems</div>
@@ -825,14 +781,6 @@
                 </div>
             </div>
 
-            <div class="water-divider"></div>
-
-            <div class="badges">
-                <span class="badge badge-glow">AI Researched</span>
-                <span class="badge badge-foam">56 Data Points</span>
-                <span class="badge badge-glow">10 Citations</span>
-            </div>
-
         </div>
     </section>
 
@@ -840,31 +788,31 @@
     <nav class="bottom-nav">
         <div class="nav-item active">
             <div class="nav-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
             </div>
             <div class="nav-label">Dashboard</div>
         </div>
         <div class="nav-item">
             <div class="nav-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
             </div>
             <div class="nav-label">Voice</div>
         </div>
         <div class="nav-item">
             <div class="nav-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             </div>
             <div class="nav-label">Knowledge</div>
         </div>
         <div class="nav-item">
             <div class="nav-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             </div>
             <div class="nav-label">Calls</div>
         </div>
         <div class="nav-item">
             <div class="nav-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
             </div>
             <div class="nav-label">More</div>
         </div>
