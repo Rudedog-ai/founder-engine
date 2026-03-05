@@ -1111,6 +1111,92 @@
                         <p style="color: var(--text-dim); margin-bottom: 2rem;">AI-powered intelligence for scaling your company</p>
                     </div>
 
+                    <script>
+                    // Self-contained onboarding handler - isolated from main script
+                    window.handleOnboardSubmit = async function() {
+                        var FBASE = 'https://qzlicsovnldozbnmahsa.supabase.co/functions/v1';
+                        var AKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bGljc292bmxkb3pibm1haHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NTQwNjEsImV4cCI6MjA4ODIzMDA2MX0.vNIFau61Y5abqOi6m4KitFZNTym7f4Pj2X4emq4SWkM';
+                        var errorDiv = document.getElementById('onboard-error');
+                        var btn = document.getElementById('onboard-submit');
+
+                        try {
+                            errorDiv.style.display = 'none';
+                            var cname = document.getElementById('onboard-company-name').value.trim();
+                            var fname = document.getElementById('onboard-founder-name').value.trim();
+                            var femail = document.getElementById('onboard-founder-email').value.trim();
+                            var industry = document.getElementById('onboard-industry').value.trim();
+                            var website = document.getElementById('onboard-website-url').value.trim();
+
+                            var errors = [];
+                            if (!cname) errors.push('Company name is required');
+                            if (!fname) errors.push('Your name is required');
+                            if (!femail) errors.push('Email is required');
+                            if (femail && femail.indexOf('@') === -1) errors.push('Please enter a valid email');
+                            if (!website) errors.push('Website URL is required');
+
+                            if (errors.length > 0) {
+                                errorDiv.textContent = errors.join('. ') + '.';
+                                errorDiv.style.display = 'block';
+                                return;
+                            }
+
+                            if (website.indexOf('http') !== 0) website = 'https://' + website;
+
+                            btn.disabled = true;
+                            btn.innerHTML = '<span class="spinner"></span> Creating...';
+
+                            // Step 1: Create the company
+                            var resp = await fetch(FBASE + '/onboard-company', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'apikey': AKEY, 'Authorization': 'Bearer ' + AKEY },
+                                body: JSON.stringify({ name: cname, founder_name: fname, founder_email: femail, industry: industry || undefined, website: website || undefined })
+                            });
+                            if (!resp.ok) throw new Error('API error: ' + (await resp.text()));
+                            var result = await resp.json();
+                            var company_id = (result.company && result.company.id) || result.company_id;
+                            if (!company_id) throw new Error('No company ID returned');
+
+                            // Store in global state if main script loaded
+                            if (window.appState) { window.appState.company_id = company_id; window.appState.company_data = result; }
+
+                            // Show scraping loader
+                            document.getElementById('onboarding-form').style.display = 'none';
+                            document.getElementById('onboarding-scraping').style.display = 'block';
+
+                            // Step 2: Research the business (optional, don't fail if it errors)
+                            try {
+                                var scrapeResp = await fetch(FBASE + '/scrape-business', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'apikey': AKEY },
+                                    body: JSON.stringify({ company_id: company_id, website_url: website, company_name: cname })
+                                });
+                                if (scrapeResp.ok) {
+                                    var scrapeData = await scrapeResp.json();
+                                    window.companyKnowledge = scrapeData.company_summary || '';
+                                    window.smartQuestions = scrapeData.smart_questions || [];
+                                    var pts = scrapeData.data_points_count || 0;
+                                    document.getElementById('scraping-summary-text').textContent = 'Found ' + pts + ' data points about your business. Angus is ready.';
+                                    document.getElementById('scraping-summary').style.display = 'block';
+                                }
+                            } catch (e) { console.warn('Research failed:', e); }
+
+                            // Show results
+                            document.getElementById('inbox-address').textContent = result.email_inbox || (result.company && result.company.email_inbox_address) || '';
+                            document.getElementById('onboarding-link').textContent = result.onboarding_link || (result.company && result.company.onboarding_link) || '';
+                            document.getElementById('onboarding-scraping').style.display = 'none';
+                            document.getElementById('onboarding-result').style.display = 'block';
+
+                        } catch (err) {
+                            errorDiv.textContent = err.message || 'Something went wrong. Please try again.';
+                            errorDiv.style.display = 'block';
+                            btn.disabled = false;
+                            btn.textContent = 'Create Account';
+                            document.getElementById('onboarding-scraping').style.display = 'none';
+                            document.getElementById('onboarding-form').style.display = 'block';
+                        }
+                    };
+                    </script>
+
                     <div class="card" style="max-width: 500px; margin: 0 auto;">
                         <h2>Get Started</h2>
 
@@ -2073,92 +2159,7 @@
 
         // ============ Event Listeners ============
 
-        // Onboarding form - assigned to window explicitly for Safari compatibility
-        window.handleOnboardSubmit = async function() {
-            var errorDiv = document.getElementById('onboard-error');
-            var btn = document.getElementById('onboard-submit');
-
-            try {
-                errorDiv.style.display = 'none';
-
-                var name = document.getElementById('onboard-company-name').value.trim();
-                var founder_name = document.getElementById('onboard-founder-name').value.trim();
-                var founder_email = document.getElementById('onboard-founder-email').value.trim();
-                var industry = document.getElementById('onboard-industry').value.trim();
-                var website_url = document.getElementById('onboard-website-url').value.trim();
-
-                // Validation
-                var errors = [];
-                if (!name) errors.push('Company name is required');
-                if (!founder_name) errors.push('Your name is required');
-                if (!founder_email) errors.push('Email is required');
-                if (founder_email && !founder_email.includes('@')) errors.push('Please enter a valid email');
-                if (!website_url) errors.push('Website URL is required');
-
-                if (errors.length > 0) {
-                    errorDiv.textContent = errors.join('. ') + '.';
-                    errorDiv.style.display = 'block';
-                    errorDiv.style.color = 'var(--red)';
-                    errorDiv.style.borderColor = 'var(--red)';
-                    errorDiv.style.background = 'rgba(255,107,107,0.1)';
-                    return;
-                }
-
-                if (!website_url.startsWith('http')) {
-                    website_url = 'https://' + website_url;
-                }
-
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner"></span> Creating...';
-
-                // Step 1: Onboard the company
-                var result = await onboardCompany(name, founder_name, founder_email, industry, website_url);
-                var company_id = result.company?.id || result.company_id;
-
-                if (!company_id) {
-                    throw new Error('Server did not return a company ID. Please try again.');
-                }
-
-                // Show scraping loader
-                document.getElementById('onboarding-form').style.display = 'none';
-                document.getElementById('onboarding-scraping').style.display = 'block';
-
-                // Step 2: Research the business
-                try {
-                    var scrapeResult = await scrapeBusiness(company_id, website_url, name);
-                    window.companyKnowledge = scrapeResult.company_summary || '';
-                    window.smartQuestions = scrapeResult.smart_questions || [];
-
-                    var dataPointsCount = scrapeResult.data_points_count || 0;
-                    document.getElementById('scraping-summary-text').textContent =
-                        'Found ' + dataPointsCount + ' data points about your business. Angus is ready.';
-                    document.getElementById('scraping-summary').style.display = 'block';
-                } catch (scrapeErr) {
-                    console.warn('Research failed, continuing:', scrapeErr);
-                    window.companyKnowledge = '';
-                    window.smartQuestions = [];
-                }
-
-                // Show results
-                document.getElementById('inbox-address').textContent = result.email_inbox || result.company?.email_inbox_address || '';
-                document.getElementById('onboarding-link').textContent = result.onboarding_link || result.company?.onboarding_link || '';
-                document.getElementById('onboarding-scraping').style.display = 'none';
-                document.getElementById('onboarding-result').style.display = 'block';
-
-                showToast('Company created successfully!');
-
-            } catch (err) {
-                errorDiv.textContent = err.message || 'Something went wrong. Please try again.';
-                errorDiv.style.display = 'block';
-                errorDiv.style.color = 'var(--red)';
-                errorDiv.style.borderColor = 'var(--red)';
-                errorDiv.style.background = 'rgba(255,107,107,0.1)';
-                btn.disabled = false;
-                btn.textContent = 'Create Account';
-                document.getElementById('onboarding-scraping').style.display = 'none';
-                document.getElementById('onboarding-form').style.display = 'block';
-            }
-        }
+        // handleOnboardSubmit is defined in its own <script> block above the form
 
         document.getElementById('goto-dashboard').addEventListener('click', () => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
