@@ -1146,9 +1146,6 @@
                                 Create Account
                             </button>
 
-                            <button type="button" class="btn btn-secondary btn-block" onclick="alert('Button works! JS is alive.')">
-                                Test Button (tap to verify JS works)
-                            </button>
                         </div>
 
                         <div id="onboarding-scraping" style="display: none; margin-top: var(--gap); text-align: center;">
@@ -2076,19 +2073,13 @@
 
         // ============ Event Listeners ============
 
-        // Onboarding form - using global function + onclick for maximum reliability
-        async function handleOnboardSubmit() {
+        // Onboarding form - assigned to window explicitly for Safari compatibility
+        window.handleOnboardSubmit = async function() {
             var errorDiv = document.getElementById('onboard-error');
             var btn = document.getElementById('onboard-submit');
 
-            // Debug: show immediately that the button was clicked
-            errorDiv.textContent = 'Processing...';
-            errorDiv.style.display = 'block';
-            errorDiv.style.color = 'var(--green)';
-            errorDiv.style.borderColor = 'var(--green)';
-            errorDiv.style.background = 'rgba(0,210,160,0.1)';
-
             try {
+                errorDiv.style.display = 'none';
 
                 var name = document.getElementById('onboard-company-name').value.trim();
                 var founder_name = document.getElementById('onboard-founder-name').value.trim();
