@@ -32,7 +32,9 @@ export default function WelcomeScreen() {
       if (mode === 'signup') {
         const { error } = await signUp(email, password)
         if (error) throw error
-        setStep('onboarding')
+        showToast('Check your email for a confirmation link, then sign in.')
+        setMode('signin')
+        // Don't move to onboarding yet — they need to confirm email first
       } else {
         const { error } = await signIn(email, password)
         if (error) throw error

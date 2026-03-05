@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
+import { supabase } from './supabase'
 import BottomNav from './components/BottomNav'
 import WelcomeScreen from './screens/WelcomeScreen'
 import DashboardScreen from './screens/DashboardScreen'
@@ -9,10 +10,31 @@ import CallsScreen from './screens/CallsScreen'
 import MoreScreen from './screens/MoreScreen'
 
 export default function App() {
-  const { user, loading, companyId } = useAuth()
+  const { user, loading, companyId, setCompanyId } = useAuth()
   const [activeScreen, setActiveScreen] = useState('dashboard')
+  const [lookingUp, setLookingUp] = useState(false)
 
-  if (loading) {
+  // Auto-find company by user_id when logged in but no companyId
+  useEffect(() => {
+    if (user && !companyId && !lookingUp) {
+      setLookingUp(true)
+      supabase
+        .from('companies')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            setCompanyId(data[0].id)
+            localStorage.setItem('fe_company_name', data[0].name || '')
+          }
+          setLookingUp(false)
+        }, () => setLookingUp(false))
+    }
+  }, [user, companyId])
+
+  if (loading || lookingUp) {
     return (
       <div className="container">
         <div className="content">
