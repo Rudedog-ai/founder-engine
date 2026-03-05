@@ -1,0 +1,9 @@
+{
+  "name": "Founder Engine",
+  "short_name": "Founder",
+  "description": "AI-powered company intelligence platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020b18",
+  "theme_color": "#00f0ff"
+}

@@ -1,6 +1,8 @@
 {
   "version": 2,
   "name": "founder-engine",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
