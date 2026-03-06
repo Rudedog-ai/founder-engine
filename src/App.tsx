@@ -18,12 +18,16 @@ export default function App() {
   const [lookingUp, setLookingUp] = useState(false)
   const [onboardingStage, setOnboardingStage] = useState<number | null>(null)
 
-  // Handle OAuth callback — Supabase puts tokens in the URL hash
+  // Handle OAuth callbacks
   useEffect(() => {
-    if (window.location.pathname === '/auth/callback') {
-      // supabase.auth.onAuthStateChange picks up the hash automatically.
-      // Just clean the URL and redirect to root.
+    const path = window.location.pathname
+    if (path === '/auth/callback') {
+      // Supabase auth — onAuthStateChange picks up the hash automatically
       window.history.replaceState({}, '', '/')
+    } else if (path === '/integrations/callback') {
+      // Composio integration callback — preserve query params, redirect to dashboard
+      const params = window.location.search
+      window.history.replaceState({}, '', '/' + params)
     }
   }, [])
 

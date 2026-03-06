@@ -8,6 +8,7 @@ import IntelligenceBuilder from '../components/intelligence/IntelligenceBuilder'
 import DocumentChecklist from '../components/intelligence/DocumentChecklist'
 import SourceOfTruth from '../components/intelligence/SourceOfTruth'
 import QuestionBatch from '../components/questions/QuestionBatch'
+import ConnectTools from '../components/integrations/ConnectTools'
 import type { CompanyProfile, GapAnalysis } from '../types'
 
 const topicLabels: Record<string, string> = {
@@ -193,6 +194,9 @@ export default function DashboardScreen() {
           )
         })}
       </div>
+
+      <div className="water-divider" />
+      <ConnectTools companyId={companyId!} />
 
       <div className="water-divider" />
       <IntelligenceBuilder companyId={companyId!} domainScores={company.domain_scores} />
