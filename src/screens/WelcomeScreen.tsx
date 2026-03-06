@@ -18,10 +18,14 @@ export default function WelcomeScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  // Onboarding fields
-  const [companyName, setCompanyName] = useState('')
-  const [founderName, setFounderName] = useState('')
-  const [website, setWebsite] = useState('')
+  // Onboarding fields — restored from sessionStorage so they survive app-switching
+  const [companyName, setCompanyNameRaw] = useState(() => sessionStorage.getItem('fe_draft_company') || '')
+  const [founderName, setFounderNameRaw] = useState(() => sessionStorage.getItem('fe_draft_founder') || '')
+  const [website, setWebsiteRaw] = useState(() => sessionStorage.getItem('fe_draft_website') || '')
+
+  function setCompanyName(v: string) { setCompanyNameRaw(v); sessionStorage.setItem('fe_draft_company', v) }
+  function setFounderName(v: string) { setFounderNameRaw(v); sessionStorage.setItem('fe_draft_founder', v) }
+  function setWebsite(v: string) { setWebsiteRaw(v); sessionStorage.setItem('fe_draft_website', v) }
 
   async function handleAuth(e: React.FormEvent) {
     e.preventDefault()
@@ -95,11 +99,15 @@ export default function WelcomeScreen() {
       localStorage.setItem('fe_company_name', companyName.trim())
 
       // Kick off background research (don't await — it's slow)
-      if (website.trim()) {
-        scrapeBusiness(companyId, website.trim(), companyName.trim(), founderName.trim()).catch(
-          err => console.warn('Background scrape failed:', err)
-        )
-      }
+      // Research runs on company name + founder name even without a website URL
+      scrapeBusiness(companyId, website.trim() || '', companyName.trim(), founderName.trim()).catch(
+        err => console.warn('Background scrape failed:', err)
+      )
+
+      // Clear drafts now that onboarding succeeded
+      sessionStorage.removeItem('fe_draft_company')
+      sessionStorage.removeItem('fe_draft_founder')
+      sessionStorage.removeItem('fe_draft_website')
 
       showToast('Account created! Welcome to Founder Engine.')
     } catch (err) {
@@ -229,8 +237,8 @@ export default function WelcomeScreen() {
               <div className="form-group">
                 <label>Website (optional)</label>
                 <input
-                  type="url"
-                  placeholder="https://acme.com"
+                  type="text"
+                  placeholder="e.g. acme.com"
                   value={website}
                   onChange={e => setWebsite(e.target.value)}
                 />
@@ -261,7 +269,7 @@ export default function WelcomeScreen() {
           <div className="ocean-form-card" style={{ textAlign: 'center' }}>
             <div className="spinner" style={{ marginBottom: 'var(--gap)' }} />
             <h3 style={{ color: 'var(--text)' }}>Researching your business...</h3>
-            <p>Angus is reviewing your website and public information.</p>
+            <p>Angus is reviewing your company and public information.</p>
           </div>
         )}
       </div>
