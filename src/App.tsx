@@ -12,6 +12,7 @@ import KnowledgeScreen from './screens/KnowledgeScreen'
 import CallsScreen from './screens/CallsScreen'
 import MoreScreen from './screens/MoreScreen'
 import AngusChat from './components/AngusChat'
+import AuthCallbackScreen from './screens/AuthCallbackScreen'
 
 export default function App() {
   const { user, loading, companyId, setCompanyId } = useAuth()
@@ -19,18 +20,18 @@ export default function App() {
   const [lookingUp, setLookingUp] = useState(false)
   const [onboardingStage, setOnboardingStage] = useState<number | null>(null)
 
-  // Handle OAuth callbacks
+  // Handle Composio integration callback
   useEffect(() => {
-    const path = window.location.pathname
-    if (path === '/auth/callback') {
-      // Supabase auth — onAuthStateChange picks up the hash automatically
-      window.history.replaceState({}, '', '/')
-    } else if (path === '/integrations/callback') {
-      // Composio integration callback — preserve query params, redirect to dashboard
+    if (window.location.pathname === '/integrations/callback') {
       const params = window.location.search
       window.history.replaceState({}, '', '/' + params)
     }
   }, [])
+
+  // Auth callback — render dedicated screen that handles the code exchange
+  if (window.location.pathname === '/auth/callback') {
+    return <AuthCallbackScreen />
+  }
 
   // If companyId already cached, fetch onboarding_stage from DB
   useEffect(() => {
