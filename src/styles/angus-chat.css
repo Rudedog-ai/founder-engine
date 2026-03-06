@@ -154,6 +154,78 @@
   cursor: default;
 }
 
+/* Campaign approval card */
+.campaign-card {
+  margin: 6px 0 4px;
+  padding: 12px 14px;
+  background: var(--ocean);
+  border: 1px solid var(--sea);
+  border-radius: var(--radius-sm);
+  max-width: 85%;
+  align-self: flex-start;
+}
+.campaign-card-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.campaign-card-stats {
+  font-size: 0.78rem;
+  color: var(--foam);
+  margin-bottom: 8px;
+}
+.campaign-card-preview {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+  padding: 8px 10px;
+  background: var(--surface);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+.campaign-card-actions {
+  display: flex;
+  gap: 8px;
+}
+.campaign-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.campaign-btn-launch {
+  background: linear-gradient(135deg, var(--wave), var(--foam));
+  color: var(--deep);
+}
+.campaign-btn-launch:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.campaign-btn-dismiss {
+  background: transparent;
+  border: 1px solid var(--sea);
+  color: var(--text-dim);
+}
+.campaign-btn-dismiss:hover {
+  border-color: var(--text-dim);
+}
+.campaign-card-launched {
+  font-size: 0.82rem;
+  color: var(--biolum);
+  font-weight: 600;
+  text-align: center;
+  padding: 6px 0;
+}
+
 @media (max-width: 600px) {
   .angus-fab { bottom: 72px; right: 12px; width: 46px; height: 46px; }
   .angus-chat-panel {

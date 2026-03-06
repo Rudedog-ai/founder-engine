@@ -185,8 +185,24 @@ export async function processQuestionAnswer(
   })
 }
 
-export async function angusChat(company_id: string, message: string): Promise<{ reply: string }> {
-  return callEdgeFunction<{ reply: string }>('angus-chat', { company_id, message })
+export interface CampaignProposed {
+  campaign_id: string
+  title: string
+  leads_count: number
+  message_preview: string
+}
+
+export interface AngusChatResponse {
+  reply: string
+  campaign_proposed?: CampaignProposed
+}
+
+export async function angusChat(company_id: string, message: string): Promise<AngusChatResponse> {
+  return callEdgeFunction<AngusChatResponse>('angus-chat', { company_id, message })
+}
+
+export async function approveCampaign(company_id: string, campaign_id: string) {
+  return callEdgeFunction('approve-campaign', { company_id, campaign_id })
 }
 
 export async function resetCompany(): Promise<void> {

@@ -1,10 +1,13 @@
-// AngusChat v1 — Floating chat widget for Angus text conversations
+// AngusChat v2 — Floating chat widget with campaign approval cards
 import { useState, useRef, useEffect } from 'react'
 import { angusChat } from '../api'
+import type { CampaignProposed } from '../api'
+import CampaignApprovalCard from './CampaignApprovalCard'
 
 interface Message {
   role: 'user' | 'angus'
   text: string
+  campaign?: CampaignProposed
 }
 
 interface Props {
@@ -30,7 +33,11 @@ export default function AngusChat({ companyId }: Props) {
     setLoading(true)
     try {
       const result = await angusChat(companyId, text)
-      setMessages(prev => [...prev, { role: 'angus', text: result.reply || 'No response' }])
+      setMessages(prev => [...prev, {
+        role: 'angus',
+        text: result.reply || 'No response',
+        campaign: result.campaign_proposed,
+      }])
     } catch {
       setMessages(prev => [...prev, { role: 'angus', text: 'Angus hit a problem — please try again.' }])
     } finally {
@@ -69,8 +76,13 @@ export default function AngusChat({ companyId }: Props) {
           </div>
         )}
         {messages.map((msg, i) => (
-          <div key={i} className={`angus-msg angus-msg-${msg.role}`}>
-            {msg.text}
+          <div key={i}>
+            <div className={`angus-msg angus-msg-${msg.role}`}>
+              {msg.text}
+            </div>
+            {msg.campaign && (
+              <CampaignApprovalCard companyId={companyId} campaign={msg.campaign} />
+            )}
           </div>
         ))}
         {loading && (
