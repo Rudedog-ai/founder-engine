@@ -241,6 +241,96 @@
   color: var(--red, #ff6b6b);
 }
 
+/* Research Banner */
+.research-banner {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(0, 150, 255, 0.06));
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.research-banner-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.research-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.research-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 240, 255, 0.3);
+  border-top-color: var(--glow, #00f0ff);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.research-badge {
+  font-size: 0.7rem;
+  background: var(--accent);
+  color: white;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.research-step {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+
+.research-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.research-bar-fill {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, var(--accent), var(--glow, #00f0ff));
+  border-radius: 2px;
+  animation: researchPulse 2s ease-in-out infinite;
+}
+
+@keyframes researchPulse {
+  0% { width: 20%; margin-left: 0; }
+  50% { width: 50%; margin-left: 25%; }
+  100% { width: 20%; margin-left: 80%; }
+}
+
+.research-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+.research-dismiss:hover {
+  color: var(--text);
+}
+
 /* Fade-in animation */
 .fade-in {
   animation: fadeIn 0.6s ease forwards;

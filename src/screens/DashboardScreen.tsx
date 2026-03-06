@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { getCompanyProfile } from '../api'
 import { useToast } from '../components/Toast'
+import ResearchBanner from '../components/ResearchBanner'
 import type { CompanyProfile, GapAnalysis } from '../types'
 
 const topicLabels: Record<string, string> = {
@@ -102,6 +103,7 @@ export default function DashboardScreen() {
 
   return (
     <div className="screen-content">
+      <ResearchBanner companyId={companyId!} />
       {/* Score Card */}
       <div className="score-card">
         <div className="score-header">
