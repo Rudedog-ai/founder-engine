@@ -61,9 +61,8 @@ export default function DashboardScreen() {
     if (!companyId) return
     getCompanyProfile(companyId)
       .then(setProfile)
-      .catch(err => {
-        console.error('Dashboard load failed:', err)
-        showToast('Failed to load dashboard data', 'error')
+      .catch(() => {
+        // Silently fail — may be called before company has profile data
       })
       .finally(() => setLoading(false))
   }, [companyId])
