@@ -1,7 +1,8 @@
-// DataPrivacySection v1 — Export All + Erase All (two-step confirm)
+// DataPrivacySection v2 — Export All + Erase All (deletes everything including account)
 import { useState } from 'react'
 import { useToast } from '../Toast'
 import { resetCompany, exportCompany } from '../../api'
+import { supabase } from '../../supabase'
 
 interface Props {
   companyId: string
@@ -13,6 +14,21 @@ export default function DataPrivacySection({ companyId, companyName }: Props) {
   const [showEraseConfirm, setShowEraseConfirm] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [exporting, setExporting] = useState(false)
+
+  async function handleErase() {
+    if (resetting) return
+    setResetting(true)
+    try {
+      await resetCompany(companyId)
+      // Sign out and clear all local state
+      await supabase.auth.signOut()
+      localStorage.clear()
+      window.location.href = '/'
+    } catch {
+      setResetting(false)
+      showToast('Erase failed. Please try again.', 'error')
+    }
+  }
 
   return (
     <>
@@ -44,12 +60,12 @@ export default function DataPrivacySection({ companyId, companyName }: Props) {
             onClick={() => setShowEraseConfirm(true)}
             style={{ border: '1px solid #f87171', color: '#f87171', background: 'transparent' }}
           >
-            Erase All Data
+            Delete My Account
           </button>
         ) : (
           <div style={{ border: '1px solid #f87171', borderRadius: 'var(--radius-sm)', padding: '12px' }}>
             <p style={{ fontSize: '0.85rem', color: '#fbbf24', margin: '0 0 12px' }}>
-              This resets Angus's memory of your company. All documents, knowledge, corrections, and questions will be deleted. Your login and account stay. This cannot be undone.
+              This permanently deletes your account, all company data, documents, knowledge, and Angus's memory. You will be signed out. This cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
@@ -62,20 +78,10 @@ export default function DataPrivacySection({ companyId, companyName }: Props) {
               <button
                 className="btn btn-small"
                 disabled={resetting}
-                onClick={async () => {
-                  if (resetting) return
-                  setResetting(true)
-                  try {
-                    await resetCompany(companyId)
-                    window.location.href = '/'
-                  } catch {
-                    setResetting(false)
-                    showToast('Reset failed. Please try again.', 'error')
-                  }
-                }}
+                onClick={handleErase}
                 style={{ background: '#f87171', color: '#1a1a2e', fontWeight: 600 }}
               >
-                {resetting ? <><span className="spinner" /> Erasing...</> : 'Yes, erase everything'}
+                {resetting ? <><span className="spinner" /> Deleting...</> : 'Yes, delete everything'}
               </button>
             </div>
           </div>

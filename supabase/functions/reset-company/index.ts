@@ -1,4 +1,4 @@
-// reset-company v2 — Erase all intelligence data, reset to onboarding Stage 1
+// reset-company v3 — Full nuclear delete: all data + company row + auth user
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
@@ -37,45 +37,22 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: 'Not found or not yours' }), { status: 403, headers: { 'Content-Type': 'application/json' } })
   }
 
-  // Delete all intelligence data
-  const deletes = await Promise.all([
-    supabase.from('knowledge_base').delete().eq('company_id', company_id),
-    supabase.from('knowledge_chunks').delete().eq('company_id', company_id),
-    supabase.from('knowledge_corrections').delete().eq('company_id', company_id),
-    supabase.from('knowledge_elements').delete().eq('company_id', company_id),
-    supabase.from('onboarding_questions').delete().eq('company_id', company_id),
-  ])
+  // Delete all intelligence data (tables may not exist yet — that's fine)
+  const tables = ['knowledge_base', 'knowledge_chunks', 'knowledge_corrections', 'knowledge_elements', 'onboarding_questions']
+  await Promise.all(tables.map(t =>
+    supabase.from(t).delete().eq('company_id', company_id)
+  ))
 
-  // Check for delete errors (tables may not exist yet — that's fine)
-  for (const d of deletes) {
-    if (d.error && !d.error.message.includes('does not exist')) {
-      console.error('Delete error:', d.error)
-    }
+  // Delete the company row itself
+  await supabase.from('companies').delete().eq('id', company_id)
+
+  // Delete the auth user
+  const { error: deleteUserError } = await supabase.auth.admin.deleteUser(user.id)
+  if (deleteUserError) {
+    console.error('Failed to delete auth user:', deleteUserError)
   }
 
-  // Reset company to Stage 1
-  const { error: updateError } = await supabase
-    .from('companies')
-    .update({
-      onboarding_stage: 1,
-      welcome_complete: false,
-      intelligence_score: 0,
-      domain_scores: { financials: 0, sales: 0, marketing: 0, operations: 0, team: 0, strategy: 0 },
-      google_folder_id: null,
-      google_access_token: null,
-      google_refresh_token: null,
-      google_connected_at: null,
-      google_webhook_channel_id: null,
-      google_webhook_expiry: null,
-      source_of_truth_doc_id: null,
-    })
-    .eq('id', company_id)
-
-  if (updateError) {
-    return new Response(JSON.stringify({ error: updateError.message }), { status: 500, headers: { 'Content-Type': 'application/json' } })
-  }
-
-  return new Response(JSON.stringify({ success: true }), {
+  return new Response(JSON.stringify({ success: true, deleted: true }), {
     status: 200,
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
   })
