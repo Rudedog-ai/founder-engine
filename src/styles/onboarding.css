@@ -110,6 +110,59 @@
   margin: 0;
 }
 
+/* Feed Angus Stage */
+.feed-badge {
+  font-size: 0.7rem;
+  background: var(--green);
+  color: white;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+.feed-section {
+  margin-bottom: 1rem;
+}
+
+.feed-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.feed-dropzone:hover,
+.feed-dropzone.dragover {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.feed-dropzone p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.feed-textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.feed-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* Fade-in animation */
 .fade-in {
   animation: fadeIn 0.6s ease forwards;
