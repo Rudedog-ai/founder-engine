@@ -5,9 +5,10 @@ interface Props {
   connected: boolean
   onConnect: () => void
   disabled?: boolean
+  loading?: boolean
 }
 
-export default function ConnectCard({ title, description, icon, connected, onConnect, disabled }: Props) {
+export default function ConnectCard({ title, description, icon, connected, onConnect, disabled, loading }: Props) {
   return (
     <div className={`connect-card ${connected ? 'connected' : ''}`}>
       <div className="connect-card-icon">{icon}</div>
@@ -18,9 +19,9 @@ export default function ConnectCard({ title, description, icon, connected, onCon
       <button
         className={`btn ${connected ? 'btn-secondary' : 'btn-primary'} btn-small`}
         onClick={onConnect}
-        disabled={disabled || connected}
+        disabled={disabled || connected || loading}
       >
-        {connected ? 'Connected' : disabled ? 'Coming Soon' : 'Connect'}
+        {connected ? 'Connected' : loading ? <><span className="spinner" /> Connecting...</> : disabled ? 'Coming Soon' : 'Connect'}
       </button>
     </div>
   )

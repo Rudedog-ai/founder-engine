@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../supabase'
 import ProgressIndicator from './ProgressIndicator'
 import ConnectCard from './ConnectCard'
 
@@ -19,7 +21,60 @@ const XeroIcon = () => (
 )
 
 export default function ConnectToolsStage({ onAdvance }: { onAdvance: () => Promise<void> }) {
+  const { companyId } = useAuth()
   const [skipping, setSkipping] = useState(false)
+  const [driveConnected, setDriveConnected] = useState(false)
+  const [driveLoading, setDriveLoading] = useState(false)
+
+  // Check if returning from Google OAuth redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('drive_connected') === 'true') {
+      setDriveConnected(true)
+      // Clean up URL params
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+    if (params.get('drive_error')) {
+      console.error('Drive OAuth error:', params.get('drive_error'))
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
+
+  // Check if Drive is already connected
+  useEffect(() => {
+    if (!companyId) return
+    supabase
+      .from('companies')
+      .select('google_connected_at')
+      .eq('id', companyId)
+      .single()
+      .then(({ data }) => {
+        if (data?.google_connected_at) setDriveConnected(true)
+      })
+  }, [companyId])
+
+  async function handleConnectDrive() {
+    if (!companyId || driveLoading) return
+    setDriveLoading(true)
+
+    try {
+      const { data, error } = await supabase.functions.invoke('google-drive-oauth', {
+        body: { action: 'get_auth_url', company_id: companyId },
+      })
+
+      if (error || !data?.auth_url) {
+        console.error('Failed to get auth URL:', error || data)
+        setDriveLoading(false)
+        return
+      }
+
+      // Redirect to Google OAuth consent screen
+      window.location.href = data.auth_url
+    } catch (err) {
+      console.error('Connect Drive error:', err)
+      setDriveLoading(false)
+    }
+  }
 
   async function handleSkip() {
     if (skipping) return
@@ -41,9 +96,9 @@ export default function ConnectToolsStage({ onAdvance }: { onAdvance: () => Prom
             title="Google Drive"
             description="Share business docs, pitch decks, financials"
             icon={<GoogleDriveIcon />}
-            connected={false}
-            onConnect={() => {}}
-            disabled
+            connected={driveConnected}
+            onConnect={handleConnectDrive}
+            loading={driveLoading}
           />
           <ConnectCard
             title="Xero"
@@ -61,7 +116,7 @@ export default function ConnectToolsStage({ onAdvance }: { onAdvance: () => Prom
           disabled={skipping}
           style={{ fontSize: '0.85rem' }}
         >
-          {skipping ? <><span className="spinner" /> Skipping...</> : 'Skip for now — I\'ll add these later'}
+          {skipping ? <><span className="spinner" /> Continuing...</> : driveConnected ? 'Continue →' : "Skip for now — I'll add these later"}
         </button>
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px', marginBottom: 0 }}>
           You can always connect tools later from Settings.
