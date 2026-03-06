@@ -92,7 +92,8 @@ export default function App() {
     }
   }, [user, companyId])
 
-  if (loading || lookingUp) {
+  // Wait until we know the onboarding stage before rendering anything
+  if (loading || lookingUp || (user && companyId && onboardingStage === null)) {
     return (
       <div className="container">
         <div className="content">
