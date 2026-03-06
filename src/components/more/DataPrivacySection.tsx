@@ -19,7 +19,7 @@ export default function DataPrivacySection({ companyId, companyName }: Props) {
     if (resetting) return
     setResetting(true)
     try {
-      await resetCompany(companyId)
+      await resetCompany()
       // Sign out and clear all local state
       await supabase.auth.signOut()
       localStorage.clear()

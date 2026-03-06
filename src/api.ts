@@ -185,10 +185,8 @@ export async function processQuestionAnswer(
   })
 }
 
-export async function resetCompany(companyId: string): Promise<void> {
-  const { error } = await supabase.functions.invoke('reset-company', {
-    body: { company_id: companyId },
-  })
+export async function resetCompany(): Promise<void> {
+  const { error } = await supabase.functions.invoke('reset-company')
   if (error) throw new Error(error.message || 'Reset failed')
 }
 
