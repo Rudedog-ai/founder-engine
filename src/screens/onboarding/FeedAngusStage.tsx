@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../supabase'
 import { uploadDocument, processTranscript } from '../../api'
 import ProgressIndicator from './ProgressIndicator'
 import FeedMethodCard from './FeedMethodCard'
 
-export default function FeedAngusStage() {
+const DocIcon = () => <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+const MicIcon = () => <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4M12 4a3 3 0 00-3 3v4a3 3 0 006 0V7a3 3 0 00-3-3z" /></svg>
+
+export default function FeedAngusStage({ onAdvance }: { onAdvance: () => Promise<void> }) {
   const { companyId } = useAuth()
   const [showUpload, setShowUpload] = useState(false)
   const [showVoice, setShowVoice] = useState(false)
@@ -40,12 +42,6 @@ export default function FeedAngusStage() {
     setSubmitting(false)
   }
 
-  async function handleContinue() {
-    if (!companyId) return
-    await supabase.from('companies').update({ onboarding_stage: 4 }).eq('id', companyId)
-    window.location.reload()
-  }
-
   return (
     <div className="onboarding-stage fade-in">
       <ProgressIndicator currentStage={3} />
@@ -59,7 +55,7 @@ export default function FeedAngusStage() {
           <FeedMethodCard
             title="Upload Documents"
             description="Pitch decks, financials, business plans, contracts"
-            icon={<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+            icon={<DocIcon />}
             actionLabel="Upload"
             onClick={() => setShowUpload(!showUpload)}
             badge={uploadCount > 0 ? `${uploadCount} uploaded` : undefined}
@@ -67,7 +63,7 @@ export default function FeedAngusStage() {
           <FeedMethodCard
             title="Talk to Angus"
             description="Share context via a transcript paste"
-            icon={<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4M12 4a3 3 0 00-3 3v4a3 3 0 006 0V7a3 3 0 00-3-3z" /></svg>}
+            icon={<MicIcon />}
             actionLabel={submitted ? 'Sent' : 'Paste'}
             onClick={() => setShowVoice(!showVoice)}
           />
@@ -106,7 +102,7 @@ export default function FeedAngusStage() {
           </div>
         )}
 
-        <button className="btn btn-secondary btn-block" onClick={handleContinue} style={{ marginTop: '1.2rem' }}>
+        <button className="btn btn-secondary btn-block" onClick={onAdvance} style={{ marginTop: '1.2rem' }}>
           Continue to Questions &rarr;
         </button>
         <p className="hint" style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 8 }}>

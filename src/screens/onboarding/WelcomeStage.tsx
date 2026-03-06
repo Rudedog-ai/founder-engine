@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../supabase'
 import ProgressIndicator from './ProgressIndicator'
 
 const WELCOME_LINES = [
@@ -11,8 +9,7 @@ const WELCOME_LINES = [
   "Let's get started.",
 ]
 
-export default function WelcomeStage() {
-  const { companyId } = useAuth()
+export default function WelcomeStage({ onAdvance }: { onAdvance: () => Promise<void> }) {
   const [visibleLines, setVisibleLines] = useState(0)
   const [advancing, setAdvancing] = useState(false)
 
@@ -26,14 +23,9 @@ export default function WelcomeStage() {
   const allVisible = visibleLines >= WELCOME_LINES.length
 
   async function handleContinue() {
-    if (!companyId || advancing) return
+    if (advancing) return
     setAdvancing(true)
-    await supabase
-      .from('companies')
-      .update({ welcome_complete: true, onboarding_stage: 2 })
-      .eq('id', companyId)
-    // App.tsx re-fetches company data and re-renders with stage 2
-    window.location.reload()
+    await onAdvance()
   }
 
   return (

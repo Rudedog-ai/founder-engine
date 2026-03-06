@@ -3,10 +3,11 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../supabase'
 import WelcomeStage from './WelcomeStage'
 import ConnectToolsStage from './ConnectToolsStage'
+import FeedAngusStage from './FeedAngusStage'
 import QuestionsStage from './QuestionsStage'
 import OnboardingComplete from './OnboardingComplete'
 
-export default function OnboardingFlow() {
+export default function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const { companyId } = useAuth()
   const [stage, setStage] = useState<number | null>(null)
 
@@ -22,6 +23,19 @@ export default function OnboardingFlow() {
       })
   }, [companyId])
 
+  async function advanceTo(nextStage: number, extraFields?: Record<string, unknown>) {
+    if (!companyId) return
+    await supabase
+      .from('companies')
+      .update({ onboarding_stage: nextStage, ...extraFields })
+      .eq('id', companyId)
+    if (nextStage > 5) {
+      onComplete()
+    } else {
+      setStage(nextStage)
+    }
+  }
+
   if (stage === null) {
     return (
       <div className="ocean-welcome">
@@ -33,18 +47,13 @@ export default function OnboardingFlow() {
     )
   }
 
-  function handleOnboardingFinish() {
-    window.location.reload()
-  }
-
   const stageComponent = (() => {
     switch (stage) {
-      case 1: return <WelcomeStage />
-      case 2: return <ConnectToolsStage />
-      // case 3: return <FeedAngusStage /> — Agent B building this
-      case 3: return <QuestionsStage /> // Temporary: skip to stage 4 content until Feed Angus is ready
-      case 4: return <QuestionsStage />
-      case 5: return <OnboardingComplete onFinish={handleOnboardingFinish} />
+      case 1: return <WelcomeStage onAdvance={() => advanceTo(2, { welcome_complete: true })} />
+      case 2: return <ConnectToolsStage onAdvance={() => advanceTo(3)} />
+      case 3: return <FeedAngusStage onAdvance={() => advanceTo(4)} />
+      case 4: return <QuestionsStage onAdvance={() => advanceTo(5)} />
+      case 5: return <OnboardingComplete onAdvance={() => advanceTo(6)} />
       default: return null
     }
   })()

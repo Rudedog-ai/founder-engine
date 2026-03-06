@@ -163,6 +163,67 @@
   border-color: var(--accent);
 }
 
+/* Question Cards */
+.question-card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.question-card.answered {
+  opacity: 0.6;
+  border-color: var(--green);
+}
+
+.question-card-domain {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.question-card-text {
+  font-size: 0.9rem;
+  color: var(--text);
+  margin: 0 0 4px;
+  line-height: 1.4;
+}
+
+.question-card-why {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0 0 8px;
+}
+
+.question-card-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.question-card-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.question-card-done {
+  font-size: 0.78rem;
+  color: var(--green);
+  font-weight: 500;
+}
+
 /* Fade-in animation */
 .fade-in {
   animation: fadeIn 0.6s ease forwards;

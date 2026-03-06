@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../supabase'
 import ProgressIndicator from './ProgressIndicator'
 import ConnectCard from './ConnectCard'
 
@@ -20,18 +18,13 @@ const XeroIcon = () => (
   </svg>
 )
 
-export default function ConnectToolsStage() {
-  const { companyId } = useAuth()
+export default function ConnectToolsStage({ onAdvance }: { onAdvance: () => Promise<void> }) {
   const [skipping, setSkipping] = useState(false)
 
   async function handleSkip() {
-    if (!companyId || skipping) return
+    if (skipping) return
     setSkipping(true)
-    await supabase
-      .from('companies')
-      .update({ onboarding_stage: 3 })
-      .eq('id', companyId)
-    window.location.reload()
+    await onAdvance()
   }
 
   return (

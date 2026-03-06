@@ -1,20 +1,12 @@
 import { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../supabase'
 import ProgressIndicator from './ProgressIndicator'
 
-export default function OnboardingComplete({ onFinish }: { onFinish: () => void }) {
-  const { companyId } = useAuth()
+export default function OnboardingComplete({ onAdvance }: { onAdvance: () => Promise<void> }) {
   const [clicked, setClicked] = useState(false)
 
   async function handleFinish() {
-    if (!companyId) return
     setClicked(true)
-    await supabase
-      .from('companies')
-      .update({ onboarding_stage: 6 })
-      .eq('id', companyId)
-    onFinish()
+    await onAdvance()
   }
 
   return (

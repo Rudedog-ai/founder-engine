@@ -1,20 +1,65 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../supabase'
 import ProgressIndicator from './ProgressIndicator'
+import QuestionCard from './QuestionCard'
 
-export default function QuestionsStage() {
+import { DEFAULT_QUESTIONS, type Question } from './defaultQuestions'
+
+export default function QuestionsStage({ onAdvance }: { onAdvance: () => Promise<void> }) {
   const { companyId } = useAuth()
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [loading, setLoading] = useState(true)
   const [advancing, setAdvancing] = useState(false)
 
-  async function handleContinue() {
-    if (!companyId || advancing) return
-    setAdvancing(true)
+  useEffect(() => {
+    if (!companyId) return
+    loadQuestions()
+  }, [companyId])
+
+  async function loadQuestions() {
+    const { data } = await supabase
+      .from('onboarding_questions')
+      .select('id, question, domain, why_asking, status')
+      .eq('company_id', companyId!)
+      .order('priority', { ascending: true })
+      .limit(10)
+
+    if (data && data.length > 0) {
+      setQuestions(data)
+    } else {
+      // Seed default questions
+      const rows = DEFAULT_QUESTIONS.map((q, i) => ({
+        company_id: companyId!,
+        question: q.question,
+        domain: q.domain,
+        why_asking: q.why_asking,
+        priority: i + 1,
+        status: 'pending',
+      }))
+      const { data: inserted } = await supabase
+        .from('onboarding_questions')
+        .insert(rows)
+        .select('id, question, domain, why_asking, status')
+      setQuestions(inserted || [])
+    }
+    setLoading(false)
+  }
+
+  async function handleAnswer(questionId: string, answerText: string) {
     await supabase
-      .from('companies')
-      .update({ onboarding_stage: 5 })
-      .eq('id', companyId)
-    window.location.reload()
+      .from('onboarding_questions')
+      .update({ answer_text: answerText, status: 'answered', answered_at: new Date().toISOString() })
+      .eq('id', questionId)
+    setQuestions(qs => qs.map(q => q.id === questionId ? { ...q, status: 'answered' } : q))
+  }
+
+  const answeredCount = questions.filter(q => q.status === 'answered').length
+
+  async function handleContinue() {
+    if (advancing) return
+    setAdvancing(true)
+    await onAdvance()
   }
 
   return (
@@ -22,24 +67,27 @@ export default function QuestionsStage() {
       <ProgressIndicator currentStage={4} />
       <div className="ocean-form-card" style={{ maxWidth: 520, margin: '0 auto' }}>
         <h3 style={{ marginBottom: '0.5rem', color: 'var(--text)' }}>Smart Questions</h3>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-          Based on what Angus knows so far, here are questions that will fill the biggest gaps in your company profile.
+        <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+          Answer what you can — each answer sharpens Angus's analysis.
+          {questions.length > 0 && <span style={{ marginLeft: '6px', color: 'var(--accent)' }}>({answeredCount}/{questions.length})</span>}
         </p>
 
-        <div style={{
-          padding: '2rem',
-          textAlign: 'center',
-          color: 'var(--text-muted)',
-          background: 'rgba(255,255,255,0.03)',
-          borderRadius: 'var(--radius-sm)',
-          border: '1px dashed rgba(255,255,255,0.15)',
-          marginBottom: '1.5rem',
-        }}>
-          <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>Questions are being generated...</p>
-          <p style={{ fontSize: '0.78rem' }}>
-            This feature is coming soon. Angus will ask you targeted questions about gaps in your company data.
-          </p>
-        </div>
+        {loading ? (
+          <div className="loading" style={{ padding: '2rem' }}><div className="spinner" /><span>Loading questions...</span></div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '1.5rem' }}>
+            {questions.map(q => (
+              <QuestionCard
+                key={q.id}
+                question={q.question}
+                domain={q.domain}
+                whyAsking={q.why_asking}
+                answered={q.status === 'answered'}
+                onAnswer={text => handleAnswer(q.id, text)}
+              />
+            ))}
+          </div>
+        )}
 
         <button
           className="btn btn-primary btn-block"
@@ -48,6 +96,11 @@ export default function QuestionsStage() {
         >
           {advancing ? <><span className="spinner" /> Finishing...</> : 'Complete Setup →'}
         </button>
+        {answeredCount === 0 && (
+          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '8px', marginBottom: 0 }}>
+            You can skip and answer these later from the dashboard.
+          </p>
+        )}
       </div>
     </div>
   )
