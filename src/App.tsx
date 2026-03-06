@@ -88,8 +88,8 @@ export default function App() {
     return <WelcomeScreen />
   }
 
-  // Show onboarding flow for stages 1-2 (stages 3-5 not yet built)
-  if (onboardingStage !== null && onboardingStage < 3) {
+  // Show onboarding flow for stages 1-5 (stage 6+ = complete, show dashboard)
+  if (onboardingStage !== null && onboardingStage <= 5) {
     return <OnboardingFlow />
   }
 

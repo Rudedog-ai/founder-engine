@@ -3,6 +3,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../supabase'
 import WelcomeStage from './WelcomeStage'
 import ConnectToolsStage from './ConnectToolsStage'
+import QuestionsStage from './QuestionsStage'
+import OnboardingComplete from './OnboardingComplete'
 
 export default function OnboardingFlow() {
   const { companyId } = useAuth()
@@ -31,11 +33,19 @@ export default function OnboardingFlow() {
     )
   }
 
+  function handleOnboardingFinish() {
+    window.location.reload()
+  }
+
   const stageComponent = (() => {
     switch (stage) {
       case 1: return <WelcomeStage />
       case 2: return <ConnectToolsStage />
-      default: return null // Stages 3-5 built in later sprints
+      // case 3: return <FeedAngusStage /> — Agent B building this
+      case 3: return <QuestionsStage /> // Temporary: skip to stage 4 content until Feed Angus is ready
+      case 4: return <QuestionsStage />
+      case 5: return <OnboardingComplete onFinish={handleOnboardingFinish} />
+      default: return null
     }
   })()
 
