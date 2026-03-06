@@ -3,6 +3,35 @@
 
 ---
 
+# 0. MULTI-AGENT RULES (READ FIRST)
+
+Multiple Claude Code agents may work on this codebase in parallel.
+Before touching any file:
+
+**SHARED FILES (coordinator only — never edit without explicit instruction):**
+- `src/App.tsx`
+- `src/styles/ocean.css`
+- `src/types.ts`
+- `src/api.ts`
+- `CLAUDE.md`
+
+**RULES:**
+1. `git pull origin main` before every task
+2. `git status` must be clean before starting
+3. Commit after every logical unit of work
+4. If your task needs a SHARED file change, stop and describe what's needed — don't edit it
+5. Never leave uncommitted changes and start something new
+6. Merge conflict = stop immediately, report it
+
+**START OF EVERY SESSION:**
+```bash
+git status          # must be clean
+git log --oneline -3
+git pull origin main
+```
+
+---
+
 # 1. WHAT THIS IS
 
 A voice-first AI system that interviews business founders, extracts structured intelligence, and builds a comprehensive knowledge base. The AI agent ("Angus") comes PREPARED to every call — it researches the company beforehand using Perplexity Deep Research, so it never asks lazy questions like "tell me about your business."
