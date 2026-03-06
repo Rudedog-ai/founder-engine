@@ -185,6 +185,10 @@ export async function processQuestionAnswer(
   })
 }
 
+export async function angusChat(company_id: string, message: string): Promise<{ reply: string }> {
+  return callEdgeFunction<{ reply: string }>('angus-chat', { company_id, message })
+}
+
 export async function resetCompany(): Promise<void> {
   const { error } = await supabase.functions.invoke('reset-company')
   if (error) throw new Error(error.message || 'Reset failed')
