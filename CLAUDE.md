@@ -47,13 +47,15 @@ React + Vite PWA (Vercel, auto-deploys from GitHub main)
   |
 Supabase Auth (email+password, Google OAuth)
   |
-Supabase (database + edge functions)
+Supabase (database + 19 edge functions)
   |
 ElevenLabs Conversational AI (voice agent "Angus")
   |
 Perplexity API (deep company research)
   |
 Claude API (intelligence extraction from transcripts + research)
+  |
+Stripe (subscription billing — checkout + webhooks)
 ```
 
 ## Core Flow
@@ -62,22 +64,27 @@ Claude API (intelligence extraction from transcripts + research)
 2. System calls `onboard-company` edge function -> creates company + gap_analysis rows
 3. System calls `scrape-business` edge function -> Perplexity sonar-pro researches the company deeply
 4. Perplexity output -> Claude extracts structured data points -> stored in `knowledge_base` table
-5. Smart questions generated that CANNOT be answered from public info
-6. Pre-call screen shows what Angus already knows
-7. ElevenLabs widget launches with `{{company_knowledge}}` and `{{smart_questions}}` as dynamic variables
-8. Voice call happens — agent asks smart, prepared questions
-9. Post-call webhook hits `process-transcript` -> Claude extracts more data points
-10. Dashboard updates with new intelligence score, knowledge, gap analysis
+5. `calculate-domain-scores` runs -> source-weighted intelligence score (auto-research capped at 10%)
+6. Smart questions generated at 25% score targeting knowledge gaps
+7. Founder answers via 4 modes: write, voice, dictate (SpeechRecognition), email
+8. Answers processed -> knowledge extracted -> scores recalculated
+9. Source of Truth generates at 25% -> structured summary per domain
+10. Corrections layer lets founders fix any fact -> corrections always override source data
+11. Google Drive folder created on connect -> docs auto-processed via webhooks
+12. ElevenLabs voice calls with `{{company_knowledge}}` and `{{smart_questions}}` dynamic variables
+13. Post-call webhook -> `process-transcript` -> Claude extracts more data points
+14. Dashboard updates: intelligence score, domain sliders, knowledge areas, activity feed
 
 ## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite (builds to static files)
 - **Auth**: Supabase Auth (email+password, Google OAuth)
-- **Database**: Supabase PostgreSQL
-- **Edge Functions**: Supabase Deno (8 functions)
+- **Database**: Supabase PostgreSQL + pgvector
+- **Edge Functions**: Supabase Deno (19 functions deployed)
 - **Voice**: ElevenLabs Conversational AI
 - **Research**: Perplexity API (sonar-pro)
-- **Intelligence**: Claude API
+- **Intelligence**: Claude API (claude-sonnet-4-5-20250929)
+- **Payments**: Stripe (checkout + webhook)
 - **Hosting**: Vercel (auto-deploys from GitHub `main`)
 
 ---
@@ -92,44 +99,41 @@ Claude API (intelligence extraction from transcripts + research)
 
 ## Supabase Edge Function Secrets (set via dashboard Settings -> Edge Functions)
 
-- `ANTHROPIC_API_KEY` — Claude API key (starts with sk-ant-api03-)
-- `PERPLEXITY_API_KEY` — (stored in Supabase edge function secrets)
-- `ELEVENLABS_WEBHOOK_SECRET` — (stored in Supabase edge function secrets)
-- `ELEVENLABS_API_KEY` — ElevenLabs API key (for Register Call API, used by whatsapp-call-handler)
-- `TWILIO_ACCOUNT_SID` — Twilio account SID (reassigned from BrokerAgent — same account)
-- `TWILIO_AUTH_TOKEN` — Twilio auth token (reassigned from BrokerAgent — same account)
-- `TWILIO_WHATSAPP_NUMBER` — WhatsApp sandbox number: +14155238886
-
-## Twilio WhatsApp Sandbox (reassigned from BrokerAgent)
-
-- **Sandbox number**: +1 415 523 8886 (standard Twilio sandbox)
-- **Join code**: `join organization-softly` (user must send this message to the sandbox number from WhatsApp)
-- **Webhook URL**: `https://qzlicsovnldozbnmahsa.supabase.co/functions/v1/whatsapp-call-handler` (set in Twilio Console → Messaging → WhatsApp Sandbox Settings)
-- **Previous use**: Was configured for BrokerAgent (shelved). Reassigned to Founder Engine.
-- **Note**: Sandbox limits — only pre-joined numbers can call. Production requires WhatsApp Business API approval.
+- `ANTHROPIC_API_KEY` — Claude API key
+- `PERPLEXITY_API_KEY` — Perplexity API key
+- `ELEVENLABS_WEBHOOK_SECRET` — ElevenLabs webhook verification
+- `ELEVENLABS_API_KEY` — ElevenLabs API key (Register Call API, WhatsApp)
+- `TWILIO_ACCOUNT_SID` — Twilio account SID
+- `TWILIO_AUTH_TOKEN` — Twilio auth token
+- `TWILIO_WHATSAPP_NUMBER` — WhatsApp sandbox: +14155238886
+- `GOOGLE_CLIENT_ID` — Google Cloud Console OAuth (TO SET)
+- `GOOGLE_CLIENT_SECRET` — Google Cloud Console OAuth (TO SET)
+- `STRIPE_SECRET_KEY` — Stripe API key (TO SET)
+- `STRIPE_WEBHOOK_SECRET` — Stripe webhook signing secret (TO SET)
 
 ## ElevenLabs
 
 - **Agent ID**: agent_1901kjxbr6xte40bw8dyeyhjwgze
 - **Agent name**: Angus
-- **Webhook**: configured in Security tab, points to `https://qzlicsovnldozbnmahsa.supabase.co/functions/v1/process-transcript`
-- **Dynamic variables**: `company_knowledge` and `smart_questions` — passed when widget initiates call
-- **Voice**: "Ruari Quick Voice" (user's custom voice)
+- **Webhook**: `https://qzlicsovnldozbnmahsa.supabase.co/functions/v1/process-transcript`
+- **Dynamic variables**: `company_knowledge` and `smart_questions`
+- **Voice**: "Ruari Quick Voice" (custom)
 - **LLM**: Currently Qwen3-30B-A3B (recommend switching to Gemini 2.5 Flash or Claude)
+- **System prompt**: docs/ANGUS-ELEVENLABS-PROMPT.md (already pasted into ElevenLabs)
 
 ## Vercel
 
-- **Team**: team_2RdwDjC6QzaZ3OzoVsHaLlPn (Ruari's projects)
-- **Founder Engine**: DEPLOYED at https://founder-engine-seven.vercel.app — auto-deploys from GitHub `main` branch (Rudedog-ai/founder-engine)
+- **Team**: team_2RdwDjC6QzaZ3OzoVsHaLlPn
+- **URL**: https://founder-engine-seven.vercel.app
+- **Repo**: Rudedog-ai/founder-engine (auto-deploys from `main`)
 
 ## Claude API
 
 - **Model**: claude-sonnet-4-5-20250929
 
-## Test Companies
+## Test Company
 
-- **Chocolate and Love**: ID `03c5d5f0-7174-4495-8b72-1aa2b5adb5ea`, 85 knowledge entries, 50% score
-- **OYNB**: email `ruari@oneyearnobeer.com`, 73 knowledge entries
+- **OYNB**: ID `7caf6a8e-0165-410d-b4ce-56f0fe05be4e`, email `ruari@oneyearnobeer.com`, 14% score "Getting Started"
 
 ---
 
@@ -142,22 +146,52 @@ Claude API (intelligence extraction from transcripts + research)
 - `id` (uuid PK), `name`, `founder_name`, `founder_email`, `industry`, `website`
 - `email_inbox_address`, `onboarding_link`, `founder_phone` (text, indexed)
 - `intelligence_score` (0-100), `intelligence_tier` (getting_started/good/great/amazing/expert)
-- `onboarding_status` (pending/session_1_complete/docs_uploaded/session_2_complete/team_sessions/analysis_ready)
-- `user_id` (uuid, references auth.users) — links company to authenticated user
+- `onboarding_status`, `onboarding_stage` (int, 1-6), `welcome_complete` (bool)
+- `user_id` (uuid, references auth.users)
+- `domain_scores` (jsonb: financials, sales, marketing, operations, team, strategy)
+- `preferred_answer_mode` (text: written/voice/transcribe/email)
+- `source_of_truth_doc_id` (text — stores JSON of generated SoT)
+- `google_folder_id`, `google_access_token`, `google_refresh_token`, `google_connected_at`
+- `google_webhook_channel_id`, `google_webhook_expiry`
+- `stripe_customer_id`, `stripe_subscription_id`, `subscription_status` (default 'free'), `subscription_plan`
 
 ### sessions — One row per voice call or transcript submission
 
 - `id` (uuid PK), `company_id`, `session_number`, `session_type`, `participant_name`, `participant_role`
 - `raw_transcript`, `summary`, `extracted_data` (jsonb), `duration_seconds`, `data_points_captured`, `topics_covered` (text[])
-- `call_sid` (text) — Twilio call SID for WhatsApp calls
-- `channel` (text, default 'web') — 'web' or 'whatsapp'
-- `status` (text, default 'completed') — 'in_progress', 'completed', 'failed'
-- `transcript_chunks` (jsonb, default '[]') — for future progressive saving
-- `created_at`
+- `call_sid` (text), `channel` (text, default 'web'), `status` (text, default 'completed')
 
-### knowledge_base, gap_analysis, team_members, documents, recommendations, workflow_map, email_ingestion, audit_log
+### knowledge_base — Flat extracted facts
 
-(See previous schema — unchanged)
+- `id`, `company_id`, `topic`, `key`, `value`, `confidence`, `source_session_id`
+
+### knowledge_chunks — Semantic chunks with pgvector embeddings
+
+- `id`, `company_id`, `source`, `source_id`, `source_name`, `domain`, `chunk_text`, `embedding` (vector 1536)
+- `confidence_score`, `document_date`, `is_stale`
+
+### knowledge_elements — Structured knowledge per domain
+
+- `id`, `company_id`, `element_key`, `element_label`, `domain`, `current_value`
+- `has_correction`, `correction_id`, `document_age_months`, `is_stale`
+
+### knowledge_corrections — Founder corrections (always win)
+
+- `id`, `company_id`, `element_key`, `element_label`, `domain`
+- `original_value`, `corrected_value`, `correction_context`, `source`
+- `active` (bool), `superseded_by` (uuid), `applied_at`
+
+### onboarding_questions — AI-generated smart questions
+
+- `id`, `company_id`, `question`, `domain`, `why_asking`, `priority` (1-3)
+- `status` (pending/answered/skipped/emailed), `answer_text`, `answer_mode`
+
+### Other tables
+- `gap_analysis` — completeness scores per topic (7 rows per company)
+- `team_members` — invited team members
+- `documents` — uploaded files metadata
+- `recommendations` — Claude-generated business recommendations
+- `audit_log` — all system actions
 
 All tables have RLS enabled.
 
@@ -165,20 +199,52 @@ All tables have RLS enabled.
 
 # 5. EDGE FUNCTIONS (Supabase Deno)
 
-| Function | Version | JWT | Purpose |
-|----------|---------|-----|---------|
-| `scrape-business` | v6 | false | Perplexity sonar-pro research -> Claude extraction -> knowledge_base storage |
-| `process-transcript` | v16 | false | ElevenLabs post-call webhook AND direct API calls. Matches call_sid for WhatsApp sessions |
-| `get-company-profile` | v13 | false | Returns full company profile with session channel/status. Supports `company_id` or `founder_email` lookup |
-| `whatsapp-call-handler` | v1 | false | Twilio webhook: phone→company lookup→ElevenLabs Register Call API→TwiML |
-| `onboard-company` | v12 | false | Creates company + gap_analysis rows for all 7 topics |
-| `upload-document` | v14 | false | File upload with magic-byte MIME validation, 500MB quota, Claude analysis |
-| `process-email` | v12 | false | Email ingestion pipeline |
-| `generate-recommendations` | v13 | false | Claude generates prioritised business recommendations |
-| `invite-team-member` | v11 | false | Creates team member record |
-| `test-api-key` | v6 | false | Debug tool |
+All functions use `verify_jwt: false` and `SUPABASE_SERVICE_ROLE_KEY` internally.
 
-**Note:** All functions use `verify_jwt: false` because they use `SUPABASE_SERVICE_ROLE_KEY` internally. JWT validation was causing 401 gateway rejections.
+### Pre-existing (before sprints)
+| Function | Version | Purpose |
+|----------|---------|---------|
+| `scrape-business` | v6 | Perplexity sonar-pro research -> Claude extraction -> knowledge_base |
+| `process-transcript` | v16 | ElevenLabs post-call webhook + direct API. Matches call_sid for WhatsApp |
+| `get-company-profile` | v13 | Full company profile. Supports company_id or founder_email lookup |
+| `whatsapp-call-handler` | v1 | Twilio webhook: phone -> company -> ElevenLabs Register Call API |
+| `onboard-company` | v12 | Creates company + gap_analysis rows for all 7 topics |
+| `upload-document` | v14 | File upload with magic-byte MIME validation, 500MB quota |
+| `process-email` | v12 | Email ingestion pipeline |
+| `generate-recommendations` | v13 | Claude generates prioritised business recommendations |
+| `invite-team-member` | v11 | Creates team member record |
+| `test-api-key` | v6 | Debug tool |
+
+### Sprint 2 — Google Drive
+| Function | Version | Purpose |
+|----------|---------|---------|
+| `google-drive-oauth` | v1 | OAuth get_auth_url + callback + folder creation + webhook setup |
+| `refresh-google-tokens` | v1 | Auto-refresh tokens, clears on revocation |
+| `google-drive-webhook` | v1 | Receives Drive push notifications, triggers processing |
+| `process-drive-document` | v1 | Extract text from Drive files, chunk, classify domain via Claude Haiku |
+
+### Sprint 3 — Intelligence Scoring
+| Function | Version | Purpose |
+|----------|---------|---------|
+| `calculate-domain-scores` | v3 | Source-weighted scoring (auto 10%, docs 45%, voice 35%, tools 25%) |
+| `generate-source-of-truth` | v1 | Claude generates structured JSON summary from knowledge_base |
+
+### Sprint 4 — Corrections
+| Function | Version | Purpose |
+|----------|---------|---------|
+| `apply-correction` | v1 | Stores correction, updates knowledge_elements + knowledge_base, audit log |
+
+### Sprint 5 — Smart Questions
+| Function | Version | Purpose |
+|----------|---------|---------|
+| `generate-onboarding-questions` | v1 | Claude generates 5-8 questions targeting knowledge gaps |
+| `process-question-answer` | v1 | Processes any answer mode, extracts knowledge, recalculates scores |
+
+### Sprint 6 — Payments
+| Function | Version | Purpose |
+|----------|---------|---------|
+| `create-checkout` | v1 | Creates Stripe customer + checkout session for subscription |
+| `stripe-webhook` | v1 | Handles checkout.session.completed, subscription updates, payment failures |
 
 ---
 
@@ -188,99 +254,166 @@ All tables have RLS enabled.
 
 ```
 founder-engine/
-├── index.html              # Vite entry point
+├── index.html
 ├── vite.config.ts
 ├── package.json
 ├── tsconfig.json
-├── .env.local              # VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
-├── public/
-│   └── manifest.json
+├── .env.local                    # VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+├── public/manifest.json
 ├── src/
-│   ├── main.tsx            # React entry, wraps in AuthProvider + ToastProvider
-│   ├── App.tsx             # Auth gate + screen routing
-│   ├── supabase.ts         # Supabase client (single instance)
-│   ├── api.ts              # All edge function calls
-│   ├── types.ts            # TypeScript interfaces
-│   ├── vite-env.d.ts       # Vite + ElevenLabs type declarations
+│   ├── main.tsx                  # Entry: AuthProvider + ToastProvider + CSS imports
+│   ├── App.tsx                   # Auth gate + screen routing + ErrorBoundary wraps
+│   ├── supabase.ts               # Supabase client singleton
+│   ├── api.ts                    # All edge function API calls
+│   ├── types.ts                  # TypeScript interfaces
+│   ├── vite-env.d.ts
 │   ├── contexts/
-│   │   └── AuthContext.tsx  # Supabase Auth (email+password, Google OAuth)
+│   │   └── AuthContext.tsx        # Supabase Auth (email+password, Google OAuth)
 │   ├── components/
-│   │   ├── BottomNav.tsx   # 5-tab navigation with SVG icons
-│   │   └── Toast.tsx       # Toast notifications
+│   │   ├── BottomNav.tsx          # 5-tab mobile navigation
+│   │   ├── SideNav.tsx            # Desktop sidebar navigation
+│   │   ├── ErrorBoundary.tsx      # Screen-level error boundary (Sprint 6)
+│   │   ├── ResearchBanner.tsx     # Perplexity scrape progress indicator
+│   │   ├── Toast.tsx              # Toast notifications
+│   │   ├── intelligence/          # Sprint 3
+│   │   │   ├── IntelligenceBuilder.tsx   # 6 domain sliders container
+│   │   │   ├── IntelligenceSlider.tsx    # Single animated domain bar
+│   │   │   ├── DocumentChecklist.tsx     # Expected vs received documents
+│   │   │   ├── KnowledgeCard.tsx         # Knowledge fact + confidence dot + edit button
+│   │   │   └── SourceOfTruth.tsx         # Collapsible domain sections + edit buttons
+│   │   ├── corrections/           # Sprint 4
+│   │   │   ├── CorrectionPanel.tsx       # Slide-out editor for knowledge facts
+│   │   │   ├── CorrectionHistory.tsx     # Timeline of past corrections
+│   │   │   └── StaleDocAlert.tsx         # Age-based warning badges
+│   │   ├── questions/             # Sprint 5
+│   │   │   ├── QuestionBatch.tsx         # Container: pending + completed questions
+│   │   │   ├── QuestionItem.tsx          # Single question + mode selector + answer
+│   │   │   ├── ModeSelector.tsx          # 4-mode toggle (write/voice/dictate/email)
+│   │   │   ├── WrittenAnswerMode.tsx     # Text input answer
+│   │   │   ├── VoiceAnswerMode.tsx       # Link to voice session
+│   │   │   ├── TranscribeAnswerMode.tsx  # Browser SpeechRecognition
+│   │   │   └── EmailAnswerMode.tsx       # Placeholder email flow
+│   │   └── more/                  # Extracted MoreScreen sections
+│   │       ├── WhatsAppSection.tsx
+│   │       ├── DocumentsSection.tsx
+│   │       └── RecommendationsSection.tsx
 │   ├── screens/
-│   │   ├── WelcomeScreen.tsx    # Auth + onboarding (ocean theme landing)
-│   │   ├── DashboardScreen.tsx  # Score card, topics, activity feed
-│   │   ├── VoiceScreen.tsx      # ElevenLabs widget + transcript processing
-│   │   ├── KnowledgeScreen.tsx  # Knowledge entries by topic
-│   │   ├── CallsScreen.tsx      # Call history with filters
-│   │   └── MoreScreen.tsx       # Upload, team, recommendations, gaps, settings
+│   │   ├── WelcomeScreen.tsx      # Auth + sign-up/sign-in
+│   │   ├── DashboardScreen.tsx    # Score card, topics, intelligence builder, SoT, questions, activity
+│   │   ├── VoiceScreen.tsx        # ElevenLabs widget + transcript processing
+│   │   ├── KnowledgeScreen.tsx    # Knowledge entries by topic
+│   │   ├── CallsScreen.tsx        # Call history with filters
+│   │   ├── MoreScreen.tsx         # Upload, Drive connect, team, billing, recommendations, settings
+│   │   └── onboarding/
+│   │       ├── OnboardingFlow.tsx      # 5-stage container
+│   │       ├── WelcomeStage.tsx        # Typewriter Angus monologue
+│   │       ├── ConnectToolsStage.tsx   # Google Drive OAuth + Xero placeholder
+│   │       ├── FeedAngusStage.tsx      # Upload docs + paste transcript
+│   │       ├── QuestionsStage.tsx      # Seed default questions
+│   │       ├── OnboardingComplete.tsx  # Advance to dashboard
+│   │       ├── ProgressIndicator.tsx   # Step X of 5
+│   │       ├── ConnectCard.tsx         # Tool connection card
+│   │       ├── QuestionCard.tsx        # Onboarding question card
+│   │       └── defaultQuestions.ts     # 5 hardcoded seed questions
 │   └── styles/
-│       └── ocean.css       # Full ocean theme
-└── docs/plans/             # Design docs and implementation plans
+│       ├── ocean.css              # Main ocean theme (CSS variables, layouts)
+│       ├── onboarding.css         # Onboarding flow styles
+│       ├── intelligence.css       # Intelligence builder, SoT, knowledge cards
+│       ├── corrections.css        # Correction panel, history, stale alerts
+│       └── questions.css          # Smart questions, mode selector, answer modes
+├── docs/
+│   ├── ANGUS-ELEVENLABS-PROMPT.md
+│   ├── AGENT-B-SPRINT-3-BRIEF.md
+│   ├── AGENT-B-SPRINT-4-BRIEF.md
+│   ├── AGENT-B-SPRINT-5-BRIEF.md
+│   ├── SPRINT-3-DASHBOARD-INTEGRATION.md
+│   └── SPRINT-4-5-INTEGRATION.md
+├── Architecture.md
+├── Decisions-Log.md
+├── Product-Status.md
+└── Brief-Onboarding-v2.md
 ```
+
+## Dashboard Layout (DashboardScreen.tsx)
+
+Top to bottom:
+1. ResearchBanner (auto-scrape progress)
+2. Score Card (intelligence score, tier, data points)
+3. Knowledge Areas (7 topic cards with completeness bars)
+4. Intelligence Builder (6 domain sliders)
+5. Document Checklist (expected vs received)
+6. Source of Truth (collapsible domains with edit buttons)
+7. Smart Questions (pending + completed, 4 answer modes)
+8. Activity Feed (recent actions)
 
 ## Development Commands
 
 ```bash
-npm run dev      # Start Vite dev server (localhost:5173)
+npm run dev      # Vite dev server (localhost:5173)
 npm run build    # TypeScript check + Vite production build
 npm run preview  # Preview production build locally
 ```
 
 ## Key Technical Details
 
-- Supabase JS client (`supabase.functions.invoke()`) auto-attaches JWT — no manual header management
+- Supabase JS client auto-attaches JWT — no manual header management
 - AuthContext manages user session, company ID (persisted to localStorage)
-- Each screen is its own component — if one crashes, others still work
+- ErrorBoundary wraps every screen — one crash doesn't take down the app
 - ElevenLabs widget lazy-loaded only when voice call starts
 - Ocean theme: deep blues, teals, seafoam, cyan glow (CSS variables)
+- Intelligence scoring: source-weighted, auto-research capped at 10%, docs 45%, voice 35%, tools 25%
 
 ---
 
 # 7. ELEVENLABS SYSTEM PROMPT
 
-The voice agent's prompt follows the "come prepared" philosophy:
+Full prompt: `docs/ANGUS-ELEVENLABS-PROMPT.md` (already pasted into ElevenLabs dashboard)
 
-- Agent has `{{company_knowledge}}` variable with everything known about the company
-- Agent has `{{smart_questions}}` variable with researched questions
+Key points:
+- `{{company_knowledge}}` and `{{smart_questions}}` dynamic variables
 - Never asks questions answerable from a website
 - 10-15 minute first call maximum
-- Direct, no-bullshit conversational style
-- First message should reference having reviewed their website/business
+- Direct, Scottish-inflected conversational style
+- Synthesises, never originates — every fact from a source
 
 ---
 
-# 8. IMMEDIATE TODO
+# 8. INTELLIGENCE SCORE SYSTEM
 
-1. **Enable Supabase Auth providers** — Enable Email+Password and Google OAuth in Supabase dashboard (Authentication -> Providers)
-2. **Google OAuth setup** — Create Google Cloud Console OAuth client ID, add to Supabase
-3. **Voice agent LLM** — Switch from Qwen3-30B-A3B to Gemini 2.5 Flash or Claude
-4. **RLS policies** — Add row-level security policies that use auth.uid() to restrict data access
-5. **Custom domain** — check founderengine.ai or similar
-6. **Test with a real founder** (not test data)
-7. **WhatsApp go-live** — Buy Twilio number, enable WhatsApp Business Calling, set env vars (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER, ELEVENLABS_API_KEY), configure webhook URL to `whatsapp-call-handler`
-8. **Update MoreScreen WhatsApp display** — Replace "Number coming soon" with actual Twilio WhatsApp number once purchased
+Source-weighted scoring prevents inflation from auto-research alone.
+
+| Source | Max Contribution | Expected Entries Per Domain |
+|--------|-----------------|---------------------------|
+| Auto-research (Perplexity) | 10% | N/A |
+| Uploaded documents | 45% | 20 per domain |
+| Voice sessions | 35% | 20 per domain |
+| Connected tools (Xero etc) | 25% | N/A |
+
+**Key rule:** A company with zero documents and no connected tools should show 10-15% maximum.
+
+Tiers: Getting Started (0-24%), Good (25-49%), Great (50-74%), Amazing (75-89%), Expert (90-100%)
 
 ---
 
-# 9. DEVELOPMENT ROADMAP
+# 9. REMAINING TODO (for launch)
 
-## Phase 1 — React Rebuild & Auth (COMPLETED)
-- Rebuilt from single HTML monolith to React + Vite + TypeScript
-- Supabase Auth integrated (email+password, Google OAuth)
-- All screens rebuilt as modular components
-- Ocean theme preserved
-- `user_id` column added to companies table
-- DEPLOYED at https://founder-engine-seven.vercel.app
+### Must Set (Ruari — manual steps)
+1. **Google Drive secrets**: Set `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` in Supabase dashboard
+2. **Google Console redirect URI**: Add `https://qzlicsovnldozbnmahsa.supabase.co/functions/v1/google-drive-oauth`
+3. **Stripe setup**: Create Stripe account, set `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` in Supabase secrets
+4. **Stripe price ID**: Create product + price in Stripe dashboard, update `price_placeholder` in MoreScreen
+5. **Stripe webhook URL**: Set `https://qzlicsovnldozbnmahsa.supabase.co/functions/v1/stripe-webhook` in Stripe dashboard
+6. **Voice agent LLM**: Switch ElevenLabs from Qwen3-30B-A3B to Gemini 2.5 Flash or Claude
+7. **Push to deploy**: `git push origin main` — Vercel auto-deploys
 
-## Phase 2 — Polish & Security
-- Row Level Security policies using auth.uid()
-- User roles — founder vs team member vs advisor
-- Error boundaries for each screen
+### Nice to Have
+- RLS policies updated for auth.uid() based access control
+- Custom domain (founderengine.ai)
+- Bidirectional Google Doc sync (edit in Drive -> dashboard updates)
+- Email question pipeline (Resend/Postmark inbound)
 - Automated tests
-
-## Phase 3-8
-(See previous roadmap — unchanged)
+- Mobile CSS polish
+- WhatsApp go-live (buy Twilio number)
 
 ---
 
@@ -289,45 +422,28 @@ The voice agent's prompt follows the "come prepared" philosophy:
 ## Row Level Security (RLS)
 
 ### `documents` table (4 policies)
-- `users_read_own_docs` (SELECT), `users_insert_own_docs` (INSERT), `users_update_own_docs` (UPDATE), `users_delete_own_docs` (DELETE)
 - All check: `company_id IN (SELECT id FROM companies WHERE user_id = auth.uid())`
 
 ### `storage.objects` — bucket `company-documents` (3 policies)
-- `users_read_own_files` (SELECT), `users_insert_own_files` (INSERT), `users_delete_own_files` (DELETE)
 - All check: `bucket_id = 'company-documents' AND folder = user's company ID`
 
 ### Storage bucket `company-documents`
-- **Public**: No (private bucket)
-- **Encryption at rest**: Yes (Supabase default — all storage objects encrypted at rest)
-- **File size limit**: 50MB per file (bucket + edge function)
-- **Company quota**: 500MB total per company (enforced in `upload-document` v14)
-- **Allowed MIME types**: PDF, DOCX, XLSX, PPTX, CSV, TXT, PNG, JPEG, WebP
-- **Server-side validation**: Magic-byte detection in edge function, blocked extensions list
-
-### Edge function security (`upload-document` v14)
-- Magic-byte MIME detection (PDF, PNG, JPEG, WebP, ZIP-based Office files)
-- Text file detection for CSV/TXT
-- Blocked extensions: exe, bat, sh, js, py, html, svg, dll, jar + 20 more
-- Company storage quota enforcement (500MB)
-- Audit logging with both declared and detected MIME types
-
-### Future: Virus scanning
-- `documents.scan_status` column exists (default: 'pending')
-- Ready for ClamAV or similar integration
+- Private bucket, encrypted at rest
+- 50MB per file, 500MB company quota
+- Magic-byte MIME detection, blocked extensions list
 
 ---
 
 # 11. TECHNICAL DEBT / KNOWN ISSUES
 
-(Section renumbered — was #10)
-
 - HMAC webhook verification is lenient — logs but doesn't block
 - Duplicate knowledge entries — need upsert logic on company_id + key
 - Edge function timeouts — Supabase free tier has limits
 - Voice agent LLM — currently Qwen3-30B-A3B, too weak
-- No tests — zero automated tests
-- RLS policies need updating for auth.uid() based access control
-- Google OAuth not yet configured in Supabase dashboard
+- No automated tests
+- Email question pipeline is placeholder only (shows address, no actual email)
+- Stripe price_id is placeholder — needs real Stripe product setup
+- Google Drive OAuth needs secrets before it works end-to-end
 
 ---
 
@@ -337,9 +453,11 @@ The voice agent's prompt follows the "come prepared" philosophy:
 |---------|---------|
 | Supabase | Database, edge functions, auth, storage |
 | Vercel | React app hosting (Vite build) |
-| ElevenLabs | Voice AI agent |
-| Perplexity API | Deep company research (sonar-pro model) |
+| ElevenLabs | Voice AI agent (Angus) |
+| Perplexity API | Deep company research (sonar-pro) |
 | Claude API | Intelligence extraction from all sources |
+| Stripe | Subscription billing (checkout + webhooks) |
+| Google Drive API | Document ingestion (drive.file scope) |
 
 ---
 
