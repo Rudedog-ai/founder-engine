@@ -64,7 +64,7 @@ export default function QuestionsStage({ onAdvance }: { onAdvance: () => Promise
 
   return (
     <div className="onboarding-stage">
-      <ProgressIndicator currentStage={4} />
+      <ProgressIndicator currentStage={3} />
       <div className="ocean-form-card" style={{ maxWidth: 520, margin: '0 auto' }}>
         <h3 style={{ marginBottom: '0.5rem', color: 'var(--text)' }}>Smart Questions</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.9rem' }}>

@@ -124,8 +124,8 @@ export default function App() {
   }
 
   // Show onboarding flow for stages 1-5 (stage 6+ = complete, show dashboard)
-  if (onboardingStage !== null && onboardingStage <= 5) {
-    return <OnboardingFlow onComplete={() => setOnboardingStage(6)} />
+  if (onboardingStage !== null && onboardingStage <= 4) {
+    return <OnboardingFlow onComplete={() => setOnboardingStage(5)} />
   }
 
   const screens: Record<string, JSX.Element> = {

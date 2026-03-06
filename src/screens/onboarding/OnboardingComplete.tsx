@@ -11,7 +11,7 @@ export default function OnboardingComplete({ onAdvance }: { onAdvance: () => Pro
 
   return (
     <div className="onboarding-stage">
-      <ProgressIndicator currentStage={5} />
+      <ProgressIndicator currentStage={4} />
       <div className="ocean-form-card" style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center' }}>
         <div className="welcome-avatar" style={{ background: 'var(--green)' }}>✓</div>
         <h3 style={{ color: 'var(--text)', marginBottom: '0.5rem' }}>You're all set</h3>

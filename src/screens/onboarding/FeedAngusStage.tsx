@@ -44,7 +44,7 @@ export default function FeedAngusStage({ onAdvance }: { onAdvance: () => Promise
 
   return (
     <div className="onboarding-stage fade-in">
-      <ProgressIndicator currentStage={3} />
+      <ProgressIndicator currentStage={2} />
       <div className="ocean-form-card" style={{ maxWidth: 520, margin: '0 auto' }}>
         <h3>Feed Angus</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: '1.2rem' }}>

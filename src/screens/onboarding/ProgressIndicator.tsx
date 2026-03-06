@@ -1,4 +1,4 @@
-const STAGE_LABELS = ['Welcome', 'Connect Tools', 'Feed Angus', 'Questions', 'Ongoing']
+const STAGE_LABELS = ['Welcome', 'Feed Angus', 'Questions', 'Ongoing']
 
 interface Props {
   currentStage: number

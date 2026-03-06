@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../supabase'
 import WelcomeStage from './WelcomeStage'
-import ConnectToolsStage from './ConnectToolsStage'
 import FeedAngusStage from './FeedAngusStage'
 import QuestionsStage from './QuestionsStage'
 import OnboardingComplete from './OnboardingComplete'
@@ -29,7 +28,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
       .from('companies')
       .update({ onboarding_stage: nextStage, ...extraFields })
       .eq('id', companyId)
-    if (nextStage > 5) {
+    if (nextStage > 4) {
       onComplete()
     } else {
       setStage(nextStage)
@@ -50,10 +49,9 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
   const stageComponent = (() => {
     switch (stage) {
       case 1: return <WelcomeStage onAdvance={() => advanceTo(2, { welcome_complete: true })} />
-      case 2: return <ConnectToolsStage onAdvance={() => advanceTo(3)} />
-      case 3: return <FeedAngusStage onAdvance={() => advanceTo(4)} />
-      case 4: return <QuestionsStage onAdvance={() => advanceTo(5)} />
-      case 5: return <OnboardingComplete onAdvance={() => advanceTo(6)} />
+      case 2: return <FeedAngusStage onAdvance={() => advanceTo(3)} />
+      case 3: return <QuestionsStage onAdvance={() => advanceTo(4)} />
+      case 4: return <OnboardingComplete onAdvance={() => advanceTo(5)} />
       default: return null
     }
   })()
