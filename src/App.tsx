@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './supabase'
 import BottomNav from './components/BottomNav'
+import SideNav from './components/SideNav'
 import WelcomeScreen from './screens/WelcomeScreen'
 import DashboardScreen from './screens/DashboardScreen'
 import VoiceScreen from './screens/VoiceScreen'
@@ -61,6 +62,7 @@ export default function App() {
 
   return (
     <div className="container">
+      <SideNav activeScreen={activeScreen} onNavigate={setActiveScreen} />
       <div className="content">
         {screens[activeScreen] || <DashboardScreen />}
       </div>
