@@ -7,6 +7,7 @@ export interface Company {
   website?: string
   email_inbox_address?: string
   onboarding_link?: string
+  founder_phone?: string
   intelligence_score: number
   intelligence_tier: string
   onboarding_status: string
@@ -37,6 +38,9 @@ export interface Session {
   duration_seconds?: number
   data_points_captured: number
   topics_covered: string[]
+  channel?: string
+  status?: string
+  call_sid?: string
   created_at: string
 }
 

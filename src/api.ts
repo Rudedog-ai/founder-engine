@@ -145,3 +145,17 @@ export async function updateRecommendationStatus(
     update_status: { id, status },
   })
 }
+
+export async function updateFounderPhone(
+  company_id: string,
+  founder_phone: string
+) {
+  const { error } = await supabase
+    .from('companies')
+    .update({ founder_phone })
+    .eq('id', company_id)
+
+  if (error) {
+    throw new Error(error.message || 'Failed to update phone number')
+  }
+}

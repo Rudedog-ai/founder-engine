@@ -7,6 +7,7 @@ import {
   inviteTeamMember,
   generateRecommendations,
   updateRecommendationStatus,
+  updateFounderPhone,
 } from '../api'
 import type { CompanyProfile, Document } from '../types'
 
@@ -114,10 +115,21 @@ export default function MoreScreen() {
   // Email copy
   const [copied, setCopied] = useState(false)
 
+  // WhatsApp phone
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [phoneSaving, setPhoneSaving] = useState(false)
+  const [phoneLoaded, setPhoneLoaded] = useState(false)
+
   useEffect(() => {
     if (!companyId) return
     getCompanyProfile(companyId)
-      .then(setProfile)
+      .then((p) => {
+        setProfile(p)
+        if (!phoneLoaded && p.company?.founder_phone) {
+          setPhoneNumber(p.company.founder_phone)
+          setPhoneLoaded(true)
+        }
+      })
       .catch(() => showToast('Failed to load data', 'error'))
       .finally(() => setLoading(false))
   }, [companyId])
@@ -214,6 +226,27 @@ export default function MoreScreen() {
     }
   }
 
+  async function handleSavePhone(e: React.FormEvent) {
+    e.preventDefault()
+    if (!companyId || !phoneNumber.trim()) return
+    // Basic validation: must start with + and have digits
+    const cleaned = phoneNumber.trim()
+    if (!/^\+\d{7,15}$/.test(cleaned)) {
+      showToast('Enter a valid phone number starting with + (e.g. +44771234567)', 'error')
+      return
+    }
+    setPhoneSaving(true)
+    try {
+      await updateFounderPhone(companyId, cleaned)
+      showToast('WhatsApp number saved!')
+      await reloadProfile()
+    } catch {
+      showToast('Failed to save phone number', 'error')
+    } finally {
+      setPhoneSaving(false)
+    }
+  }
+
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault()
     if (!companyId || !inviteName.trim() || !inviteRole.trim()) return
@@ -296,6 +329,45 @@ export default function MoreScreen() {
           </div>
         </>
       )}
+
+      {/* ===== WHATSAPP VOICE ===== */}
+      <div className="section-title">WhatsApp Voice Calls</div>
+      <div className="card" style={{ background: 'var(--surface)' }}>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '12px' }}>
+          Save your WhatsApp number so you can call Angus directly from WhatsApp. He'll come prepared with everything he knows about your business.
+        </p>
+        <form onSubmit={handleSavePhone} style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Your WhatsApp number</label>
+            <input
+              type="tel"
+              placeholder="+44 7712 345678"
+              value={phoneNumber}
+              onChange={e => setPhoneNumber(e.target.value)}
+              style={{ width: '100%' }}
+            />
+          </div>
+          <button className="btn btn-primary btn-small" type="submit" disabled={phoneSaving} style={{ flexShrink: 0 }}>
+            {phoneSaving ? 'Saving...' : company?.founder_phone ? 'Update' : 'Save'}
+          </button>
+        </form>
+        {company?.founder_phone && (
+          <div style={{ marginTop: '12px', padding: '10px 14px', background: 'var(--abyss)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--sea)' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '4px' }}>Call Angus on WhatsApp:</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--biolum)" strokeWidth="2">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+              </svg>
+              <span style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--glow)', letterSpacing: '0.5px' }}>
+                Number coming soon
+              </span>
+            </div>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px', marginBottom: 0 }}>
+              We're setting up the WhatsApp calling number. You'll be notified when it's ready.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* ===== UPLOAD DOCUMENTS ===== */}
       <div className="section-title">Upload Documents</div>

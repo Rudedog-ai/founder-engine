@@ -95,6 +95,10 @@ Claude API (intelligence extraction from transcripts + research)
 - `ANTHROPIC_API_KEY` — Claude API key (starts with sk-ant-api03-)
 - `PERPLEXITY_API_KEY` — (stored in Supabase edge function secrets)
 - `ELEVENLABS_WEBHOOK_SECRET` — (stored in Supabase edge function secrets)
+- `ELEVENLABS_API_KEY` — ElevenLabs API key (for Register Call API, used by whatsapp-call-handler)
+- `TWILIO_ACCOUNT_SID` — Twilio account SID (NOT YET SET — needed before WhatsApp goes live)
+- `TWILIO_AUTH_TOKEN` — Twilio auth token (NOT YET SET — needed before WhatsApp goes live)
+- `TWILIO_WHATSAPP_NUMBER` — WhatsApp-enabled Twilio number (NOT YET SET)
 
 ## ElevenLabs
 
@@ -128,12 +132,22 @@ Claude API (intelligence extraction from transcripts + research)
 ### companies — One row per onboarded company
 
 - `id` (uuid PK), `name`, `founder_name`, `founder_email`, `industry`, `website`
-- `email_inbox_address`, `onboarding_link`
+- `email_inbox_address`, `onboarding_link`, `founder_phone` (text, indexed)
 - `intelligence_score` (0-100), `intelligence_tier` (getting_started/good/great/amazing/expert)
 - `onboarding_status` (pending/session_1_complete/docs_uploaded/session_2_complete/team_sessions/analysis_ready)
 - `user_id` (uuid, references auth.users) — links company to authenticated user
 
-### knowledge_base, sessions, gap_analysis, team_members, documents, recommendations, workflow_map, email_ingestion, audit_log
+### sessions — One row per voice call or transcript submission
+
+- `id` (uuid PK), `company_id`, `session_number`, `session_type`, `participant_name`, `participant_role`
+- `raw_transcript`, `summary`, `extracted_data` (jsonb), `duration_seconds`, `data_points_captured`, `topics_covered` (text[])
+- `call_sid` (text) — Twilio call SID for WhatsApp calls
+- `channel` (text, default 'web') — 'web' or 'whatsapp'
+- `status` (text, default 'completed') — 'in_progress', 'completed', 'failed'
+- `transcript_chunks` (jsonb, default '[]') — for future progressive saving
+- `created_at`
+
+### knowledge_base, gap_analysis, team_members, documents, recommendations, workflow_map, email_ingestion, audit_log
 
 (See previous schema — unchanged)
 
@@ -146,8 +160,9 @@ All tables have RLS enabled.
 | Function | Version | JWT | Purpose |
 |----------|---------|-----|---------|
 | `scrape-business` | v6 | false | Perplexity sonar-pro research -> Claude extraction -> knowledge_base storage |
-| `process-transcript` | v15 | false | ElevenLabs post-call webhook AND direct API calls |
-| `get-company-profile` | v12 | false | Returns full company profile. Supports `company_id` or `founder_email` lookup |
+| `process-transcript` | v16 | false | ElevenLabs post-call webhook AND direct API calls. Matches call_sid for WhatsApp sessions |
+| `get-company-profile` | v13 | false | Returns full company profile with session channel/status. Supports `company_id` or `founder_email` lookup |
+| `whatsapp-call-handler` | v1 | false | Twilio webhook: phone→company lookup→ElevenLabs Register Call API→TwiML |
 | `onboard-company` | v12 | false | Creates company + gap_analysis rows for all 7 topics |
 | `upload-document` | v14 | false | File upload with magic-byte MIME validation, 500MB quota, Claude analysis |
 | `process-email` | v12 | false | Email ingestion pipeline |
@@ -235,6 +250,8 @@ The voice agent's prompt follows the "come prepared" philosophy:
 4. **RLS policies** — Add row-level security policies that use auth.uid() to restrict data access
 5. **Custom domain** — check founderengine.ai or similar
 6. **Test with a real founder** (not test data)
+7. **WhatsApp go-live** — Buy Twilio number, enable WhatsApp Business Calling, set env vars (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER, ELEVENLABS_API_KEY), configure webhook URL to `whatsapp-call-handler`
+8. **Update MoreScreen WhatsApp display** — Replace "Number coming soon" with actual Twilio WhatsApp number once purchased
 
 ---
 
