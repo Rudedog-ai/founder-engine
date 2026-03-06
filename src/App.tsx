@@ -18,6 +18,26 @@ export default function App() {
   const [lookingUp, setLookingUp] = useState(false)
   const [onboardingStage, setOnboardingStage] = useState<number | null>(null)
 
+  // If companyId already cached, fetch onboarding_stage from DB
+  useEffect(() => {
+    if (user && companyId && onboardingStage === null) {
+      setLookingUp(true)
+      supabase
+        .from('companies')
+        .select('onboarding_stage')
+        .eq('id', companyId)
+        .single()
+        .then(({ data, error }) => {
+          if (error || !data) {
+            setOnboardingStage(1)
+          } else {
+            setOnboardingStage(data.onboarding_stage ?? 1)
+          }
+          setLookingUp(false)
+        })
+    }
+  }, [user, companyId, onboardingStage])
+
   // Auto-find company by user_id, then fallback to email lookup
   useEffect(() => {
     if (user && !companyId && !lookingUp) {
