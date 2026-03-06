@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 
 interface Props {
   companyId: string
+  onComplete?: () => void
 }
 
 const STEPS = [
@@ -13,38 +14,43 @@ const STEPS = [
   'Building your intelligence profile...',
 ]
 
-export default function ResearchBanner({ companyId }: Props) {
+export default function ResearchBanner({ companyId, onComplete }: Props) {
   const [status, setStatus] = useState<string | null>(null)
   const [dataPoints, setDataPoints] = useState(0)
   const [stepIndex, setStepIndex] = useState(0)
   const [dismissed, setDismissed] = useState(false)
+  const wasResearching = useRef(false)
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>
-
     async function poll() {
       const { data: co } = await supabase
         .from('companies')
         .select('scrape_status')
         .eq('id', companyId)
         .single()
-      setStatus(co?.scrape_status ?? null)
+      const s = co?.scrape_status ?? null
+      setStatus(s)
 
-      if (co?.scrape_status === 'researching' || co?.scrape_status === 'pending') {
+      if (s === 'researching') {
+        wasResearching.current = true
         const { count } = await supabase
           .from('knowledge_base')
           .select('id', { count: 'exact', head: true })
           .eq('company_id', companyId)
         setDataPoints(count ?? 0)
       }
+
+      if (wasResearching.current && (s === 'complete' || s === 'error')) {
+        wasResearching.current = false
+        onComplete?.()
+      }
     }
 
     poll()
-    interval = setInterval(poll, 4000)
+    const interval = setInterval(poll, 4000)
     return () => clearInterval(interval)
-  }, [companyId])
+  }, [companyId, onComplete])
 
-  // Rotate step text while researching
   useEffect(() => {
     if (status !== 'researching') return
     const timer = setInterval(() => setStepIndex(i => (i + 1) % STEPS.length), 3000)
@@ -52,7 +58,6 @@ export default function ResearchBanner({ companyId }: Props) {
   }, [status])
 
   if (dismissed || !status || status === 'complete' || status === 'error') return null
-  if (status !== 'researching' && status !== 'pending') return null
 
   return (
     <div className="research-banner">

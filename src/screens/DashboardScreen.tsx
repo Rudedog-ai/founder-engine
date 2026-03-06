@@ -52,9 +52,8 @@ export default function DashboardScreen() {
   const [profile, setProfile] = useState<CompanyProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  function loadProfile() {
     if (!companyId) return
-    setLoading(true)
     getCompanyProfile(companyId)
       .then(setProfile)
       .catch(err => {
@@ -62,7 +61,17 @@ export default function DashboardScreen() {
         showToast('Failed to load dashboard data', 'error')
       })
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    setLoading(true)
+    loadProfile()
   }, [companyId])
+
+  function handleResearchComplete() {
+    showToast('Research complete! Updating your dashboard...')
+    loadProfile()
+  }
 
   if (loading) {
     return (
@@ -103,7 +112,7 @@ export default function DashboardScreen() {
 
   return (
     <div className="screen-content">
-      <ResearchBanner companyId={companyId!} />
+      <ResearchBanner companyId={companyId!} onComplete={handleResearchComplete} />
       {/* Score Card */}
       <div className="score-card">
         <div className="score-header">
