@@ -15,23 +15,55 @@ export default function App() {
   const [activeScreen, setActiveScreen] = useState('dashboard')
   const [lookingUp, setLookingUp] = useState(false)
 
-  // Auto-find company by user_id when logged in but no companyId
+  // Auto-find company by user_id, then fallback to email lookup
   useEffect(() => {
     if (user && !companyId && !lookingUp) {
       setLookingUp(true)
-      supabase
-        .from('companies')
-        .select('id, name')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .then(({ data }) => {
-          if (data && data.length > 0) {
-            setCompanyId(data[0].id)
-            localStorage.setItem('fe_company_name', data[0].name || '')
-          }
+
+      async function findCompany() {
+        // First: try by user_id
+        const { data: byUserId } = await supabase
+          .from('companies')
+          .select('id, name')
+          .eq('user_id', user!.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+
+        if (byUserId && byUserId.length > 0) {
+          setCompanyId(byUserId[0].id)
+          localStorage.setItem('fe_company_name', byUserId[0].name || '')
           setLookingUp(false)
-        }, () => setLookingUp(false))
+          return
+        }
+
+        // Fallback: try by founder_email (handles Google OAuth with different user_id)
+        if (user!.email) {
+          const { data: byEmail } = await supabase
+            .from('companies')
+            .select('id, name, user_id')
+            .eq('founder_email', user!.email)
+            .order('created_at', { ascending: false })
+            .limit(1)
+
+          if (byEmail && byEmail.length > 0) {
+            // Link this auth user to the existing company
+            if (!byEmail[0].user_id) {
+              await supabase
+                .from('companies')
+                .update({ user_id: user!.id })
+                .eq('id', byEmail[0].id)
+            }
+            setCompanyId(byEmail[0].id)
+            localStorage.setItem('fe_company_name', byEmail[0].name || '')
+            setLookingUp(false)
+            return
+          }
+        }
+
+        setLookingUp(false)
+      }
+
+      findCompany().catch(() => setLookingUp(false))
     }
   }, [user, companyId])
 

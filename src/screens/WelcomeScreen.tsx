@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../components/Toast'
+import { supabase } from '../supabase'
 import { onboardCompany, scrapeBusiness } from '../api'
 
 type EmailMode = 'signin' | 'signup'
@@ -74,6 +75,32 @@ export default function WelcomeScreen() {
 
     try {
       const founderEmail = user?.email || email
+
+      // Check if a company already exists for this user or email before creating
+      const { data: existing } = await supabase
+        .from('companies')
+        .select('id, name, user_id')
+        .or(`user_id.eq.${user?.id},founder_email.eq.${founderEmail}`)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (existing && existing.length > 0) {
+        // Link to this auth user if not already linked
+        if (!existing[0].user_id && user?.id) {
+          await supabase
+            .from('companies')
+            .update({ user_id: user.id })
+            .eq('id', existing[0].id)
+        }
+        setCompanyId(existing[0].id)
+        localStorage.setItem('fe_email', founderEmail)
+        localStorage.setItem('fe_company_name', existing[0].name || companyName.trim())
+        showToast('Welcome back! Found your existing company.')
+        setScraping(false)
+        setLoading(false)
+        return
+      }
+
       const result = await onboardCompany(
         companyName.trim(),
         founderName.trim(),
