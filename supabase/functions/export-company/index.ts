@@ -1,4 +1,4 @@
-// export-company v1 — Download everything Angus knows as structured text
+// export-company v2 — Download everything Angus knows as structured text
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
@@ -19,10 +19,9 @@ Deno.serve(async (req: Request) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
   // Auth check
-  const userToken = authHeader.replace('Bearer ', '')
-  const { data: { user } } = await createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!)
-    .auth.getUser(userToken)
-  if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+  const token = authHeader.replace('Bearer ', '')
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  if (authError || !user) return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 })
 
   // Fetch all data in parallel
   const [companyRes, knowledgeRes, correctionsRes, questionsRes] = await Promise.all([

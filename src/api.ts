@@ -186,19 +186,10 @@ export async function processQuestionAnswer(
 }
 
 export async function resetCompany(companyId: string): Promise<void> {
-  const { data: { session } } = await supabase.auth.getSession()
-  const res = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-company`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
-      },
-      body: JSON.stringify({ company_id: companyId }),
-    }
-  )
-  if (!res.ok) throw new Error('Reset failed')
+  const { error } = await supabase.functions.invoke('reset-company', {
+    body: { company_id: companyId },
+  })
+  if (error) throw new Error(error.message || 'Reset failed')
 }
 
 export async function exportCompany(companyId: string, companyName: string): Promise<void> {
@@ -210,6 +201,7 @@ export async function exportCompany(companyId: string, companyName: string): Pro
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session?.access_token}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
       },
       body: JSON.stringify({ company_id: companyId }),
     }
