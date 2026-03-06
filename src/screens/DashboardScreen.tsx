@@ -6,6 +6,7 @@ import ResearchBanner from '../components/ResearchBanner'
 import IntelligenceBuilder from '../components/intelligence/IntelligenceBuilder'
 import DocumentChecklist from '../components/intelligence/DocumentChecklist'
 import SourceOfTruth from '../components/intelligence/SourceOfTruth'
+import QuestionBatch from '../components/questions/QuestionBatch'
 import type { CompanyProfile, GapAnalysis } from '../types'
 
 const topicLabels: Record<string, string> = {
@@ -182,6 +183,10 @@ export default function DashboardScreen() {
       <DocumentChecklist companyId={companyId!} documents={profile.documents} />
       <div className="water-divider" />
       <SourceOfTruth companyId={companyId!} />
+
+      <div className="water-divider" />
+      <div className="section-title">Smart Questions</div>
+      <QuestionBatch companyId={companyId!} />
 
       {/* Activity Feed */}
       <div className="section-title">Recent Activity</div>

@@ -6,6 +6,8 @@ import App from './App'
 import './styles/ocean.css'
 import './styles/onboarding.css'
 import './styles/intelligence.css'
+import './styles/corrections.css'
+import './styles/questions.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -154,6 +154,37 @@ export async function generateSourceOfTruth(company_id: string) {
   return callEdgeFunction('generate-source-of-truth', { company_id })
 }
 
+export async function applyCorrection(
+  company_id: string,
+  element_key: string,
+  element_label: string,
+  domain: string,
+  original_value: string,
+  corrected_value: string,
+  correction_context?: string
+) {
+  return callEdgeFunction('apply-correction', {
+    company_id, element_key, element_label, domain,
+    original_value, corrected_value, correction_context,
+    source: 'dashboard_edit',
+  })
+}
+
+export async function generateQuestions(company_id: string) {
+  return callEdgeFunction('generate-onboarding-questions', { company_id })
+}
+
+export async function processQuestionAnswer(
+  company_id: string,
+  question_id: string,
+  answer_text: string,
+  answer_mode: string
+) {
+  return callEdgeFunction('process-question-answer', {
+    company_id, question_id, answer_text, answer_mode,
+  })
+}
+
 export async function updateFounderPhone(
   company_id: string,
   founder_phone: string

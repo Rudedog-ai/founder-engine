@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
+import CorrectionPanel from '../corrections/CorrectionPanel'
 
 interface SotDomain {
   summary: string
@@ -34,34 +35,38 @@ export default function SourceOfTruth({ companyId }: Props) {
   const [score, setScore] = useState(0)
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [editingFact, setEditingFact] = useState<{ key: string; label: string; domain: string; value: string } | null>(null)
 
-  useEffect(() => {
-    async function load() {
-      const { data } = await supabase
-        .from('companies')
-        .select('intelligence_score, source_of_truth_doc_id')
-        .eq('id', companyId)
-        .single()
+  async function load() {
+    const { data } = await supabase
+      .from('companies')
+      .select('intelligence_score, source_of_truth_doc_id')
+      .eq('id', companyId)
+      .single()
 
-      setScore(data?.intelligence_score || 0)
+    setScore(data?.intelligence_score || 0)
 
-      if (data?.source_of_truth_doc_id) {
-        try {
-          const parsed = typeof data.source_of_truth_doc_id === 'string'
-            ? JSON.parse(data.source_of_truth_doc_id)
-            : data.source_of_truth_doc_id
-          setSot(parsed)
-        } catch {
-          setSot(null)
-        }
+    if (data?.source_of_truth_doc_id) {
+      try {
+        const parsed = typeof data.source_of_truth_doc_id === 'string'
+          ? JSON.parse(data.source_of_truth_doc_id)
+          : data.source_of_truth_doc_id
+        setSot(parsed)
+      } catch {
+        setSot(null)
       }
-      setLoading(false)
     }
-    load()
-  }, [companyId])
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [companyId])
 
   function toggle(domain: string) {
     setExpanded(prev => ({ ...prev, [domain]: !prev[domain] }))
+  }
+
+  function factToKey(fact: string) {
+    return fact.slice(0, 40).toLowerCase().replace(/[^a-z0-9]+/g, '_')
   }
 
   if (loading) return null
@@ -107,7 +112,23 @@ export default function SourceOfTruth({ companyId }: Props) {
               {data.summary && <div className="sot-domain-summary">{data.summary}</div>}
               {data.key_facts?.length > 0 && (
                 <ul className="sot-fact-list">
-                  {data.key_facts.map((fact, i) => <li key={i}>{fact}</li>)}
+                  {data.key_facts.map((fact, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                      <span style={{ flex: 1 }}>{fact}</span>
+                      <button
+                        className="edit-fact-btn"
+                        onClick={e => {
+                          e.stopPropagation()
+                          setEditingFact({ key: factToKey(fact), label: fact.slice(0, 60), domain, value: fact })
+                        }}
+                        title="Edit this fact"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               )}
               {data.gaps?.length > 0 && (
@@ -130,6 +151,19 @@ export default function SourceOfTruth({ companyId }: Props) {
             {sot.critical_gaps.map((gap, i) => <li key={i}>{gap}</li>)}
           </ul>
         </div>
+      )}
+
+      {editingFact && (
+        <CorrectionPanel
+          isOpen={true}
+          onClose={() => setEditingFact(null)}
+          companyId={companyId}
+          elementKey={editingFact.key}
+          elementLabel={editingFact.label}
+          domain={editingFact.domain}
+          currentValue={editingFact.value}
+          onCorrected={() => { setEditingFact(null); load() }}
+        />
       )}
     </div>
   )
