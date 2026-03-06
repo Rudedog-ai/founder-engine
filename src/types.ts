@@ -11,8 +11,24 @@ export interface Company {
   intelligence_score: number
   intelligence_tier: string
   onboarding_status: string
+  onboarding_stage: number
+  welcome_complete: boolean
+  preferred_answer_mode?: string
+  google_folder_id?: string
+  google_connected_at?: string
+  source_of_truth_doc_id?: string
+  domain_scores: DomainScores
   user_id?: string
   created_at: string
+}
+
+export interface DomainScores {
+  financials: number
+  sales: number
+  marketing: number
+  operations: number
+  team: number
+  strategy: number
 }
 
 export interface KnowledgeEntry {

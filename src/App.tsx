@@ -4,6 +4,7 @@ import { supabase } from './supabase'
 import BottomNav from './components/BottomNav'
 import SideNav from './components/SideNav'
 import WelcomeScreen from './screens/WelcomeScreen'
+import OnboardingFlow from './screens/onboarding/OnboardingFlow'
 import DashboardScreen from './screens/DashboardScreen'
 import VoiceScreen from './screens/VoiceScreen'
 import KnowledgeScreen from './screens/KnowledgeScreen'
@@ -14,6 +15,7 @@ export default function App() {
   const { user, loading, companyId, setCompanyId } = useAuth()
   const [activeScreen, setActiveScreen] = useState('dashboard')
   const [lookingUp, setLookingUp] = useState(false)
+  const [onboardingStage, setOnboardingStage] = useState<number | null>(null)
 
   // Auto-find company by user_id, then fallback to email lookup
   useEffect(() => {
@@ -24,13 +26,14 @@ export default function App() {
         // First: try by user_id
         const { data: byUserId } = await supabase
           .from('companies')
-          .select('id, name')
+          .select('id, name, onboarding_stage')
           .eq('user_id', user!.id)
           .order('created_at', { ascending: false })
           .limit(1)
 
         if (byUserId && byUserId.length > 0) {
           setCompanyId(byUserId[0].id)
+          setOnboardingStage(byUserId[0].onboarding_stage ?? 1)
           localStorage.setItem('fe_company_name', byUserId[0].name || '')
           setLookingUp(false)
           return
@@ -40,7 +43,7 @@ export default function App() {
         if (user!.email) {
           const { data: byEmail } = await supabase
             .from('companies')
-            .select('id, name, user_id')
+            .select('id, name, user_id, onboarding_stage')
             .eq('founder_email', user!.email)
             .order('created_at', { ascending: false })
             .limit(1)
@@ -54,6 +57,7 @@ export default function App() {
                 .eq('id', byEmail[0].id)
             }
             setCompanyId(byEmail[0].id)
+            setOnboardingStage(byEmail[0].onboarding_stage ?? 1)
             localStorage.setItem('fe_company_name', byEmail[0].name || '')
             setLookingUp(false)
             return
@@ -82,6 +86,11 @@ export default function App() {
 
   if (!user || !companyId) {
     return <WelcomeScreen />
+  }
+
+  // Show onboarding flow for stages 1-2 (stages 3-5 not yet built)
+  if (onboardingStage !== null && onboardingStage < 3) {
+    return <OnboardingFlow />
   }
 
   const screens: Record<string, JSX.Element> = {

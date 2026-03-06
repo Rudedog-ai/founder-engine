@@ -1,0 +1,121 @@
+/* Onboarding Flow Styles */
+
+.onboarding-stage {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* Progress Indicator */
+.onboarding-progress {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.onboarding-progress-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.onboarding-progress-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.onboarding-progress-step {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.3s ease;
+}
+
+.onboarding-progress-step.active {
+  background: var(--accent);
+}
+
+.onboarding-progress-step.complete {
+  background: var(--green);
+}
+
+/* Welcome Stage */
+.welcome-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 auto 1.5rem;
+}
+
+.welcome-lines {
+  min-height: 180px;
+}
+
+.welcome-line {
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+/* Connect Cards */
+.connect-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.2s ease;
+}
+
+.connect-card.connected {
+  border-color: var(--green);
+}
+
+.connect-card-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.connect-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.connect-card-body h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 2px;
+}
+
+.connect-card-body p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Fade-in animation */
+.fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
