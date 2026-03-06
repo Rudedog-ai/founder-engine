@@ -1,5 +1,5 @@
 # Founder Onboarding Intelligence Engine
-### Last Updated: 6 March 2026
+### Last Updated: 7 March 2026
 
 ---
 
@@ -116,15 +116,17 @@ All tables have RLS enabled.
 
 | Function | Version | JWT | Purpose |
 |----------|---------|-----|---------|
-| `scrape-business` | v5 | false | Perplexity sonar-pro research -> Claude extraction -> knowledge_base storage |
+| `scrape-business` | v6 | false | Perplexity sonar-pro research -> Claude extraction -> knowledge_base storage |
 | `process-transcript` | v15 | false | ElevenLabs post-call webhook AND direct API calls |
-| `get-company-profile` | v11 | true | Returns full company profile. Supports `company_id` or `founder_email` lookup |
-| `onboard-company` | v10 | true | Creates company + gap_analysis rows for all 7 topics |
-| `upload-document` | v12 | true | File upload -> text extraction -> Claude analysis |
+| `get-company-profile` | v12 | false | Returns full company profile. Supports `company_id` or `founder_email` lookup |
+| `onboard-company` | v12 | false | Creates company + gap_analysis rows for all 7 topics |
+| `upload-document` | v14 | false | File upload with magic-byte MIME validation, 500MB quota, Claude analysis |
 | `process-email` | v12 | false | Email ingestion pipeline |
-| `generate-recommendations` | v12 | true | Claude generates prioritised business recommendations |
-| `invite-team-member` | v10 | true | Creates team member record |
+| `generate-recommendations` | v13 | false | Claude generates prioritised business recommendations |
+| `invite-team-member` | v11 | false | Creates team member record |
 | `test-api-key` | v6 | false | Debug tool |
+
+**Note:** All functions use `verify_jwt: false` because they use `SUPABASE_SERVICE_ROLE_KEY` internally. JWT validation was causing 401 gateway rejections.
 
 ---
 
@@ -228,7 +230,42 @@ The voice agent's prompt follows the "come prepared" philosophy:
 
 ---
 
-# 10. TECHNICAL DEBT / KNOWN ISSUES
+# 10. SECURITY
+
+## Row Level Security (RLS)
+
+### `documents` table (4 policies)
+- `users_read_own_docs` (SELECT), `users_insert_own_docs` (INSERT), `users_update_own_docs` (UPDATE), `users_delete_own_docs` (DELETE)
+- All check: `company_id IN (SELECT id FROM companies WHERE user_id = auth.uid())`
+
+### `storage.objects` — bucket `company-documents` (3 policies)
+- `users_read_own_files` (SELECT), `users_insert_own_files` (INSERT), `users_delete_own_files` (DELETE)
+- All check: `bucket_id = 'company-documents' AND folder = user's company ID`
+
+### Storage bucket `company-documents`
+- **Public**: No (private bucket)
+- **Encryption at rest**: Yes (Supabase default — all storage objects encrypted at rest)
+- **File size limit**: 50MB per file (bucket + edge function)
+- **Company quota**: 500MB total per company (enforced in `upload-document` v14)
+- **Allowed MIME types**: PDF, DOCX, XLSX, PPTX, CSV, TXT, PNG, JPEG, WebP
+- **Server-side validation**: Magic-byte detection in edge function, blocked extensions list
+
+### Edge function security (`upload-document` v14)
+- Magic-byte MIME detection (PDF, PNG, JPEG, WebP, ZIP-based Office files)
+- Text file detection for CSV/TXT
+- Blocked extensions: exe, bat, sh, js, py, html, svg, dll, jar + 20 more
+- Company storage quota enforcement (500MB)
+- Audit logging with both declared and detected MIME types
+
+### Future: Virus scanning
+- `documents.scan_status` column exists (default: 'pending')
+- Ready for ClamAV or similar integration
+
+---
+
+# 11. TECHNICAL DEBT / KNOWN ISSUES
+
+(Section renumbered — was #10)
 
 - HMAC webhook verification is lenient — logs but doesn't block
 - Duplicate knowledge entries — need upsert logic on company_id + key
@@ -240,7 +277,7 @@ The voice agent's prompt follows the "come prepared" philosophy:
 
 ---
 
-# 11. INFRASTRUCTURE
+# 12. INFRASTRUCTURE
 
 | Service | Purpose |
 |---------|---------|
@@ -252,7 +289,7 @@ The voice agent's prompt follows the "come prepared" philosophy:
 
 ---
 
-# 12. OWNER
+# 13. OWNER
 
 **Ruari Fairbairns** — rfairbairns@gmail.com
 - NOT a developer — needs exact commands
