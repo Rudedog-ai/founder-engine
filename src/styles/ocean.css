@@ -1491,6 +1491,8 @@ input::placeholder, textarea::placeholder {
         align-items: center;
         justify-content: center;
         padding: 60px 40px;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .ocean-welcome-content {
