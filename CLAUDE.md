@@ -103,7 +103,7 @@ Claude API (intelligence extraction from transcripts + research)
 ## Twilio WhatsApp Sandbox (reassigned from BrokerAgent)
 
 - **Sandbox number**: +1 415 523 8886 (standard Twilio sandbox)
-- **Join code**: `join followed-certainly` (user must send this message to the sandbox number from WhatsApp)
+- **Join code**: `join organization-softly` (user must send this message to the sandbox number from WhatsApp)
 - **Webhook URL**: `https://qzlicsovnldozbnmahsa.supabase.co/functions/v1/whatsapp-call-handler` (set in Twilio Console → Messaging → WhatsApp Sandbox Settings)
 - **Previous use**: Was configured for BrokerAgent (shelved). Reassigned to Founder Engine.
 - **Note**: Sandbox limits — only pre-joined numbers can call. Production requires WhatsApp Business API approval.

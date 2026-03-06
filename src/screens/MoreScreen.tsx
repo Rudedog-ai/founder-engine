@@ -372,7 +372,7 @@ export default function MoreScreen() {
             letterSpacing: '0.5px',
             textAlign: 'center',
           }}>
-            join followed-certainly
+            join organization-softly
           </div>
           <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '8px', marginBottom: 0 }}>
             This connects your WhatsApp to Angus. You only need to do this once.
