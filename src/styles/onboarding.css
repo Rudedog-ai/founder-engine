@@ -224,6 +224,23 @@
   font-weight: 500;
 }
 
+/* Sign Out Button (SideNav) */
+.side-nav-signout {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 6px;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.side-nav-signout:hover {
+  color: var(--red, #ff6b6b);
+}
+
 /* Fade-in animation */
 .fade-in {
   animation: fadeIn 0.6s ease forwards;

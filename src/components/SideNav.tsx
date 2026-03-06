@@ -1,4 +1,5 @@
 import { useAuth } from '../contexts/AuthContext'
+import { useState } from 'react'
 
 interface SideNavProps {
   activeScreen: string
@@ -62,7 +63,13 @@ const navItems = [
 ]
 
 export default function SideNav({ activeScreen, onNavigate }: SideNavProps) {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const [signingOut, setSigningOut] = useState(false)
+
+  async function handleSignOut() {
+    setSigningOut(true)
+    await signOut()
+  }
 
   return (
     <nav className="side-nav">
@@ -82,6 +89,13 @@ export default function SideNav({ activeScreen, onNavigate }: SideNavProps) {
       {user?.email && (
         <div className="side-nav-footer">
           <div className="side-nav-email">{user.email}</div>
+          <button
+            className="side-nav-signout"
+            onClick={handleSignOut}
+            disabled={signingOut}
+          >
+            {signingOut ? 'Signing out...' : 'Sign out'}
+          </button>
         </div>
       )}
     </nav>
