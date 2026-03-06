@@ -1469,11 +1469,14 @@ input::placeholder, textarea::placeholder {
     /* App layout: shift content right for sidebar */
     .container {
         flex-direction: row;
+        height: 100vh;
     }
 
     .content {
         margin-left: 240px;
         width: calc(100% - 240px);
+        height: 100vh;
+        overflow-y: auto;
         padding-bottom: 0;
     }
 
