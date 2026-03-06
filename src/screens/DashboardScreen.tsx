@@ -3,6 +3,9 @@ import { useAuth } from '../contexts/AuthContext'
 import { getCompanyProfile } from '../api'
 import { useToast } from '../components/Toast'
 import ResearchBanner from '../components/ResearchBanner'
+import IntelligenceBuilder from '../components/intelligence/IntelligenceBuilder'
+import DocumentChecklist from '../components/intelligence/DocumentChecklist'
+import SourceOfTruth from '../components/intelligence/SourceOfTruth'
 import type { CompanyProfile, GapAnalysis } from '../types'
 
 const topicLabels: Record<string, string> = {
@@ -172,6 +175,13 @@ export default function DashboardScreen() {
           )
         })}
       </div>
+
+      <div className="water-divider" />
+      <IntelligenceBuilder companyId={companyId!} domainScores={company.domain_scores} />
+      <div className="water-divider" />
+      <DocumentChecklist companyId={companyId!} documents={profile.documents} />
+      <div className="water-divider" />
+      <SourceOfTruth companyId={companyId!} />
 
       {/* Activity Feed */}
       <div className="section-title">Recent Activity</div>

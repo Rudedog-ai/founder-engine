@@ -146,6 +146,14 @@ export async function updateRecommendationStatus(
   })
 }
 
+export async function calculateDomainScores(company_id: string) {
+  return callEdgeFunction('calculate-domain-scores', { company_id })
+}
+
+export async function generateSourceOfTruth(company_id: string) {
+  return callEdgeFunction('generate-source-of-truth', { company_id })
+}
+
 export async function updateFounderPhone(
   company_id: string,
   founder_phone: string
