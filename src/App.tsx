@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './supabase'
+import ErrorBoundary from './components/ErrorBoundary'
 import BottomNav from './components/BottomNav'
 import SideNav from './components/SideNav'
 import WelcomeScreen from './screens/WelcomeScreen'
@@ -94,11 +95,11 @@ export default function App() {
   }
 
   const screens: Record<string, JSX.Element> = {
-    dashboard: <DashboardScreen />,
-    voice: <VoiceScreen />,
-    knowledge: <KnowledgeScreen />,
-    calls: <CallsScreen />,
-    more: <MoreScreen />,
+    dashboard: <ErrorBoundary fallback="Dashboard failed to load"><DashboardScreen /></ErrorBoundary>,
+    voice: <ErrorBoundary fallback="Voice session failed to load"><VoiceScreen /></ErrorBoundary>,
+    knowledge: <ErrorBoundary fallback="Knowledge screen failed to load"><KnowledgeScreen /></ErrorBoundary>,
+    calls: <ErrorBoundary fallback="Calls screen failed to load"><CallsScreen /></ErrorBoundary>,
+    more: <ErrorBoundary fallback="Settings failed to load"><MoreScreen /></ErrorBoundary>,
   }
 
   return (
