@@ -72,15 +72,37 @@ export interface Recommendation {
   status: string
 }
 
+export interface Document {
+  id: string
+  company_id: string
+  file_name: string
+  file_path: string
+  file_type: string
+  file_size_bytes: number
+  file_hash?: string
+  extracted_text?: string
+  extracted_data?: {
+    data_points?: Array<{ topic: string; key: string; value: string; confidence: number }>
+    gap_updates?: Array<{ topic: string; new_score: number; new_data_points: number }>
+    document_summary?: string
+    primary_topic?: string
+  }
+  processed: boolean
+  source: string
+  uploaded_by: string
+  uploaded_at: string
+  scan_status: string
+}
+
 export interface CompanyProfile {
-  company: Company
+  company: Company & { storage_used_bytes?: number }
   knowledge: Record<string, KnowledgeEntry[]>
   knowledge_raw: KnowledgeEntry[]
   gaps: GapAnalysis[]
   sessions: Session[]
   team: TeamMember[]
   recommendations: Recommendation[]
-  documents: unknown[]
+  documents: Document[]
   recent_activity: Array<{
     action: string
     created_at: string

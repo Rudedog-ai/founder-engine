@@ -70,7 +70,11 @@ export async function processTranscript(
   })
 }
 
-export async function uploadDocument(company_id: string, file: File) {
+export async function uploadDocument(
+  company_id: string,
+  file: File,
+  onProgress?: (percent: number) => void
+): Promise<{ success: boolean; document: import('./types').Document }> {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('company_id', company_id)
@@ -79,23 +83,38 @@ export async function uploadDocument(company_id: string, file: File) {
   const session = await supabase.auth.getSession()
   const token = session.data.session?.access_token
 
-  const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-document`,
-    {
-      method: 'POST',
-      headers: {
-        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-      },
-      body: formData,
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-document`)
+    xhr.setRequestHeader('apikey', import.meta.env.VITE_SUPABASE_ANON_KEY)
+    xhr.setRequestHeader('Authorization', `Bearer ${token || import.meta.env.VITE_SUPABASE_ANON_KEY}`)
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100))
+      }
     }
-  )
 
-  if (!response.ok) {
-    throw new Error('Failed to upload document')
-  }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText))
+        } catch {
+          reject(new Error('Invalid response from server'))
+        }
+      } else {
+        try {
+          const err = JSON.parse(xhr.responseText)
+          reject(new Error(err.error || `Upload failed (${xhr.status})`))
+        } catch {
+          reject(new Error(`Upload failed (${xhr.status})`))
+        }
+      }
+    }
 
-  return response.json()
+    xhr.onerror = () => reject(new Error('Network error during upload'))
+    xhr.send(formData)
+  })
 }
 
 export async function inviteTeamMember(
