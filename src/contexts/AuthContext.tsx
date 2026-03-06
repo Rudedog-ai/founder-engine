@@ -77,13 +77,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithGoogle() {
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: window.location.origin + '/auth/callback',
+        skipBrowserRedirect: true,
       },
     })
-    return { error: error ? new Error(error.message) : null }
+    if (error) return { error: new Error(error.message) }
+    if (data?.url) {
+      window.location.href = data.url
+      return { error: null }
+    }
+    return { error: new Error('Google sign-in is not configured. Please use email sign-in.') }
   }
 
   async function signOut() {

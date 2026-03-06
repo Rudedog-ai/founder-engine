@@ -8,6 +8,7 @@ import './styles/onboarding.css'
 import './styles/intelligence.css'
 import './styles/corrections.css'
 import './styles/questions.css'
+import './styles/angus-chat.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -11,6 +11,7 @@ import VoiceScreen from './screens/VoiceScreen'
 import KnowledgeScreen from './screens/KnowledgeScreen'
 import CallsScreen from './screens/CallsScreen'
 import MoreScreen from './screens/MoreScreen'
+import AngusChat from './components/AngusChat'
 
 export default function App() {
   const { user, loading, companyId, setCompanyId } = useAuth()
@@ -143,6 +144,7 @@ export default function App() {
         {screens[activeScreen] || <DashboardScreen />}
       </div>
       <BottomNav activeScreen={activeScreen} onNavigate={setActiveScreen} />
+      <AngusChat companyId={companyId} />
     </div>
   )
 }
