@@ -6,6 +6,7 @@ import { getCompanyProfile, uploadDocument, inviteTeamMember } from '../api'
 import WhatsAppSection from '../components/more/WhatsAppSection'
 import DocumentsSection from '../components/more/DocumentsSection'
 import RecommendationsSection from '../components/more/RecommendationsSection'
+import DataPrivacySection from '../components/more/DataPrivacySection'
 import type { CompanyProfile, Document } from '../types'
 
 const ACCEPTED_TYPES = '.pdf,.docx,.xlsx,.pptx,.csv,.txt,.png,.jpg,.jpeg,.webp'
@@ -337,6 +338,9 @@ export default function MoreScreen() {
           </div>
         )}
       </div>
+
+      {/* Data & Privacy */}
+      <DataPrivacySection companyId={companyId!} companyName={company?.name || 'my-company'} />
 
       {/* Settings */}
       <div className="section-title">Settings</div>

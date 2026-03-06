@@ -32,29 +32,28 @@
 
 ## Database Schema
 
-### companies table — all columns added across sprints (all LIVE)
+### companies table — columns to add in Sprint 1 migration
 
 ```sql
--- Sprint 1: Onboarding
-onboarding_stage INTEGER DEFAULT 1,
-welcome_complete BOOLEAN DEFAULT FALSE,
-preferred_answer_mode TEXT,
-source_of_truth_doc_id TEXT,
-domain_scores JSONB DEFAULT '{"financials":0,"sales":0,"marketing":0,"operations":0,"team":0,"strategy":0}',
-
--- Sprint 2: Google Drive OAuth
-google_folder_id TEXT,
-google_access_token TEXT,
-google_refresh_token TEXT,
-google_connected_at TIMESTAMPTZ,
-google_webhook_channel_id TEXT,
-google_webhook_expiry TIMESTAMPTZ,
-
--- Sprint 6: Stripe Billing
-stripe_customer_id TEXT,
-stripe_subscription_id TEXT,
-subscription_status TEXT DEFAULT 'free',
-subscription_plan TEXT
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS
+  google_folder_id TEXT,
+  google_access_token TEXT,
+  google_refresh_token TEXT,
+  google_connected_at TIMESTAMPTZ,
+  google_webhook_channel_id TEXT,
+  google_webhook_expiry TIMESTAMPTZ,
+  onboarding_stage INTEGER DEFAULT 1,
+  welcome_complete BOOLEAN DEFAULT FALSE,
+  preferred_answer_mode TEXT,
+  source_of_truth_doc_id TEXT,
+  domain_scores JSONB DEFAULT '{
+    "financials": 0,
+    "sales": 0,
+    "marketing": 0,
+    "operations": 0,
+    "team": 0,
+    "strategy": 0
+  }';
 ```
 
 ### knowledge_chunks (new table — Sprint 2)
@@ -223,21 +222,21 @@ Never let a new document ingest overwrite an active correction.
 
 ## Edge Functions — Full List
 
-| Function | Sprint | Status | Version |
-|----------|--------|--------|---------|
-| google-drive-oauth | 2 | SHIPPED | v1 |
-| google-drive-webhook | 2 | SHIPPED | v1 |
-| process-drive-document | 2 | SHIPPED | v1 |
-| refresh-google-tokens | 2 | SHIPPED | v1 |
-| calculate-domain-scores | 3 | SHIPPED | v3 |
-| generate-source-of-truth | 3 | SHIPPED | v1 |
-| apply-correction | 4 | SHIPPED | v1 |
-| generate-onboarding-questions | 5 | SHIPPED | v1 |
-| process-question-answer | 5 | SHIPPED | v1 |
-| create-checkout | 6 | SHIPPED | v1 |
-| stripe-webhook | 6 | SHIPPED | v1 |
-| process-inbound-email | 5 | DEFERRED | — |
-| send-questions-email | 5 | DEFERRED | — |
+| Function | Sprint | Status |
+|----------|--------|--------|
+| google-drive-oauth | 2 | TO BUILD |
+| google-drive-webhook | 2 | TO BUILD |
+| process-drive-document | 2 | TO BUILD |
+| calculate-domain-scores | 3 | TO BUILD |
+| generate-source-of-truth | 3 | TO BUILD |
+| update-source-of-truth | 3 | TO BUILD |
+| apply-correction | 4 | TO BUILD |
+| generate-onboarding-questions | 5 | TO BUILD |
+| process-inbound-email | 5 | TO BUILD |
+| send-questions-email | 5 | TO BUILD |
+| refresh-google-tokens | 2 | TO BUILD |
+| onboard-company | 1 | UPDATE |
+| process-transcript | 5 | UPDATE |
 
 ---
 
@@ -245,22 +244,20 @@ Never let a new document ingest overwrite an active correction.
 
 | Component | Sprint | Status |
 |-----------|--------|--------|
-| OnboardingFlow.tsx | 1 | SHIPPED |
-| ConnectToolsStage.tsx | 1+2 | SHIPPED (wired to real Drive OAuth) |
-| IntelligenceBuilder.tsx | 3 | SHIPPED |
-| IntelligenceSlider.tsx | 3 | SHIPPED |
-| DocumentChecklist.tsx | 3 | SHIPPED |
-| SourceOfTruth.tsx | 3 | SHIPPED (+ edit buttons Sprint 4) |
-| KnowledgeCard.tsx | 3 | SHIPPED (+ edit button Sprint 4) |
-| CorrectionPanel.tsx | 4 | SHIPPED |
-| CorrectionHistory.tsx | 4 | SHIPPED |
-| StaleDocAlert.tsx | 4 | SHIPPED |
-| QuestionBatch.tsx | 5 | SHIPPED |
-| QuestionItem.tsx | 5 | SHIPPED |
-| ModeSelector.tsx | 5 | SHIPPED |
-| WrittenAnswerMode.tsx | 5 | SHIPPED |
-| VoiceAnswerMode.tsx | 5 | SHIPPED |
-| TranscribeAnswerMode.tsx | 5 | SHIPPED |
-| EmailAnswerMode.tsx | 5 | SHIPPED |
-| ErrorBoundary.tsx | 6 | SHIPPED |
+| OnboardingFlow.tsx | 1 | TO BUILD |
+| ConnectToolsScreen.tsx | 1 | TO BUILD |
+| IntelligenceBuilder.tsx | 3 | TO BUILD |
+| IntelligenceSlider.tsx | 3 | TO BUILD |
+| DocumentChecklist.tsx | 3 | TO BUILD |
+| SourceOfTruth.tsx | 3 | TO BUILD |
+| KnowledgeCard.tsx | 4 | TO BUILD |
+| CorrectionPanel.tsx | 4 | TO BUILD |
+| StaleDocAlert.tsx | 4 | TO BUILD |
+| QuestionBatch.tsx | 5 | TO BUILD |
+| VoiceAnswerMode.tsx | 5 | TO BUILD |
+| TranscribeAnswerMode.tsx | 5 | TO BUILD |
+| WrittenAnswerMode.tsx | 5 | TO BUILD |
+| EmailAnswerMode.tsx | 5 | TO BUILD |
+| Dashboard.tsx | 3 | UPDATE |
+| AngusWidget.tsx | 4 | UPDATE |
 

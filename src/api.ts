@@ -185,6 +185,47 @@ export async function processQuestionAnswer(
   })
 }
 
+export async function resetCompany(companyId: string): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession()
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-company`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ company_id: companyId }),
+    }
+  )
+  if (!res.ok) throw new Error('Reset failed')
+}
+
+export async function exportCompany(companyId: string, companyName: string): Promise<void> {
+  const { data: { session } } = await supabase.auth.getSession()
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-company`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ company_id: companyId }),
+    }
+  )
+  if (!res.ok) throw new Error('Export failed')
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `founder-engine-${companyName.replace(/\s+/g, '-').toLowerCase()}.txt`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
 export async function updateFounderPhone(
   company_id: string,
   founder_phone: string

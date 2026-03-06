@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { getCompanyProfile } from '../api'
+import { supabase } from '../supabase'
 import { useToast } from '../components/Toast'
 import ResearchBanner from '../components/ResearchBanner'
 import IntelligenceBuilder from '../components/intelligence/IntelligenceBuilder'
@@ -56,7 +57,7 @@ export default function DashboardScreen() {
   const [profile, setProfile] = useState<CompanyProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  function loadProfile() {
+  const loadProfile = useCallback(() => {
     if (!companyId) return
     getCompanyProfile(companyId)
       .then(setProfile)
@@ -65,12 +66,29 @@ export default function DashboardScreen() {
         showToast('Failed to load dashboard data', 'error')
       })
       .finally(() => setLoading(false))
-  }
+  }, [companyId])
 
   useEffect(() => {
     setLoading(true)
     loadProfile()
-  }, [companyId])
+  }, [loadProfile])
+
+  // Realtime: reload when domain_scores update so sliders animate live
+  useEffect(() => {
+    if (!companyId) return
+    const channel = supabase
+      .channel('domain-scores')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'companies',
+        filter: `id=eq.${companyId}`,
+      }, () => {
+        loadProfile()
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [companyId, loadProfile])
 
   function handleResearchComplete() {
     showToast('Research complete! Updating your dashboard...')
