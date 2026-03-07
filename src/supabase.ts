@@ -1,4 +1,4 @@
-// supabase v2 — client init with manual session detection
+// supabase v3 — client init with PKCE flow
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -10,6 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
+    flowType: 'pkce',
     autoRefreshToken: true,
     persistSession: true,
     // We handle code exchange manually in AuthCallbackScreen
