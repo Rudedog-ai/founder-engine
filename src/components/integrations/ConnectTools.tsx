@@ -1,5 +1,5 @@
-// ConnectTools v7 — Match Composio auth configs exactly
-import { useEffect, useState } from 'react'
+// ConnectTools v8 — Auto-sync pending statuses via check-integration-status
+import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../../supabase'
 import { useToast } from '../Toast'
 import { LOGOS } from './logos'
@@ -34,7 +34,6 @@ const APPS: ComposioApp[] = [
   { key: 'calendly', name: 'Calendly', logo: LOGOS.calendly, description: 'Meeting scheduling' },
 ]
 
-// Top 5 shown in compact (onboarding) mode
 const TOP_5_KEYS = ['xero', 'hubspot', 'slack', 'google_drive', 'notion']
 
 interface Props {
@@ -48,7 +47,7 @@ export default function ConnectTools({ companyId, compact }: Props) {
   const [connecting, setConnecting] = useState<string | null>(null)
   const [dataPoints, setDataPoints] = useState<Record<string, number>>({})
 
-  useEffect(() => {
+  const refreshIntegrations = useCallback(() => {
     supabase
       .from('integrations')
       .select('toolkit, status, connected_at')
@@ -59,6 +58,21 @@ export default function ConnectTools({ companyId, compact }: Props) {
         data.forEach(i => { map[i.toolkit] = i })
         setIntegrations(map)
       })
+  }, [companyId])
+
+  // Check Composio for any pending integrations and update DB
+  const syncPendingStatuses = useCallback(async () => {
+    const { data } = await supabase.functions.invoke('check-integration-status', {
+      body: { company_id: companyId },
+    })
+    if (data?.updated > 0) {
+      refreshIntegrations()
+      showToast(`${data.updated} integration${data.updated > 1 ? 's' : ''} connected!`)
+    }
+  }, [companyId, refreshIntegrations, showToast])
+
+  useEffect(() => {
+    refreshIntegrations()
 
     supabase
       .from('knowledge_chunks')
@@ -73,15 +87,34 @@ export default function ConnectTools({ companyId, compact }: Props) {
         })
         setDataPoints(counts)
       })
-  }, [companyId])
+  }, [companyId, refreshIntegrations])
 
+  // Listen for cross-tab OAuth completion broadcast
+  useEffect(() => {
+    try {
+      const bc = new BroadcastChannel('fe-integration-connected')
+      bc.onmessage = () => syncPendingStatuses()
+      return () => bc.close()
+    } catch { /* not supported */ }
+  }, [syncPendingStatuses])
+
+  // On window focus, sync any pending statuses (user may have completed OAuth in another tab)
+  useEffect(() => {
+    const hasPending = Object.values(integrations).some(i => i.status === 'pending')
+    if (!hasPending) return
+    const onFocus = () => syncPendingStatuses()
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [integrations, syncPendingStatuses])
+
+  // On mount, also sync pending statuses (page refresh after OAuth)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('integration_connected')) {
-      showToast('Integration connected!')
+      syncPendingStatuses()
       window.history.replaceState({}, '', window.location.pathname)
     }
-  }, [])
+  }, [syncPendingStatuses])
 
   async function handleConnect(appKey: string) {
     if (connecting) return
@@ -105,6 +138,7 @@ export default function ConnectTools({ companyId, compact }: Props) {
         return
       }
       window.open(data.redirect_url, '_blank')
+      refreshIntegrations()
       setConnecting(null)
     } catch {
       showToast('Connection failed — try again', 'error')
