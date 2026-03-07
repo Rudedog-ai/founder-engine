@@ -1,4 +1,4 @@
-// ConnectTools v3 — Dynamic Composio app list with fallback
+// ConnectTools v4 — Static app list, API key removed from client
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
 import { useToast } from '../Toast'
@@ -16,12 +16,7 @@ interface Integration {
   connected_at: string | null
 }
 
-const COMPOSIO_API_KEY = 'ak_pYbmkUNIS0sEpgububA3'
-const COMPOSIO_API = 'https://backend.composio.dev/api/v2/apps'
-
-const PRIORITY_KEYS = ['xero', 'hubspot', 'salesforce', 'quickbooks', 'gmail', 'linkedin', 'apollo', 'slack', 'notion', 'stripe']
-
-const FALLBACK_APPS: ComposioApp[] = [
+const APPS: ComposioApp[] = [
   { key: 'xero', name: 'Xero', logo: '', description: 'Accounting & financials' },
   { key: 'hubspot', name: 'HubSpot', logo: '', description: 'CRM & sales pipeline' },
   { key: 'salesforce', name: 'Salesforce', logo: '', description: 'CRM & customer data' },
@@ -41,44 +36,8 @@ interface Props {
 
 export default function ConnectTools({ companyId, compact }: Props) {
   const { showToast } = useToast()
-  const [apps, setApps] = useState<ComposioApp[]>([])
-  const [loadingApps, setLoadingApps] = useState(true)
   const [integrations, setIntegrations] = useState<Record<string, Integration>>({})
   const [connecting, setConnecting] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch(COMPOSIO_API, { headers: { 'x-api-key': COMPOSIO_API_KEY } })
-      .then(res => {
-        if (!res.ok) throw new Error(`API ${res.status}`)
-        return res.json()
-      })
-      .then(data => {
-        const items = Array.isArray(data) ? data : data.items || data.apps || []
-        const mapped: ComposioApp[] = items
-          .filter((a: Record<string, unknown>) => a.name && a.key)
-          .map((a: Record<string, unknown>) => ({
-            key: a.key as string,
-            name: a.name as string,
-            logo: (a.logo as string) || '',
-            description: (a.description as string) || '',
-          }))
-        if (mapped.length > 0) {
-          mapped.sort((a, b) => {
-            const ai = PRIORITY_KEYS.indexOf(a.key)
-            const bi = PRIORITY_KEYS.indexOf(b.key)
-            if (ai >= 0 && bi >= 0) return ai - bi
-            if (ai >= 0) return -1
-            if (bi >= 0) return 1
-            return a.name.localeCompare(b.name)
-          })
-          setApps(mapped)
-        } else {
-          setApps(FALLBACK_APPS)
-        }
-      })
-      .catch(() => setApps(FALLBACK_APPS))
-      .finally(() => setLoadingApps(false))
-  }, [])
 
   useEffect(() => {
     supabase
@@ -133,16 +92,7 @@ export default function ConnectTools({ companyId, compact }: Props) {
     }
   }
 
-  if (loadingApps) {
-    return (
-      <div style={{ textAlign: 'center', padding: '20px' }}>
-        <div className="spinner" />
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '8px' }}>Loading integrations...</p>
-      </div>
-    )
-  }
-
-  const displayApps = compact ? apps.slice(0, 12) : apps
+  const displayApps = compact ? APPS.slice(0, 12) : APPS
 
   return (
     <>
