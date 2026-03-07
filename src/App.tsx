@@ -1,4 +1,4 @@
-// App v3 — main routing with onboarding status check
+// App v4 — routing with airtight onboarding gate
 import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './supabase'
@@ -15,13 +15,12 @@ import MoreScreen from './screens/MoreScreen'
 import AngusChat from './components/AngusChat'
 import AuthCallbackScreen from './screens/AuthCallbackScreen'
 
-type OnboardingState = 'loading' | 'onboarding' | 'complete'
+type Route = 'loading' | 'welcome' | 'onboarding' | 'dashboard'
 
 export default function App() {
-  const { user, loading, companyId, setCompanyId } = useAuth()
+  const { user, loading: authLoading, companyId, setCompanyId } = useAuth()
   const [activeScreen, setActiveScreen] = useState('dashboard')
-  const [companyLoading, setCompanyLoading] = useState(false)
-  const [onboardingState, setOnboardingState] = useState<OnboardingState>('loading')
+  const [route, setRoute] = useState<Route>('loading')
 
   // Auth callback — render before anything else
   if (window.location.pathname === '/auth/callback') {
@@ -36,37 +35,36 @@ export default function App() {
     }
   }, [])
 
-  // Fetch company and onboarding status after auth resolves
+  // Resolve route after auth loads
   useEffect(() => {
-    if (!user) {
-      setOnboardingState('loading')
+    // Still waiting for auth
+    if (authLoading) { setRoute('loading'); return }
+
+    // No user — welcome screen
+    if (!user) { setRoute('welcome'); return }
+
+    // User exists but no companyId — find company
+    if (!companyId) {
+      setRoute('loading')
+      findCompany()
       return
     }
 
-    // If companyId is cached, check its onboarding status
-    if (companyId) {
-      setCompanyLoading(true)
-      supabase
-        .from('companies')
-        .select('onboarding_status')
-        .eq('id', companyId)
-        .single()
-        .then(({ data, error }) => {
-          if (error || !data) {
-            setOnboardingState('onboarding')
-          } else if (data.onboarding_status === 'complete' || data.onboarding_status === 'active') {
-            setOnboardingState('complete')
-          } else {
-            setOnboardingState('onboarding')
-          }
-          setCompanyLoading(false)
-        })
-      return
-    }
-
-    // No companyId — look up by user_id, then email
-    setCompanyLoading(true)
-    findCompany()
+    // User + companyId — check onboarding status
+    setRoute('loading')
+    supabase
+      .from('companies')
+      .select('onboarding_status')
+      .eq('id', companyId)
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          setRoute('onboarding')
+        } else {
+          const s = data.onboarding_status
+          setRoute(s === 'complete' || s === 'active' ? 'dashboard' : 'onboarding')
+        }
+      })
 
     async function findCompany() {
       const { data: byUserId } = await supabase
@@ -79,9 +77,8 @@ export default function App() {
       if (byUserId && byUserId.length > 0) {
         setCompanyId(byUserId[0].id)
         localStorage.setItem('fe_company_name', byUserId[0].name || '')
-        const status = byUserId[0].onboarding_status
-        setOnboardingState(status === 'complete' || status === 'active' ? 'complete' : 'onboarding')
-        setCompanyLoading(false)
+        const s = byUserId[0].onboarding_status
+        setRoute(s === 'complete' || s === 'active' ? 'dashboard' : 'onboarding')
         return
       }
 
@@ -99,20 +96,18 @@ export default function App() {
           }
           setCompanyId(byEmail[0].id)
           localStorage.setItem('fe_company_name', byEmail[0].name || '')
-          const status = byEmail[0].onboarding_status
-          setOnboardingState(status === 'complete' || status === 'active' ? 'complete' : 'onboarding')
-          setCompanyLoading(false)
+          const s = byEmail[0].onboarding_status
+          setRoute(s === 'complete' || s === 'active' ? 'dashboard' : 'onboarding')
           return
         }
       }
 
-      // No company found — will show WelcomeScreen
-      setCompanyLoading(false)
+      // No company found
+      setRoute('welcome')
     }
-  }, [user, companyId])
+  }, [authLoading, user, companyId])
 
-  // Loading states
-  if (loading || companyLoading) {
+  if (route === 'loading') {
     return (
       <div className="container">
         <div className="content">
@@ -125,12 +120,12 @@ export default function App() {
     )
   }
 
-  if (!user || !companyId) {
+  if (route === 'welcome' || !user || !companyId) {
     return <WelcomeScreen />
   }
 
-  if (onboardingState === 'onboarding') {
-    return <OnboardingFlow onComplete={() => setOnboardingState('complete')} />
+  if (route === 'onboarding') {
+    return <OnboardingFlow onComplete={() => setRoute('dashboard')} />
   }
 
   const screens: Record<string, JSX.Element> = {

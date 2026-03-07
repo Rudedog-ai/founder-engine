@@ -1,3 +1,4 @@
+// supabase v2 — client init with manual session detection
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -11,6 +12,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
+    // We handle code exchange manually in AuthCallbackScreen
+    detectSessionInUrl: false,
   },
 })
