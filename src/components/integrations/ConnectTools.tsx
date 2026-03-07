@@ -1,4 +1,4 @@
-// ConnectTools v4 — Static app list, API key removed from client
+// ConnectTools v5 — Grid layout, brand logos, counter, Connected ✓ with data points
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
 import { useToast } from '../Toast'
@@ -17,17 +17,21 @@ interface Integration {
 }
 
 const APPS: ComposioApp[] = [
-  { key: 'xero', name: 'Xero', logo: '', description: 'Accounting & financials' },
-  { key: 'hubspot', name: 'HubSpot', logo: '', description: 'CRM & sales pipeline' },
-  { key: 'salesforce', name: 'Salesforce', logo: '', description: 'CRM & customer data' },
-  { key: 'quickbooks', name: 'QuickBooks', logo: '', description: 'Accounting & invoicing' },
-  { key: 'gmail', name: 'Gmail', logo: '', description: 'Email' },
-  { key: 'linkedin', name: 'LinkedIn', logo: '', description: 'Professional network' },
-  { key: 'apollo', name: 'Apollo', logo: '', description: 'Lead intelligence' },
-  { key: 'slack', name: 'Slack', logo: '', description: 'Team communication' },
-  { key: 'notion', name: 'Notion', logo: '', description: 'Docs & knowledge base' },
-  { key: 'stripe', name: 'Stripe', logo: '', description: 'Payments & billing' },
+  { key: 'xero', name: 'Xero', logo: 'https://logo.clearbit.com/xero.com', description: 'Accounting & financials' },
+  { key: 'hubspot', name: 'HubSpot', logo: 'https://logo.clearbit.com/hubspot.com', description: 'CRM & sales pipeline' },
+  { key: 'slack', name: 'Slack', logo: 'https://logo.clearbit.com/slack.com', description: 'Team communication' },
+  { key: 'google_drive', name: 'Google Drive', logo: 'https://logo.clearbit.com/google.com', description: 'Documents & files' },
+  { key: 'notion', name: 'Notion', logo: 'https://logo.clearbit.com/notion.so', description: 'Docs & knowledge base' },
+  { key: 'salesforce', name: 'Salesforce', logo: 'https://logo.clearbit.com/salesforce.com', description: 'CRM & customer data' },
+  { key: 'quickbooks', name: 'QuickBooks', logo: 'https://logo.clearbit.com/quickbooks.intuit.com', description: 'Accounting & invoicing' },
+  { key: 'gmail', name: 'Gmail', logo: 'https://logo.clearbit.com/gmail.com', description: 'Email' },
+  { key: 'linkedin', name: 'LinkedIn', logo: 'https://logo.clearbit.com/linkedin.com', description: 'Professional network' },
+  { key: 'apollo', name: 'Apollo', logo: 'https://logo.clearbit.com/apollo.io', description: 'Lead intelligence' },
+  { key: 'stripe', name: 'Stripe', logo: 'https://logo.clearbit.com/stripe.com', description: 'Payments & billing' },
 ]
+
+// Top 5 shown in compact (onboarding) mode
+const TOP_5_KEYS = ['xero', 'hubspot', 'slack', 'google_drive', 'notion']
 
 interface Props {
   companyId: string
@@ -38,6 +42,7 @@ export default function ConnectTools({ companyId, compact }: Props) {
   const { showToast } = useToast()
   const [integrations, setIntegrations] = useState<Record<string, Integration>>({})
   const [connecting, setConnecting] = useState<string | null>(null)
+  const [dataPoints, setDataPoints] = useState<Record<string, number>>({})
 
   useEffect(() => {
     supabase
@@ -49,6 +54,21 @@ export default function ConnectTools({ companyId, compact }: Props) {
         const map: Record<string, Integration> = {}
         data.forEach(i => { map[i.toolkit] = i })
         setIntegrations(map)
+      })
+
+    // Fetch knowledge chunk counts per domain for connected integrations
+    supabase
+      .from('knowledge_chunks')
+      .select('domain')
+      .eq('company_id', companyId)
+      .then(({ data }) => {
+        if (!data) return
+        const counts: Record<string, number> = {}
+        data.forEach(chunk => {
+          const d = chunk.domain || 'other'
+          counts[d] = (counts[d] || 0) + 1
+        })
+        setDataPoints(counts)
       })
   }, [companyId])
 
@@ -92,17 +112,44 @@ export default function ConnectTools({ companyId, compact }: Props) {
     }
   }
 
-  const displayApps = compact ? APPS.slice(0, 12) : APPS
+  const displayApps = compact ? APPS.filter(a => TOP_5_KEYS.includes(a.key)) : APPS
+  const connectedCount = displayApps.filter(a => {
+    const s = integrations[a.key]?.status
+    return s === 'connected' || s === 'active'
+  }).length
+
+  // Map toolkit keys to knowledge domains for data point counts
+  const toolkitDomainMap: Record<string, string> = {
+    xero: 'financials', quickbooks: 'financials',
+    hubspot: 'sales', salesforce: 'sales', apollo: 'sales',
+    gmail: 'operations', slack: 'operations',
+    notion: 'strategy', google_drive: 'strategy',
+    linkedin: 'marketing', stripe: 'financials',
+  }
 
   return (
     <>
       {!compact && <div className="section-title">Connect Tools</div>}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
+      <div style={{
+        fontSize: '0.8rem',
+        color: 'var(--text-muted)',
+        marginBottom: '10px',
+        textAlign: compact ? 'center' : 'left',
+      }}>
+        {connectedCount} of {displayApps.length} connected
+      </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+        gap: '10px',
+      }}>
         {displayApps.map(app => {
           const integration = integrations[app.key]
           const isConnected = integration?.status === 'connected' || integration?.status === 'active'
           const isPending = integration?.status === 'pending'
           const isConnecting = connecting === app.key
+          const domain = toolkitDomainMap[app.key]
+          const points = domain ? (dataPoints[domain] || 0) : 0
 
           return (
             <div key={app.key} className="card" style={{
@@ -112,23 +159,38 @@ export default function ConnectTools({ companyId, compact }: Props) {
               opacity: isConnected ? 1 : 0.85,
               border: isConnected ? '1px solid var(--biolum)' : undefined,
             }}>
-              {app.logo ? (
-                <img src={app.logo} alt="" style={{ width: 28, height: 28, borderRadius: 6, marginBottom: 8, objectFit: 'contain', display: 'block', margin: '0 auto 8px' }} />
-              ) : (
-                <div style={{
-                  width: 28, height: 28, borderRadius: 6,
-                  background: 'var(--sea)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)', margin: '0 auto 8px',
-                }}>
-                  {app.name.charAt(0)}
-                </div>
-              )}
+              <img
+                src={app.logo}
+                alt=""
+                style={{
+                  width: 32, height: 32, borderRadius: 6,
+                  objectFit: 'contain', display: 'block',
+                  margin: '0 auto 8px', background: '#fff', padding: 2,
+                }}
+                onError={e => {
+                  (e.target as HTMLImageElement).style.display = 'none'
+                  const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement
+                  if (fallback) fallback.style.display = 'flex'
+                }}
+              />
+              <div style={{
+                width: 32, height: 32, borderRadius: 6,
+                background: 'var(--sea)', display: 'none', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)', margin: '0 auto 8px',
+              }}>
+                {app.name.charAt(0)}
+              </div>
               <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '2px' }}>{app.name}</div>
-              {app.description && (
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{app.description}</div>
-              )}
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{app.description}</div>
               {isConnected ? (
-                <span style={{ fontSize: '0.75rem', color: 'var(--biolum)' }}>Connected</span>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--biolum)', fontWeight: 600 }}>Connected ✓</span>
+                  {points > 0 && (
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {points} data point{points !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <button
                   className="btn btn-primary btn-small"
