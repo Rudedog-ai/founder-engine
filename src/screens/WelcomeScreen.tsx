@@ -22,11 +22,12 @@ export default function WelcomeScreen() {
   const [companyName, setCompanyNameRaw] = useState(() => sessionStorage.getItem('fe_draft_company') || '')
   const [founderName, setFounderNameRaw] = useState(() => sessionStorage.getItem('fe_draft_founder') || '')
   const [website, setWebsiteRaw] = useState(() => sessionStorage.getItem('fe_draft_website') || '')
-  const [scraping, setScraping] = useState(false)
+  const [industry, setIndustryRaw] = useState(() => sessionStorage.getItem('fe_draft_industry') || '')
 
   function setCompanyName(v: string) { setCompanyNameRaw(v); sessionStorage.setItem('fe_draft_company', v) }
   function setFounderName(v: string) { setFounderNameRaw(v); sessionStorage.setItem('fe_draft_founder', v) }
   function setWebsite(v: string) { setWebsiteRaw(v); sessionStorage.setItem('fe_draft_website', v) }
+  function setIndustry(v: string) { setIndustryRaw(v); sessionStorage.setItem('fe_draft_industry', v) }
 
   async function handleGoogle() {
     setError('')
@@ -78,7 +79,6 @@ export default function WelcomeScreen() {
     }
 
     setLoading(true)
-    setScraping(true)
 
     try {
       const founderEmail = user?.email || email
@@ -103,7 +103,6 @@ export default function WelcomeScreen() {
         localStorage.setItem('fe_email', founderEmail)
         localStorage.setItem('fe_company_name', existing[0].name || companyName.trim())
         showToast('Welcome back! Found your existing company.')
-        setScraping(false)
         setLoading(false)
         return
       }
@@ -112,7 +111,8 @@ export default function WelcomeScreen() {
         companyName.trim(),
         founderName.trim(),
         founderEmail,
-        website.trim() || undefined
+        website.trim() || undefined,
+        industry.trim() || undefined
       )
 
       const companyId = result.company?.id || result.company_id
@@ -129,11 +129,11 @@ export default function WelcomeScreen() {
       sessionStorage.removeItem('fe_draft_company')
       sessionStorage.removeItem('fe_draft_founder')
       sessionStorage.removeItem('fe_draft_website')
+      sessionStorage.removeItem('fe_draft_industry')
 
       showToast('Account created! Welcome to Founder Engine.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Onboarding failed')
-      setScraping(false)
     } finally {
       setLoading(false)
     }
@@ -166,7 +166,7 @@ export default function WelcomeScreen() {
           AI-powered company intelligence. Voice-first onboarding that actually understands your business.
         </p>
 
-        {!needsOnboarding && !scraping && (
+        {!needsOnboarding && (
           <div className="ocean-form-card">
             {!showEmailForm ? (
               <>
@@ -278,7 +278,7 @@ export default function WelcomeScreen() {
           </div>
         )}
 
-        {needsOnboarding && !scraping && (
+        {needsOnboarding && (
           <div className="ocean-form-card">
             <h3 style={{ marginBottom: 'var(--gap)', color: 'var(--text)' }}>Tell us about your company</h3>
             <form onSubmit={handleOnboard}>
@@ -309,6 +309,21 @@ export default function WelcomeScreen() {
                   onChange={e => setWebsite(e.target.value)}
                 />
               </div>
+              <div className="form-group">
+                <label>Industry</label>
+                <select value={industry} onChange={e => setIndustry(e.target.value)}>
+                  <option value="">Select your industry...</option>
+                  <option value="technology">Technology</option>
+                  <option value="ecommerce">E-commerce</option>
+                  <option value="professional_services">Professional Services</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="finance">Finance</option>
+                  <option value="manufacturing">Manufacturing</option>
+                  <option value="food_beverage">Food & Beverage</option>
+                  <option value="education">Education</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
 
               {error && (
                 <div style={{
@@ -331,13 +346,6 @@ export default function WelcomeScreen() {
           </div>
         )}
 
-        {scraping && (
-          <div className="ocean-form-card" style={{ textAlign: 'center' }}>
-            <div className="spinner" style={{ marginBottom: 'var(--gap)' }} />
-            <h3 style={{ color: 'var(--text)' }}>Researching your business...</h3>
-            <p>Angus is reviewing your company and public information.</p>
-          </div>
-        )}
       </div>
     </div>
   )
