@@ -35,7 +35,7 @@ export default function AngusChat({ companyId }: Props) {
       const result = await angusChat(companyId, text)
       setMessages(prev => [...prev, {
         role: 'angus',
-        text: result.reply || 'No response',
+        text: result.reply || result.response || 'No response',
         campaign: result.campaign_proposed,
       }])
     } catch {

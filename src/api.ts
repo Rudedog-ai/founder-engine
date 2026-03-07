@@ -193,7 +193,8 @@ export interface CampaignProposed {
 }
 
 export interface AngusChatResponse {
-  reply: string
+  reply?: string
+  response?: string
   campaign_proposed?: CampaignProposed
 }
 

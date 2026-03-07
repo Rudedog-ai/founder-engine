@@ -1,11 +1,11 @@
-// connect-integration v4.0.0 — Initiate Composio OAuth flow (v2 API with v1 fallback)
+// connect-integration v5.0.0 — Initiate Composio OAuth flow (v3 API)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const COMPOSIO_API_KEY = Deno.env.get('COMPOSIO_API_KEY')!
-const COMPOSIO_BASE = 'https://backend.composio.dev/api'
+const COMPOSIO_BASE = 'https://backend.composio.dev/api/v3'
 const DEFAULT_REDIRECT = 'https://founder-engine-seven.vercel.app/integrations/callback'
 
 const corsHeaders = {
@@ -18,37 +18,34 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders })
 }
 
-async function tryComposioV2(
-  companyId: string,
-  toolkit: string,
-  redirectUri: string,
-): Promise<{ ok: boolean; data: Record<string, unknown>; status: number }> {
-  const res = await fetch(`${COMPOSIO_BASE}/v2/connectedAccounts`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': COMPOSIO_API_KEY },
-    body: JSON.stringify({
-      entityId: companyId,
-      appName: toolkit.toUpperCase(),
-      redirectUri,
-      authMode: 'OAUTH2',
-    }),
+async function getAuthConfigId(toolkit: string): Promise<string | null> {
+  const res = await fetch(`${COMPOSIO_BASE}/auth_configs?toolkit=${toolkit.toUpperCase()}`, {
+    headers: { 'x-api-key': COMPOSIO_API_KEY },
   })
+  if (!res.ok) {
+    console.error(`Failed to fetch auth configs for ${toolkit}: ${res.status}`)
+    return null
+  }
   const data = await res.json()
-  return { ok: res.ok, data, status: res.status }
+  const items = data.items || data.data || data
+  if (Array.isArray(items) && items.length > 0) {
+    return items[0].id || items[0].nanoid || null
+  }
+  return null
 }
 
-async function tryComposioV1(
-  companyId: string,
-  toolkit: string,
-  redirectUri: string,
+async function createLinkSession(
+  authConfigId: string,
+  userId: string,
+  callbackUrl: string,
 ): Promise<{ ok: boolean; data: Record<string, unknown>; status: number }> {
-  const res = await fetch(`${COMPOSIO_BASE}/v1/connectedAccounts`, {
+  const res = await fetch(`${COMPOSIO_BASE}/connected_accounts/link`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': COMPOSIO_API_KEY },
     body: JSON.stringify({
-      entityId: companyId,
-      appName: toolkit.toUpperCase(),
-      redirectUri,
+      auth_config_id: authConfigId,
+      user_id: userId,
+      callback_url: callbackUrl,
     }),
   })
   const data = await res.json()
@@ -88,19 +85,24 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: 'Company not found or not owned by user' }, 403)
   }
 
-  const redirectUri = redirect_uri || DEFAULT_REDIRECT
+  const callbackUrl = redirect_uri || DEFAULT_REDIRECT
 
-  // Try Composio v2 first, fall back to v1 on 404/400
-  console.log(`Initiating Composio connection: toolkit=${toolkit}, company=${company_id}`)
-  let result = await tryComposioV2(company_id, toolkit, redirectUri)
-
-  if (!result.ok && (result.status === 404 || result.status === 400)) {
-    console.log(`Composio v2 returned ${result.status}, falling back to v1`)
-    result = await tryComposioV1(company_id, toolkit, redirectUri)
+  // Step 1: Get auth config ID for this toolkit
+  console.log(`Looking up auth config for toolkit=${toolkit}`)
+  const authConfigId = await getAuthConfigId(toolkit)
+  if (!authConfigId) {
+    return jsonResponse({
+      error: 'No auth config found for this integration',
+      detail: `No Composio auth config exists for ${toolkit.toUpperCase()}. Configure it in the Composio dashboard first.`,
+    }, 404)
   }
 
+  // Step 2: Create link session
+  console.log(`Creating link session: authConfigId=${authConfigId}, company=${company_id}`)
+  const result = await createLinkSession(authConfigId, company_id, callbackUrl)
+
   if (!result.ok) {
-    console.error('Composio error response:', JSON.stringify(result.data))
+    console.error('Composio link error:', JSON.stringify(result.data))
     return jsonResponse({
       error: 'Failed to initiate connection',
       detail: result.data.message || result.data.error || result.data,
@@ -108,7 +110,7 @@ Deno.serve(async (req: Request) => {
     }, 500)
   }
 
-  console.log('Composio success:', JSON.stringify(result.data))
+  console.log('Composio link success:', JSON.stringify(result.data))
 
   // Upsert integration record
   const { error: upsertError } = await supabase
@@ -117,7 +119,7 @@ Deno.serve(async (req: Request) => {
       company_id,
       toolkit: toolkit.toLowerCase(),
       status: 'pending',
-      composio_connection_id: result.data.connectedAccountId || result.data.id || null,
+      composio_connection_id: result.data.connected_account_id || null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'company_id,toolkit' })
 
@@ -126,8 +128,9 @@ Deno.serve(async (req: Request) => {
   }
 
   return jsonResponse({
-    redirect_url: result.data.redirectUrl || result.data.redirectUri || null,
-    connection_id: result.data.connectedAccountId || result.data.id || null,
-    status: result.data.connectionStatus || 'initiated',
+    redirect_url: result.data.redirect_url || null,
+    connection_id: result.data.connected_account_id || null,
+    link_token: result.data.link_token || null,
+    status: 'initiated',
   })
 })
