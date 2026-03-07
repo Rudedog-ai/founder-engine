@@ -1,4 +1,4 @@
-// ConnectTools v6 — Inline SVG logos, no external dependencies
+// ConnectTools v7 — Match Composio auth configs exactly
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
 import { useToast } from '../Toast'
@@ -23,12 +23,15 @@ const APPS: ComposioApp[] = [
   { key: 'slack', name: 'Slack', logo: LOGOS.slack, description: 'Team communication' },
   { key: 'google_drive', name: 'Google Drive', logo: LOGOS.google_drive, description: 'Documents & files' },
   { key: 'notion', name: 'Notion', logo: LOGOS.notion, description: 'Docs & knowledge base' },
-  { key: 'salesforce', name: 'Salesforce', logo: LOGOS.salesforce, description: 'CRM & customer data' },
-  { key: 'quickbooks', name: 'QuickBooks', logo: LOGOS.quickbooks, description: 'Accounting & invoicing' },
   { key: 'gmail', name: 'Gmail', logo: LOGOS.gmail, description: 'Email' },
-  { key: 'linkedin', name: 'LinkedIn', logo: LOGOS.linkedin, description: 'Professional network' },
-  { key: 'apollo', name: 'Apollo', logo: LOGOS.apollo, description: 'Lead intelligence' },
   { key: 'stripe', name: 'Stripe', logo: LOGOS.stripe, description: 'Payments & billing' },
+  { key: 'google_calendar', name: 'Google Calendar', logo: LOGOS.google_calendar, description: 'Scheduling' },
+  { key: 'google_sheets', name: 'Google Sheets', logo: LOGOS.google_sheets, description: 'Spreadsheets' },
+  { key: 'google_docs', name: 'Google Docs', logo: LOGOS.google_docs, description: 'Documents' },
+  { key: 'google_analytics', name: 'Google Analytics', logo: LOGOS.google_analytics, description: 'Web analytics' },
+  { key: 'google_ads', name: 'Google Ads', logo: LOGOS.google_ads, description: 'Ad campaigns' },
+  { key: 'monday', name: 'Monday', logo: LOGOS.monday, description: 'Project management' },
+  { key: 'calendly', name: 'Calendly', logo: LOGOS.calendly, description: 'Meeting scheduling' },
 ]
 
 // Top 5 shown in compact (onboarding) mode
@@ -57,7 +60,6 @@ export default function ConnectTools({ companyId, compact }: Props) {
         setIntegrations(map)
       })
 
-    // Fetch knowledge chunk counts per domain for connected integrations
     supabase
       .from('knowledge_chunks')
       .select('domain')
@@ -93,21 +95,18 @@ export default function ConnectTools({ companyId, compact }: Props) {
         },
       })
       if (error) {
-        console.error('connect-integration error:', error)
         showToast(error.message || 'Could not start connection', 'error')
         setConnecting(null)
         return
       }
       if (!data?.redirect_url) {
-        console.error('connect-integration: no redirect_url:', data)
         showToast(data?.error || 'No redirect URL returned', 'error')
         setConnecting(null)
         return
       }
       window.open(data.redirect_url, '_blank')
       setConnecting(null)
-    } catch (err) {
-      console.error('connect-integration exception:', err)
+    } catch {
       showToast('Connection failed — try again', 'error')
       setConnecting(null)
     }
@@ -119,13 +118,13 @@ export default function ConnectTools({ companyId, compact }: Props) {
     return s === 'connected' || s === 'active'
   }).length
 
-  // Map toolkit keys to knowledge domains for data point counts
   const toolkitDomainMap: Record<string, string> = {
-    xero: 'financials', quickbooks: 'financials',
-    hubspot: 'sales', salesforce: 'sales', apollo: 'sales',
-    gmail: 'operations', slack: 'operations',
-    notion: 'strategy', google_drive: 'strategy',
-    linkedin: 'marketing', stripe: 'financials',
+    xero: 'financials', stripe: 'financials',
+    hubspot: 'sales',
+    gmail: 'operations', slack: 'operations', monday: 'operations', calendly: 'operations',
+    notion: 'strategy', google_drive: 'strategy', google_docs: 'strategy',
+    google_sheets: 'financials', google_analytics: 'marketing', google_ads: 'marketing',
+    google_calendar: 'operations',
   }
 
   return (
