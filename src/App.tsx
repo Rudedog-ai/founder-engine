@@ -1,4 +1,4 @@
-// App v5 — routing with airtight onboarding gate, hooks-safe
+// App v6 — add BroadcastChannel for integration callback cross-tab sync
 import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './supabase'
@@ -24,10 +24,15 @@ export default function App() {
   const [activeScreen, setActiveScreen] = useState('dashboard')
   const [route, setRoute] = useState<Route>('loading')
 
-  // Handle Composio integration callback
+  // Handle Composio integration callback — notify original tab via BroadcastChannel
   useEffect(() => {
     if (isAuthCallback) return
     if (window.location.pathname === '/integrations/callback') {
+      try {
+        const bc = new BroadcastChannel('fe-integration-connected')
+        bc.postMessage({ connected: true })
+        bc.close()
+      } catch { /* BroadcastChannel not supported */ }
       const params = window.location.search
       window.history.replaceState({}, '', '/' + params)
     }
