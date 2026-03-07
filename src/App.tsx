@@ -33,18 +33,20 @@ export default function App() {
     return <AuthCallbackScreen />
   }
 
-  // If companyId already cached, fetch onboarding_stage from DB
+  // If companyId already cached, fetch onboarding status from DB
   useEffect(() => {
     if (user && companyId && onboardingStage === null) {
       setLookingUp(true)
       supabase
         .from('companies')
-        .select('onboarding_stage')
+        .select('onboarding_stage, onboarding_status')
         .eq('id', companyId)
         .single()
         .then(({ data, error }) => {
           if (error || !data) {
             setOnboardingStage(1)
+          } else if (data.onboarding_status === 'complete') {
+            setOnboardingStage(99)
           } else {
             setOnboardingStage(data.onboarding_stage ?? 1)
           }
@@ -62,14 +64,14 @@ export default function App() {
         // First: try by user_id
         const { data: byUserId } = await supabase
           .from('companies')
-          .select('id, name, onboarding_stage')
+          .select('id, name, onboarding_stage, onboarding_status')
           .eq('user_id', user!.id)
           .order('created_at', { ascending: false })
           .limit(1)
 
         if (byUserId && byUserId.length > 0) {
           setCompanyId(byUserId[0].id)
-          setOnboardingStage(byUserId[0].onboarding_stage ?? 1)
+          setOnboardingStage(byUserId[0].onboarding_status === 'complete' ? 99 : (byUserId[0].onboarding_stage ?? 1))
           localStorage.setItem('fe_company_name', byUserId[0].name || '')
           setLookingUp(false)
           return
@@ -79,7 +81,7 @@ export default function App() {
         if (user!.email) {
           const { data: byEmail } = await supabase
             .from('companies')
-            .select('id, name, user_id, onboarding_stage')
+            .select('id, name, user_id, onboarding_stage, onboarding_status')
             .eq('founder_email', user!.email)
             .order('created_at', { ascending: false })
             .limit(1)
@@ -93,7 +95,7 @@ export default function App() {
                 .eq('id', byEmail[0].id)
             }
             setCompanyId(byEmail[0].id)
-            setOnboardingStage(byEmail[0].onboarding_stage ?? 1)
+            setOnboardingStage(byEmail[0].onboarding_status === 'complete' ? 99 : (byEmail[0].onboarding_stage ?? 1))
             localStorage.setItem('fe_company_name', byEmail[0].name || '')
             setLookingUp(false)
             return

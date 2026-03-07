@@ -37,12 +37,12 @@ export default function QuestionBatch({ companyId }: QuestionBatchProps) {
   }
 
   async function loadPreference() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('companies')
       .select('preferred_answer_mode')
       .eq('id', companyId)
       .single()
-    if (data?.preferred_answer_mode) setPreferredMode(data.preferred_answer_mode)
+    if (!error && data?.preferred_answer_mode) setPreferredMode(data.preferred_answer_mode)
   }
 
   useEffect(() => {

@@ -69,18 +69,12 @@ export default function MoreScreen() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [showInviteForm, setShowInviteForm] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [driveConnected, setDriveConnected] = useState(false)
-  const [driveLoading, setDriveLoading] = useState(false)
-
   useEffect(() => {
     if (!companyId) return
     getCompanyProfile(companyId)
       .then(setProfile)
       .catch(() => showToast('Failed to load data', 'error'))
       .finally(() => setLoading(false))
-    // Check Drive connection
-    supabase.from('companies').select('google_connected_at').eq('id', companyId).single()
-      .then(({ data }) => { if (data?.google_connected_at) setDriveConnected(true) })
   }, [companyId])
 
   const reloadProfile = useCallback(async () => {
@@ -215,34 +209,6 @@ export default function MoreScreen() {
       {/* Documents */}
       <DocumentsSection documents={documents} />
 
-      {/* Connect Storage */}
-      <div className="section-title">Connect Storage</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-        <div className="card" style={{ background: 'var(--surface)', textAlign: 'center', padding: '16px', opacity: driveConnected ? 1 : undefined }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 500, marginBottom: '4px' }}>Google Drive</div>
-          {driveConnected ? (
-            <span style={{ fontSize: '0.75rem', color: '#34d399' }}>Connected</span>
-          ) : (
-            <button className="btn btn-primary btn-small" disabled={driveLoading} onClick={async () => {
-              if (!companyId || driveLoading) return
-              setDriveLoading(true)
-              try {
-                const { data, error } = await supabase.functions.invoke('google-drive-oauth', {
-                  body: { action: 'get_auth_url', company_id: companyId },
-                })
-                if (error || !data?.auth_url) { setDriveLoading(false); return }
-                window.location.href = data.auth_url
-              } catch { setDriveLoading(false) }
-            }} style={{ fontSize: '0.75rem', marginTop: 4 }}>
-              {driveLoading ? 'Connecting...' : 'Connect'}
-            </button>
-          )}
-        </div>
-        <div className="card" style={{ background: 'var(--surface)', opacity: 0.6, textAlign: 'center', padding: '16px' }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 500, marginBottom: '4px' }}>Dropbox</div>
-          <span className="badge badge-accent" style={{ fontSize: '0.65rem' }}>Coming Soon</span>
-        </div>
-      </div>
 
       {/* Team */}
       <div className="section-title">Team</div>

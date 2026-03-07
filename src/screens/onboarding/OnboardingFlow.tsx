@@ -24,10 +24,17 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
 
   async function advanceTo(nextStage: number, extraFields?: Record<string, unknown>) {
     if (!companyId) return
-    await supabase
+    const updates: Record<string, unknown> = { onboarding_stage: nextStage, ...extraFields }
+    if (nextStage > 4) {
+      updates.onboarding_status = 'complete'
+    }
+    const { error } = await supabase
       .from('companies')
-      .update({ onboarding_stage: nextStage, ...extraFields })
+      .update(updates)
       .eq('id', companyId)
+    if (error) {
+      console.error('Failed to update onboarding stage:', error)
+    }
     if (nextStage > 4) {
       onComplete()
     } else {
