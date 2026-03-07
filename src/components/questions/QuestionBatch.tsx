@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
+import { useToast } from '../Toast'
 import QuestionItem from './QuestionItem'
 
 interface QuestionBatchProps {
@@ -18,6 +19,7 @@ interface QuestionRow {
 }
 
 export default function QuestionBatch({ companyId }: QuestionBatchProps) {
+  const { showToast } = useToast()
   const [questions, setQuestions] = useState<QuestionRow[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -59,6 +61,7 @@ export default function QuestionBatch({ companyId }: QuestionBatchProps) {
       await loadQuestions()
     } catch (err) {
       console.error('Generate questions failed:', err)
+      showToast('Failed to generate questions', 'error')
     } finally {
       setGenerating(false)
     }

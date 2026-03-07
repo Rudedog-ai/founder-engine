@@ -63,7 +63,7 @@ export default function DashboardScreen() {
     getCompanyProfile(companyId)
       .then(setProfile)
       .catch(() => {
-        // Silently fail — may be called before company has profile data
+        showToast('Failed to load dashboard data', 'error')
       })
       .finally(() => setLoading(false))
   }, [companyId])

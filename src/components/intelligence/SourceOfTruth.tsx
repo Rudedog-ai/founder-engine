@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
+import { useToast } from '../Toast'
 import CorrectionPanel from '../corrections/CorrectionPanel'
 
 interface SotDomain {
@@ -31,6 +32,7 @@ interface Props {
 }
 
 export default function SourceOfTruth({ companyId }: Props) {
+  const { showToast } = useToast()
   const [sot, setSot] = useState<SotData | null>(null)
   const [score, setScore] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -38,11 +40,17 @@ export default function SourceOfTruth({ companyId }: Props) {
   const [editingFact, setEditingFact] = useState<{ key: string; label: string; domain: string; value: string } | null>(null)
 
   async function load() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('companies')
       .select('intelligence_score, source_of_truth_doc_id')
       .eq('id', companyId)
       .single()
+
+    if (error) {
+      showToast('Failed to load Source of Truth', 'error')
+      setLoading(false)
+      return
+    }
 
     setScore(data?.intelligence_score || 0)
 
