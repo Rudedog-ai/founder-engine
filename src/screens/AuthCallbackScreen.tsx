@@ -1,4 +1,4 @@
-// AuthCallbackScreen v2 — handles OAuth redirect from Supabase/Google
+// AuthCallbackScreen v3 — handles OAuth PKCE code exchange
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 
@@ -7,59 +7,37 @@ export default function AuthCallbackScreen() {
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
-    let cancelled = false
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
 
-    async function handleCallback() {
-      try {
-        // PKCE flow: exchange ?code= for a session first
-        const params = new URLSearchParams(window.location.search)
-        const code = params.get('code')
-
-        if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-          if (exchangeError) {
-            if (!cancelled) { setErrorMsg(exchangeError.message); setStatus('error') }
-            return
-          }
-          // Exchange succeeded — verify session is set
-          const { data } = await supabase.auth.getSession()
-          if (data.session) {
-            window.location.replace('/')
-            return
-          }
-        }
-
-        // Hash-based tokens (implicit flow): give client a moment to process
-        if (window.location.hash) {
-          await new Promise(r => setTimeout(r, 1000))
-          const { data } = await supabase.auth.getSession()
-          if (data.session) {
-            window.location.replace('/')
-            return
-          }
-        }
-
-        // Final check — session may have been picked up by onAuthStateChange
-        const { data } = await supabase.auth.getSession()
-        if (data.session) {
-          window.location.replace('/')
-          return
-        }
-
-        if (!cancelled) {
-          setErrorMsg('No session could be established. Please try signing in again.')
-          setStatus('error')
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setErrorMsg(err instanceof Error ? err.message : 'Unknown error')
-          setStatus('error')
-        }
-      }
+    if (!code) {
+      setErrorMsg('No auth code found in URL')
+      setStatus('error')
+      return
     }
 
-    handleCallback()
-    return () => { cancelled = true }
+    supabase.auth.exchangeCodeForSession(code)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('exchangeCodeForSession error:', error.message)
+          setErrorMsg(error.message)
+          setStatus('error')
+          return
+        }
+        // Use session from exchange response directly — no separate getSession() call
+        if (data.session) {
+          window.location.replace('/')
+        } else {
+          console.error('Exchange returned no error but no session either')
+          setErrorMsg('Sign-in succeeded but no session was returned. Please try again.')
+          setStatus('error')
+        }
+      })
+      .catch(err => {
+        console.error('Auth callback exception:', err)
+        setErrorMsg(err instanceof Error ? err.message : 'Unknown error during sign-in')
+        setStatus('error')
+      })
   }, [])
 
   if (status === 'error') {

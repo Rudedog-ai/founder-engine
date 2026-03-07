@@ -1,4 +1,4 @@
-// App v4 — routing with airtight onboarding gate
+// App v5 — routing with airtight onboarding gate, hooks-safe
 import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './supabase'
@@ -17,18 +17,16 @@ import AuthCallbackScreen from './screens/AuthCallbackScreen'
 
 type Route = 'loading' | 'welcome' | 'onboarding' | 'dashboard'
 
+const isAuthCallback = window.location.pathname === '/auth/callback'
+
 export default function App() {
   const { user, loading: authLoading, companyId, setCompanyId } = useAuth()
   const [activeScreen, setActiveScreen] = useState('dashboard')
   const [route, setRoute] = useState<Route>('loading')
 
-  // Auth callback — render before anything else
-  if (window.location.pathname === '/auth/callback') {
-    return <AuthCallbackScreen />
-  }
-
   // Handle Composio integration callback
   useEffect(() => {
+    if (isAuthCallback) return
     if (window.location.pathname === '/integrations/callback') {
       const params = window.location.search
       window.history.replaceState({}, '', '/' + params)
@@ -37,6 +35,8 @@ export default function App() {
 
   // Resolve route after auth loads
   useEffect(() => {
+    if (isAuthCallback) return
+
     // Still waiting for auth
     if (authLoading) { setRoute('loading'); return }
 
@@ -106,6 +106,11 @@ export default function App() {
       setRoute('welcome')
     }
   }, [authLoading, user, companyId])
+
+  // Auth callback — render AFTER all hooks are called (React hooks ordering rule)
+  if (isAuthCallback) {
+    return <AuthCallbackScreen />
+  }
 
   if (route === 'loading') {
     return (
