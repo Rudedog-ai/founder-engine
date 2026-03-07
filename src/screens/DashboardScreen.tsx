@@ -225,20 +225,6 @@ export default function DashboardScreen() {
         )}
       </div>
 
-      {/* Temporary reset button for testing onboarding */}
-      <div className="water-divider" />
-      <button
-        className="btn btn-block"
-        style={{ border: '1px solid #f87171', color: '#f87171', background: 'transparent', marginBottom: '2rem' }}
-        onClick={async () => {
-          if (!companyId) return
-          if (!confirm('Reset to onboarding Stage 1? (for testing)')) return
-          await supabase.from('companies').update({ onboarding_stage: 1, welcome_complete: false }).eq('id', companyId)
-          window.location.href = '/'
-        }}
-      >
-        Reset to Onboarding (testing)
-      </button>
     </div>
   )
 }
