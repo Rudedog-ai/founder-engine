@@ -1,3 +1,4 @@
+// App v3 — main routing with onboarding status check
 import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './supabase'
@@ -14,11 +15,18 @@ import MoreScreen from './screens/MoreScreen'
 import AngusChat from './components/AngusChat'
 import AuthCallbackScreen from './screens/AuthCallbackScreen'
 
+type OnboardingState = 'loading' | 'onboarding' | 'complete'
+
 export default function App() {
   const { user, loading, companyId, setCompanyId } = useAuth()
   const [activeScreen, setActiveScreen] = useState('dashboard')
-  const [lookingUp, setLookingUp] = useState(false)
-  const [onboardingStage, setOnboardingStage] = useState<number | null>(null)
+  const [companyLoading, setCompanyLoading] = useState(false)
+  const [onboardingState, setOnboardingState] = useState<OnboardingState>('loading')
+
+  // Auth callback — render before anything else
+  if (window.location.pathname === '/auth/callback') {
+    return <AuthCallbackScreen />
+  }
 
   // Handle Composio integration callback
   useEffect(() => {
@@ -28,89 +36,83 @@ export default function App() {
     }
   }, [])
 
-  // Auth callback — render dedicated screen that handles the code exchange
-  if (window.location.pathname === '/auth/callback') {
-    return <AuthCallbackScreen />
-  }
-
-  // If companyId already cached, fetch onboarding status from DB
+  // Fetch company and onboarding status after auth resolves
   useEffect(() => {
-    if (user && companyId && onboardingStage === null) {
-      setLookingUp(true)
+    if (!user) {
+      setOnboardingState('loading')
+      return
+    }
+
+    // If companyId is cached, check its onboarding status
+    if (companyId) {
+      setCompanyLoading(true)
       supabase
         .from('companies')
-        .select('onboarding_stage, onboarding_status')
+        .select('onboarding_status')
         .eq('id', companyId)
         .single()
         .then(({ data, error }) => {
           if (error || !data) {
-            setOnboardingStage(1)
-          } else if (data.onboarding_status === 'complete') {
-            setOnboardingStage(99)
+            setOnboardingState('onboarding')
+          } else if (data.onboarding_status === 'complete' || data.onboarding_status === 'active') {
+            setOnboardingState('complete')
           } else {
-            setOnboardingStage(data.onboarding_stage ?? 1)
+            setOnboardingState('onboarding')
           }
-          setLookingUp(false)
+          setCompanyLoading(false)
         })
+      return
     }
-  }, [user, companyId, onboardingStage])
 
-  // Auto-find company by user_id, then fallback to email lookup
-  useEffect(() => {
-    if (user && !companyId && !lookingUp) {
-      setLookingUp(true)
+    // No companyId — look up by user_id, then email
+    setCompanyLoading(true)
+    findCompany()
 
-      async function findCompany() {
-        // First: try by user_id
-        const { data: byUserId } = await supabase
+    async function findCompany() {
+      const { data: byUserId } = await supabase
+        .from('companies')
+        .select('id, name, onboarding_status')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (byUserId && byUserId.length > 0) {
+        setCompanyId(byUserId[0].id)
+        localStorage.setItem('fe_company_name', byUserId[0].name || '')
+        const status = byUserId[0].onboarding_status
+        setOnboardingState(status === 'complete' || status === 'active' ? 'complete' : 'onboarding')
+        setCompanyLoading(false)
+        return
+      }
+
+      if (user!.email) {
+        const { data: byEmail } = await supabase
           .from('companies')
-          .select('id, name, onboarding_stage, onboarding_status')
-          .eq('user_id', user!.id)
+          .select('id, name, user_id, onboarding_status')
+          .eq('founder_email', user!.email)
           .order('created_at', { ascending: false })
           .limit(1)
 
-        if (byUserId && byUserId.length > 0) {
-          setCompanyId(byUserId[0].id)
-          setOnboardingStage(byUserId[0].onboarding_status === 'complete' ? 99 : (byUserId[0].onboarding_stage ?? 1))
-          localStorage.setItem('fe_company_name', byUserId[0].name || '')
-          setLookingUp(false)
+        if (byEmail && byEmail.length > 0) {
+          if (!byEmail[0].user_id) {
+            await supabase.from('companies').update({ user_id: user!.id }).eq('id', byEmail[0].id)
+          }
+          setCompanyId(byEmail[0].id)
+          localStorage.setItem('fe_company_name', byEmail[0].name || '')
+          const status = byEmail[0].onboarding_status
+          setOnboardingState(status === 'complete' || status === 'active' ? 'complete' : 'onboarding')
+          setCompanyLoading(false)
           return
         }
-
-        // Fallback: try by founder_email (handles Google OAuth with different user_id)
-        if (user!.email) {
-          const { data: byEmail } = await supabase
-            .from('companies')
-            .select('id, name, user_id, onboarding_stage, onboarding_status')
-            .eq('founder_email', user!.email)
-            .order('created_at', { ascending: false })
-            .limit(1)
-
-          if (byEmail && byEmail.length > 0) {
-            // Link this auth user to the existing company
-            if (!byEmail[0].user_id) {
-              await supabase
-                .from('companies')
-                .update({ user_id: user!.id })
-                .eq('id', byEmail[0].id)
-            }
-            setCompanyId(byEmail[0].id)
-            setOnboardingStage(byEmail[0].onboarding_status === 'complete' ? 99 : (byEmail[0].onboarding_stage ?? 1))
-            localStorage.setItem('fe_company_name', byEmail[0].name || '')
-            setLookingUp(false)
-            return
-          }
-        }
-
-        setLookingUp(false)
       }
 
-      findCompany().catch(() => setLookingUp(false))
+      // No company found — will show WelcomeScreen
+      setCompanyLoading(false)
     }
   }, [user, companyId])
 
-  // Wait until we know the onboarding stage before rendering anything
-  if (loading || lookingUp || (user && companyId && onboardingStage === null)) {
+  // Loading states
+  if (loading || companyLoading) {
     return (
       <div className="container">
         <div className="content">
@@ -127,9 +129,8 @@ export default function App() {
     return <WelcomeScreen />
   }
 
-  // Show onboarding flow for stages 1-5 (stage 6+ = complete, show dashboard)
-  if (onboardingStage !== null && onboardingStage <= 4) {
-    return <OnboardingFlow onComplete={() => setOnboardingStage(5)} />
+  if (onboardingState === 'onboarding') {
+    return <OnboardingFlow onComplete={() => setOnboardingState('complete')} />
   }
 
   const screens: Record<string, JSX.Element> = {

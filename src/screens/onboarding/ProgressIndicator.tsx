@@ -1,4 +1,5 @@
-const STAGE_LABELS = ['Welcome', 'Feed Angus', 'Questions', 'Ongoing']
+// ProgressIndicator v3
+const STAGE_LABELS = ['Welcome', 'Setup']
 
 interface Props {
   currentStage: number

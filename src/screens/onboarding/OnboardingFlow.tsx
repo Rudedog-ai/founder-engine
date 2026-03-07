@@ -1,10 +1,9 @@
+// OnboardingFlow v3 — Welcome → Setup (connect tools + upload docs)
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../supabase'
 import WelcomeStage from './WelcomeStage'
-import FeedAngusStage from './FeedAngusStage'
-import QuestionsStage from './QuestionsStage'
-import OnboardingComplete from './OnboardingComplete'
+import SetupStage from './SetupStage'
 
 export default function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const { companyId } = useAuth()
@@ -14,18 +13,22 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
     if (!companyId) return
     supabase
       .from('companies')
-      .select('onboarding_stage')
+      .select('onboarding_stage, onboarding_status')
       .eq('id', companyId)
       .single()
       .then(({ data }) => {
-        setStage(data?.onboarding_stage ?? 1)
+        if (data?.onboarding_status === 'complete') {
+          onComplete()
+        } else {
+          setStage(data?.onboarding_stage ?? 1)
+        }
       })
   }, [companyId])
 
   async function advanceTo(nextStage: number, extraFields?: Record<string, unknown>) {
     if (!companyId) return
     const updates: Record<string, unknown> = { onboarding_stage: nextStage, ...extraFields }
-    if (nextStage > 4) {
+    if (nextStage > 2) {
       updates.onboarding_status = 'complete'
     }
     const { error } = await supabase
@@ -35,7 +38,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
     if (error) {
       console.error('Failed to update onboarding stage:', error)
     }
-    if (nextStage > 4) {
+    if (nextStage > 2) {
       onComplete()
     } else {
       setStage(nextStage)
@@ -56,9 +59,7 @@ export default function OnboardingFlow({ onComplete }: { onComplete: () => void 
   const stageComponent = (() => {
     switch (stage) {
       case 1: return <WelcomeStage onAdvance={() => advanceTo(2, { welcome_complete: true })} />
-      case 2: return <FeedAngusStage onAdvance={() => advanceTo(3)} />
-      case 3: return <QuestionsStage onAdvance={() => advanceTo(4)} />
-      case 4: return <OnboardingComplete onAdvance={() => advanceTo(5)} />
+      case 2: return <SetupStage onAdvance={() => advanceTo(3)} />
       default: return null
     }
   })()
