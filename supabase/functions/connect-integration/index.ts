@@ -1,4 +1,4 @@
-// connect-integration v5.0.0 — Initiate Composio OAuth flow (v3 API)
+// connect-integration v6.0.0 — Fix Composio toolkit slug mapping + object structure
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
@@ -18,19 +18,47 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders })
 }
 
+// Map our app keys to Composio toolkit slugs (Composio uses no underscores)
+const TOOLKIT_SLUG_MAP: Record<string, string> = {
+  google_drive: 'googledrive',
+  google_docs: 'googledocs',
+  google_sheets: 'googlesheets',
+  google_calendar: 'googlecalendar',
+  google_analytics: 'google_analytics',
+  google_ads: 'googleads',
+}
+
+function toComposioSlug(toolkit: string): string {
+  const lower = toolkit.toLowerCase()
+  return TOOLKIT_SLUG_MAP[lower] || lower
+}
+
 async function getAuthConfigId(toolkit: string): Promise<string | null> {
-  const res = await fetch(`${COMPOSIO_BASE}/auth_configs?toolkit=${toolkit.toUpperCase()}`, {
+  const slug = toComposioSlug(toolkit)
+  const res = await fetch(`${COMPOSIO_BASE}/auth_configs`, {
     headers: { 'x-api-key': COMPOSIO_API_KEY },
   })
   if (!res.ok) {
-    console.error(`Failed to fetch auth configs for ${toolkit}: ${res.status}`)
+    console.error(`Failed to fetch auth configs: ${res.status}`)
     return null
   }
   const data = await res.json()
   const items = data.items || data.data || data
-  if (Array.isArray(items) && items.length > 0) {
-    return items[0].id || items[0].nanoid || null
+  if (!Array.isArray(items) || items.length === 0) return null
+
+  // toolkit is an object { slug, logo } in Composio v3
+  const match = items.find((i: Record<string, unknown>) => {
+    const tk = i.toolkit as Record<string, string> | undefined
+    const itemSlug = tk?.slug || ''
+    return itemSlug.toLowerCase() === slug
+  })
+
+  if (match) {
+    console.log(`Found auth config for ${slug}: id=${match.id}`)
+    return (match.id || null) as string | null
   }
+
+  console.error(`No auth config found for slug=${slug} among ${items.length} configs`)
   return null
 }
 
