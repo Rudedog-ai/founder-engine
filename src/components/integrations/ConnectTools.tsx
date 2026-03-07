@@ -1,7 +1,8 @@
-// ConnectTools v5 — Grid layout, brand logos, counter, Connected ✓ with data points
+// ConnectTools v6 — Inline SVG logos, no external dependencies
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase'
 import { useToast } from '../Toast'
+import { LOGOS } from './logos'
 
 interface ComposioApp {
   key: string
@@ -17,17 +18,17 @@ interface Integration {
 }
 
 const APPS: ComposioApp[] = [
-  { key: 'xero', name: 'Xero', logo: 'https://logo.clearbit.com/xero.com', description: 'Accounting & financials' },
-  { key: 'hubspot', name: 'HubSpot', logo: 'https://logo.clearbit.com/hubspot.com', description: 'CRM & sales pipeline' },
-  { key: 'slack', name: 'Slack', logo: 'https://logo.clearbit.com/slack.com', description: 'Team communication' },
-  { key: 'google_drive', name: 'Google Drive', logo: 'https://logo.clearbit.com/google.com', description: 'Documents & files' },
-  { key: 'notion', name: 'Notion', logo: 'https://logo.clearbit.com/notion.so', description: 'Docs & knowledge base' },
-  { key: 'salesforce', name: 'Salesforce', logo: 'https://logo.clearbit.com/salesforce.com', description: 'CRM & customer data' },
-  { key: 'quickbooks', name: 'QuickBooks', logo: 'https://logo.clearbit.com/quickbooks.intuit.com', description: 'Accounting & invoicing' },
-  { key: 'gmail', name: 'Gmail', logo: 'https://logo.clearbit.com/gmail.com', description: 'Email' },
-  { key: 'linkedin', name: 'LinkedIn', logo: 'https://logo.clearbit.com/linkedin.com', description: 'Professional network' },
-  { key: 'apollo', name: 'Apollo', logo: 'https://logo.clearbit.com/apollo.io', description: 'Lead intelligence' },
-  { key: 'stripe', name: 'Stripe', logo: 'https://logo.clearbit.com/stripe.com', description: 'Payments & billing' },
+  { key: 'xero', name: 'Xero', logo: LOGOS.xero, description: 'Accounting & financials' },
+  { key: 'hubspot', name: 'HubSpot', logo: LOGOS.hubspot, description: 'CRM & sales pipeline' },
+  { key: 'slack', name: 'Slack', logo: LOGOS.slack, description: 'Team communication' },
+  { key: 'google_drive', name: 'Google Drive', logo: LOGOS.google_drive, description: 'Documents & files' },
+  { key: 'notion', name: 'Notion', logo: LOGOS.notion, description: 'Docs & knowledge base' },
+  { key: 'salesforce', name: 'Salesforce', logo: LOGOS.salesforce, description: 'CRM & customer data' },
+  { key: 'quickbooks', name: 'QuickBooks', logo: LOGOS.quickbooks, description: 'Accounting & invoicing' },
+  { key: 'gmail', name: 'Gmail', logo: LOGOS.gmail, description: 'Email' },
+  { key: 'linkedin', name: 'LinkedIn', logo: LOGOS.linkedin, description: 'Professional network' },
+  { key: 'apollo', name: 'Apollo', logo: LOGOS.apollo, description: 'Lead intelligence' },
+  { key: 'stripe', name: 'Stripe', logo: LOGOS.stripe, description: 'Payments & billing' },
 ]
 
 // Top 5 shown in compact (onboarding) mode
@@ -165,21 +166,9 @@ export default function ConnectTools({ companyId, compact }: Props) {
                 style={{
                   width: 32, height: 32, borderRadius: 6,
                   objectFit: 'contain', display: 'block',
-                  margin: '0 auto 8px', background: '#fff', padding: 2,
-                }}
-                onError={e => {
-                  (e.target as HTMLImageElement).style.display = 'none'
-                  const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement
-                  if (fallback) fallback.style.display = 'flex'
+                  margin: '0 auto 8px',
                 }}
               />
-              <div style={{
-                width: 32, height: 32, borderRadius: 6,
-                background: 'var(--sea)', display: 'none', alignItems: 'center', justifyContent: 'center',
-                fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)', margin: '0 auto 8px',
-              }}>
-                {app.name.charAt(0)}
-              </div>
               <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '2px' }}>{app.name}</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: '8px' }}>{app.description}</div>
               {isConnected ? (
