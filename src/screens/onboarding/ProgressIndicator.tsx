@@ -1,5 +1,5 @@
-// ProgressIndicator v3
-const STAGE_LABELS = ['Welcome', 'Setup']
+// ProgressIndicator v4
+const STAGE_LABELS = ['Connect Tools', 'Google Drive', 'Questions']
 
 interface Props {
   currentStage: number
