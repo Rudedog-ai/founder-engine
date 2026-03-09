@@ -1,4 +1,4 @@
-// IngestDashboard.tsx - MATCHES Founder Engine brand exactly
+// IngestDashboard.tsx - Real-time two-pass ingestion progress
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
@@ -9,7 +9,18 @@ interface DomainScore {
   layer1_score: number;
   layer2_score: number;
   total_score: number;
+  fact_count: number;
   gaps: string[];
+}
+
+interface IngestionProgress {
+  source: string;
+  total_files: number;
+  scanned_files: number;
+  relevant_files: number;
+  facts_extracted: number;
+  estimated_cost: number;
+  status: string;
 }
 
 const DOMAIN_CONFIG = [
@@ -26,45 +37,151 @@ const DOMAIN_CONFIG = [
 export default function IngestDashboard() {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const [companyId, setCompanyId] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, DomainScore>>({});
+  const [progress, setProgress] = useState<Record<string, IngestionProgress>>({});
   const [loading, setLoading] = useState(true);
   const [activating, setActivating] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!user) return;
+
+    // Get company ID
+    supabase
+      .from('companies')
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setCompanyId(data[0].id);
+        }
+      });
+  }, [user]);
+
+  useEffect(() => {
+    if (!companyId) return;
+
+    // Load domain scores
+    supabase
+      .from('domain_scores')
+      .select('*')
+      .eq('company_id', companyId)
+      .then(({ data }) => {
+        if (data) {
+          const scoresMap: Record<string, DomainScore> = {};
+          data.forEach((score: any) => {
+            scoresMap[score.domain] = {
+              domain: score.domain,
+              layer1_score: score.layer1_score || 0,
+              layer2_score: score.layer2_score || 0,
+              total_score: score.total_score || 0,
+              fact_count: score.fact_count || 0,
+              gaps: score.gaps || [],
+            };
+          });
+          setScores(scoresMap);
+        }
+        setLoading(false);
+      });
+
+    // Load ingestion progress
+    supabase
+      .from('ingestion_progress')
+      .select('*')
+      .eq('company_id', companyId)
+      .then(({ data }) => {
+        if (data) {
+          const progressMap: Record<string, IngestionProgress> = {};
+          data.forEach((p: any) => {
+            progressMap[p.source] = {
+              source: p.source,
+              total_files: p.total_files || 0,
+              scanned_files: p.scanned_files || 0,
+              relevant_files: p.relevant_files || 0,
+              facts_extracted: p.facts_extracted || 0,
+              estimated_cost: p.estimated_cost || 0,
+              status: p.status || 'pending',
+            };
+          });
+          setProgress(progressMap);
+        }
+      });
+
+    // Real-time listeners
+    const scoresChannel = supabase
+      .channel('domain-scores-realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'domain_scores',
+        filter: `company_id=eq.${companyId}`,
+      }, (payload: any) => {
+        if (payload.new) {
+          setScores(prev => ({
+            ...prev,
+            [payload.new.domain]: {
+              domain: payload.new.domain,
+              layer1_score: payload.new.layer1_score || 0,
+              layer2_score: payload.new.layer2_score || 0,
+              total_score: payload.new.total_score || 0,
+              fact_count: payload.new.fact_count || 0,
+              gaps: payload.new.gaps || [],
+            }
+          }));
+        }
+      })
+      .subscribe();
+
+    const progressChannel = supabase
+      .channel('ingestion-progress-realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'ingestion_progress',
+        filter: `company_id=eq.${companyId}`,
+      }, (payload: any) => {
+        if (payload.new) {
+          setProgress(prev => ({
+            ...prev,
+            [payload.new.source]: {
+              source: payload.new.source,
+              total_files: payload.new.total_files || 0,
+              scanned_files: payload.new.scanned_files || 0,
+              relevant_files: payload.new.relevant_files || 0,
+              facts_extracted: payload.new.facts_extracted || 0,
+              estimated_cost: payload.new.estimated_cost || 0,
+              status: payload.new.status || 'pending',
+            }
+          }));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(scoresChannel);
+      supabase.removeChannel(progressChannel);
+    };
+  }, [companyId]);
+
   async function activateAgent(domainKey: string) {
-    if (activating) return;
+    if (activating || !companyId) return;
     
     setActivating(domainKey);
     
     try {
-      // Get company ID from user
-      const { data: companies } = await supabase
-        .from('companies')
-        .select('id')
-        .eq('user_id', user?.id)
-        .limit(1);
-
-      if (!companies || companies.length === 0) {
-        showToast('Company not found', 'error');
-        setActivating(null);
-        return;
-      }
-
-      const companyId = companies[0].id;
-
-      // Trigger domain-specific ingestion
-      const { data, error } = await supabase.functions.invoke('start-domain-ingest', {
+      const { data, error } = await supabase.functions.invoke('two-pass-ingest', {
         body: { 
           company_id: companyId, 
-          domain: domainKey 
+          source: 'google_drive', // Start with Drive
         }
       });
 
       if (error) {
         console.error('Ingest error:', error);
-        showToast(`${domainKey} agent activation failed: ${error.message}`, 'error');
+        showToast(`Ingestion failed: ${error.message}`, 'error');
       } else {
-        showToast(`${domainKey.toUpperCase()} agent activated! Ingesting data...`, 'success');
-        // Scores will update via real-time listener
+        showToast(`${domainKey.toUpperCase()} agent activated! Processing files...`, 'success');
       }
     } catch (err) {
       console.error('Activation error:', err);
@@ -74,64 +191,81 @@ export default function IngestDashboard() {
     }
   }
 
-  useEffect(() => {
-    if (!user) return;
-    
-    // For now, show 0% scores (real data will come from Supabase)
-    const mockScores: Record<string, DomainScore> = {};
-    DOMAIN_CONFIG.forEach(domain => {
-      mockScores[domain.key] = {
-        domain: domain.key,
-        layer1_score: 0,
-        layer2_score: 0,
-        total_score: 0,
-        gaps: ['Platform access pending', 'Historical context needed']
-      };
-    });
-    setScores(mockScores);
-    setLoading(false);
-
-    // Real-time listener
-    const channel = supabase
-      .channel('domain-scores-ingest')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'domain_scores',
-      }, () => {
-        // Reload scores when updated
-        console.log('Domain scores updated');
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
   if (loading) {
-    return null; // Silent loading, or add a spinner
+    return null;
   }
 
-  const completedCount = Object.values(scores).filter(s => s.total_score >= 30).length;
+  // Calculate overall progress
+  const totalFacts = Object.values(scores).reduce((sum, s) => sum + s.fact_count, 0);
+  const avgScore = Object.values(scores).length > 0
+    ? Object.values(scores).reduce((sum, s) => sum + s.total_score, 0) / Object.values(scores).length
+    : 0;
+
+  // Get active ingestion
+  const activeIngestion = Object.values(progress).find(p => p.status === 'processing');
 
   return (
     <div className="intelligence-section">
       <div className="intelligence-section-title">INGEST Pipeline</div>
+      
+      {/* Overall stats */}
       <div style={{
         fontSize: '0.8rem',
         color: 'var(--text-muted)',
         marginBottom: '10px',
       }}>
-        {completedCount} of {DOMAIN_CONFIG.length} domains complete
+        {totalFacts} facts extracted • {Math.round(avgScore)}% average knowledge
       </div>
+
+      {/* Active ingestion progress */}
+      {activeIngestion && (
+        <div style={{
+          background: 'rgba(var(--foam-rgb), 0.1)',
+          border: '1px solid var(--foam)',
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '12px',
+          fontSize: '0.75rem',
+        }}>
+          <div style={{ marginBottom: '6px', fontWeight: 600, color: 'var(--foam)' }}>
+            Processing {activeIngestion.source}...
+          </div>
+          <div style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>
+            Scanned: {activeIngestion.scanned_files}/{activeIngestion.total_files} files •{' '}
+            Relevant: {activeIngestion.relevant_files} ({activeIngestion.total_files > 0 ? Math.round((activeIngestion.relevant_files / activeIngestion.total_files) * 100) : 0}%) •{' '}
+            Facts: {activeIngestion.facts_extracted} •{' '}
+            Cost: ${activeIngestion.estimated_cost.toFixed(2)}
+          </div>
+          <div style={{
+            height: '4px',
+            background: 'var(--ocean)',
+            borderRadius: '2px',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%',
+              background: 'var(--foam)',
+              width: `${activeIngestion.total_files > 0 ? (activeIngestion.scanned_files / activeIngestion.total_files) * 100 : 0}%`,
+              transition: 'width 0.3s ease',
+            }} />
+          </div>
+        </div>
+      )}
+
+      {/* Domain cards */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
         gap: '10px',
       }}>
         {DOMAIN_CONFIG.map(domain => {
-          const score = scores[domain.key] || { layer1_score: 0, layer2_score: 0, total_score: 0, gaps: [] };
+          const score = scores[domain.key] || { 
+            layer1_score: 0, 
+            layer2_score: 0, 
+            total_score: 0, 
+            fact_count: 0,
+            gaps: [] 
+          };
           const isComplete = score.total_score >= 30;
           const isPartial = score.total_score > 0 && score.total_score < 30;
 
@@ -143,10 +277,7 @@ export default function IngestDashboard() {
               opacity: isComplete ? 1 : 0.85,
               border: isComplete ? '1px solid var(--biolum)' : undefined,
             }}>
-              <div style={{
-                fontSize: '2rem',
-                marginBottom: '8px',
-              }}>
+              <div style={{ fontSize: '2rem', marginBottom: '8px' }}>
                 {domain.icon}
               </div>
               <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '2px' }}>
@@ -203,7 +334,7 @@ export default function IngestDashboard() {
                     Complete ✓
                   </span>
                   <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    {score.total_score}% knowledge
+                    {score.fact_count} facts • {score.total_score}%
                   </div>
                 </div>
               ) : (
@@ -218,19 +349,18 @@ export default function IngestDashboard() {
                       <span className="spinner" style={{ width: 12, height: 12 }} />
                       {' '}Starting...
                     </>
-                  ) : isPartial ? 'Continue' : 'Activate Agent'}
+                  ) : isPartial ? `Continue (${score.fact_count} facts)` : 'Activate Agent'}
                 </button>
               )}
 
-              {/* Gaps (if any) */}
-              {score.gaps.length > 0 && !isComplete && (
+              {/* Fact count */}
+              {score.fact_count > 0 && !isComplete && (
                 <div style={{
                   marginTop: '6px',
                   fontSize: '0.6rem',
-                  color: 'var(--coral)',
-                  fontStyle: 'italic',
+                  color: 'var(--foam)',
                 }}>
-                  {score.gaps.length} gap{score.gaps.length !== 1 ? 's' : ''}
+                  {score.fact_count} facts extracted
                 </div>
               )}
             </div>
