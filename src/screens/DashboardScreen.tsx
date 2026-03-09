@@ -10,6 +10,7 @@ import SourceOfTruth from '../components/intelligence/SourceOfTruth'
 import QuestionBatch from '../components/questions/QuestionBatch'
 import ConnectTools from '../components/integrations/ConnectTools'
 import IngestDashboard from '../components/dashboard/IngestDashboard'
+import KnowledgeBaseViewer from '../components/knowledge/KnowledgeBaseViewer'
 import type { CompanyProfile, GapAnalysis } from '../types'
 
 const topicLabels: Record<string, string> = {
@@ -203,6 +204,8 @@ export default function DashboardScreen() {
       <IntelligenceBuilder companyId={companyId!} domainScores={company.domain_scores} />
       <div className="water-divider" />
       <IngestDashboard />
+      <div className="water-divider" />
+      <KnowledgeBaseViewer />
       <div className="water-divider" />
       <DocumentChecklist companyId={companyId!} documents={profile.documents} />
       <div className="water-divider" />
