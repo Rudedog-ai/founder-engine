@@ -9,33 +9,54 @@ export default function AuthCallbackScreen() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const code = params.get('code')
+    const error_code = params.get('error')
+    const error_description = params.get('error_description')
 
-    if (!code) {
-      setErrorMsg('No auth code found in URL')
+    console.log('[AuthCallback] Full URL:', window.location.href)
+    console.log('[AuthCallback] Code present:', !!code)
+    console.log('[AuthCallback] Error code:', error_code)
+    console.log('[AuthCallback] User agent:', navigator.userAgent)
+
+    if (error_code) {
+      setErrorMsg(`OAuth error: ${error_description || error_code}`)
       setStatus('error')
       return
     }
 
+    if (!code) {
+      setErrorMsg('No auth code found in URL. Please try signing in again.')
+      setStatus('error')
+      return
+    }
+
+    console.log('[AuthCallback] Starting code exchange...')
+    
     supabase.auth.exchangeCodeForSession(code)
       .then(({ data, error }) => {
+        console.log('[AuthCallback] Exchange complete. Error:', error?.message, 'Session:', !!data?.session)
+        
         if (error) {
-          console.error('exchangeCodeForSession error:', error.message)
-          setErrorMsg(error.message)
+          console.error('exchangeCodeForSession error:', error)
+          setErrorMsg(`Auth exchange failed: ${error.message}. Try clearing cookies and signing in again.`)
           setStatus('error')
           return
         }
-        // Use session from exchange response directly — no separate getSession() call
+        
         if (data.session) {
-          window.location.replace('/')
+          console.log('[AuthCallback] Session established, redirecting to /')
+          // Give mobile browsers time to persist session
+          setTimeout(() => {
+            window.location.replace('/')
+          }, 100)
         } else {
           console.error('Exchange returned no error but no session either')
-          setErrorMsg('Sign-in succeeded but no session was returned. Please try again.')
+          setErrorMsg('Sign-in succeeded but no session was returned. Please clear cookies and try again.')
           setStatus('error')
         }
       })
       .catch(err => {
         console.error('Auth callback exception:', err)
-        setErrorMsg(err instanceof Error ? err.message : 'Unknown error during sign-in')
+        setErrorMsg(`Exception: ${err instanceof Error ? err.message : 'Unknown error'}. Clear cookies and try again.`)
         setStatus('error')
       })
   }, [])

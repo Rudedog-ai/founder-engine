@@ -215,7 +215,7 @@ After deployment, verify:
 - All edge functions use `--no-verify-jwt` (they're called by cron, not users)
 - Secrets are accessed via `Deno.env.get('SECRET_NAME')`
 - Cron jobs use net.http_post (PostgreSQL extension)
-- Email sender: scout@minimoguls.co.uk
+- Email sender: scout@founder-engine.co.uk
 - Email recipient: rfairbairns@gmail.com (configurable via SCOUT_EMAIL_TO secret)
 
 ## If Something Fails

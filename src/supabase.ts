@@ -13,7 +13,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     flowType: 'pkce',
     autoRefreshToken: true,
     persistSession: true,
-    // We handle code exchange manually in AuthCallbackScreen
     detectSessionInUrl: false,
+    storage: window.localStorage,
+    storageKey: 'founder-engine-auth',
+    // Help mobile browsers
+    debug: import.meta.env.DEV,
   },
 })
