@@ -74,24 +74,33 @@ serve(async (req) => {
       throw new Error('Google Drive not connected for this company')
     }
 
-    // Get folder ID from companies table
+    // Get folder ID from companies table (founder-selected scope)
     const { data: company } = await supabase
       .from('companies')
-      .select('google_folder_id')
+      .select('google_drive_folder_id')
       .eq('id', company_id)
       .single()
 
-    if (!company?.google_folder_id) {
-      throw new Error('Google Drive folder not configured')
-    }
+    // If no folder selected, scan everything (fallback to old behavior)
+    // In production, we should require folder selection first
+    const folderId = company?.google_drive_folder_id
 
     // Refresh token if needed (simplified - full implementation should check expiry)
     const accessToken = driveSource.oauth_token
 
-    // List files in the Founder Engine folder
-    const listUrl = file_id
-      ? `https://www.googleapis.com/drive/v3/files/${file_id}?fields=id,name,mimeType,modifiedTime,size`
-      : `https://www.googleapis.com/drive/v3/files?q='${company.google_folder_id}'+in+parents&fields=files(id,name,mimeType,modifiedTime,size)`
+    // List files in the selected folder (or all files if no folder selected)
+    let listUrl: string
+    if (file_id) {
+      // Single file request
+      listUrl = `https://www.googleapis.com/drive/v3/files/${file_id}?fields=id,name,mimeType,modifiedTime,size`
+    } else if (folderId) {
+      // Folder-scoped scan (RECOMMENDED)
+      listUrl = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,modifiedTime,size)&pageSize=1000`
+    } else {
+      // Full Drive scan (OLD BEHAVIOR - discouraged)
+      console.warn('No folder selected - scanning all Drive files (slow, expensive)')
+      listUrl = `https://www.googleapis.com/drive/v3/files?q=trashed=false&fields=files(id,name,mimeType,modifiedTime,size)&pageSize=1000`
+    }
 
     const listResponse = await fetch(listUrl, {
       headers: {

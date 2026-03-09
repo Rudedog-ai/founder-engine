@@ -134,13 +134,29 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { company_id, source, folder_ids, date_filter } = await req.json()
+    let { company_id, source, folder_ids, date_filter } = await req.json()
 
     if (!company_id || !source) {
       return new Response(
         JSON.stringify({ error: 'Missing company_id or source' }),
         { status: 400, headers: corsHeaders }
       )
+    }
+
+    // If no folder_ids provided, get from companies table (founder-selected scope)
+    if (!folder_ids || folder_ids.length === 0) {
+      const { data: company } = await supabase
+        .from('companies')
+        .select('google_drive_folder_id')
+        .eq('id', company_id)
+        .single()
+      
+      if (company?.google_drive_folder_id) {
+        folder_ids = [company.google_drive_folder_id]
+        console.log(`Using founder-selected folder: ${company.google_drive_folder_id}`)
+      } else {
+        console.warn('No folder selected - will scan all Drive (expensive!)')
+      }
     }
 
     // Date filter options

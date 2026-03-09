@@ -9,6 +9,7 @@ import DocumentChecklist from '../components/intelligence/DocumentChecklist'
 import SourceOfTruth from '../components/intelligence/SourceOfTruth'
 import QuestionBatch from '../components/questions/QuestionBatch'
 import ConnectTools from '../components/integrations/ConnectTools'
+import FolderSelector from '../components/integrations/FolderSelector'
 import IngestDashboard from '../components/dashboard/IngestDashboard'
 import KnowledgeBaseViewer from '../components/knowledge/KnowledgeBaseViewer'
 import type { CompanyProfile, GapAnalysis } from '../types'
@@ -59,6 +60,7 @@ export default function DashboardScreen() {
   const { showToast } = useToast()
   const [profile, setProfile] = useState<CompanyProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [googleDriveConnected, setGoogleDriveConnected] = useState(false)
 
   const loadProfile = useCallback(() => {
     if (!companyId) return
@@ -74,6 +76,21 @@ export default function DashboardScreen() {
     setLoading(true)
     loadProfile()
   }, [loadProfile])
+
+  // Check if Google Drive is connected
+  useEffect(() => {
+    if (!companyId) return
+    supabase
+      .from('integrations')
+      .select('status')
+      .eq('company_id', companyId)
+      .eq('toolkit', 'google_drive')
+      .eq('status', 'connected')
+      .single()
+      .then(({ data }) => {
+        setGoogleDriveConnected(!!data)
+      })
+  }, [companyId])
 
   // Realtime: reload when domain_scores update so sliders animate live
   useEffect(() => {
@@ -199,6 +216,20 @@ export default function DashboardScreen() {
 
       <div className="water-divider" />
       <ConnectTools companyId={companyId!} />
+
+      {googleDriveConnected && (
+        <>
+          <div className="water-divider" />
+          <div className="section-title">Select Your Data Folder</div>
+          <FolderSelector 
+            companyId={companyId!} 
+            onFolderSelected={() => {
+              showToast('Folder selected! Starting ingestion...', 'success')
+              // Optionally trigger ingestion here
+            }}
+          />
+        </>
+      )}
 
       <div className="water-divider" />
       <IntelligenceBuilder companyId={companyId!} domainScores={company.domain_scores} />
