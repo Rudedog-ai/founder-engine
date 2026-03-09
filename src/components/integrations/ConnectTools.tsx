@@ -34,7 +34,8 @@ const APPS: ComposioApp[] = [
   { key: 'calendly', name: 'Calendly', logo: LOGOS.calendly, description: 'Meeting scheduling' },
 ]
 
-const TOP_5_KEYS = ['xero', 'hubspot', 'slack', 'google_drive', 'notion']
+// Temporarily removed xero due to Composio connection limit
+const TOP_5_KEYS = ['hubspot', 'slack', 'google_drive', 'notion', 'gmail']
 
 interface Props {
   companyId: string
