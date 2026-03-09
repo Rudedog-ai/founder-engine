@@ -37,7 +37,6 @@ html, body {
     font-family: 'Inter', -apple-system, system-ui, sans-serif;
     background: var(--deep);
     color: var(--text);
-    overflow: hidden;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -1202,11 +1201,12 @@ input::placeholder, textarea::placeholder {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 40px 24px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .ocean-bg {
