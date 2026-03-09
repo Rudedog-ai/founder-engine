@@ -187,7 +187,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${resendKey}`
       },
       body: JSON.stringify({
-        from: 'Scout Agent <scout@minimoguls.co.uk>',
+        from: 'Scout Agent <scout@founder-engine.co.uk>',
         to: toEmail,
         subject: `🔍 Scout Weekly Report: ${investigate.length} High-Impact ${investigate.length === 1 ? 'Tool' : 'Tools'} • ${today}`,
         html: html

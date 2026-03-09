@@ -111,7 +111,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${resendKey}`
       },
       body: JSON.stringify({
-        from: 'Scout Agent <scout@minimoguls.co.uk>',
+        from: 'Scout Agent <scout@founder-engine.co.uk>',
         to: toEmail,
         subject: `🔥 ${evaluations.length} High-Impact ${evaluations.length === 1 ? 'Tool' : 'Tools'} Found — ${today}`,
         html: html

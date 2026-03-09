@@ -56,7 +56,7 @@ Create 3 secrets:
 
 **Secret 2:**
 - Name: `RESEND_API_KEY`
-- Value: `re_DmrWW6mr_M5FtrTxSmxW1mFUAvJ58UdVy`
+- Value: (ask user for Resend API key - needs separate account from MiniMoguls)
 
 **Secret 3:**
 - Name: `SCOUT_EMAIL_TO`
