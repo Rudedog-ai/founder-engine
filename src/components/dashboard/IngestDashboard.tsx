@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { useToast } from '../../hooks/useToast';
 
 interface DomainScore {
   domain: string;
@@ -24,8 +25,54 @@ const DOMAIN_CONFIG = [
 
 export default function IngestDashboard() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [scores, setScores] = useState<Record<string, DomainScore>>({});
   const [loading, setLoading] = useState(true);
+  const [activating, setActivating] = useState<string | null>(null);
+
+  async function activateAgent(domainKey: string) {
+    if (activating) return;
+    
+    setActivating(domainKey);
+    
+    try {
+      // Get company ID from user
+      const { data: companies } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('user_id', user?.id)
+        .limit(1);
+
+      if (!companies || companies.length === 0) {
+        showToast('Company not found', 'error');
+        setActivating(null);
+        return;
+      }
+
+      const companyId = companies[0].id;
+
+      // Trigger domain-specific ingestion
+      const { data, error } = await supabase.functions.invoke('start-domain-ingest', {
+        body: { 
+          company_id: companyId, 
+          domain: domainKey 
+        }
+      });
+
+      if (error) {
+        console.error('Ingest error:', error);
+        showToast(`${domainKey} agent activation failed: ${error.message}`, 'error');
+      } else {
+        showToast(`${domainKey.toUpperCase()} agent activated! Ingesting data...`, 'success');
+        // Scores will update via real-time listener
+      }
+    } catch (err) {
+      console.error('Activation error:', err);
+      showToast('Activation failed - check console', 'error');
+    } finally {
+      setActivating(null);
+    }
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -163,9 +210,15 @@ export default function IngestDashboard() {
                 <button
                   className="btn btn-primary btn-small"
                   style={{ fontSize: '0.72rem', padding: '4px 12px' }}
-                  onClick={() => console.log(`Activate ${domain.key} agent`)}
+                  disabled={activating === domain.key}
+                  onClick={() => activateAgent(domain.key)}
                 >
-                  {isPartial ? 'Continue' : 'Activate Agent'}
+                  {activating === domain.key ? (
+                    <>
+                      <span className="spinner" style={{ width: 12, height: 12 }} />
+                      {' '}Starting...
+                    </>
+                  ) : isPartial ? 'Continue' : 'Activate Agent'}
                 </button>
               )}
 
