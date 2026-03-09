@@ -1,7 +1,53 @@
 // LLM Evaluator
-// Uses Claude Sonnet to analyze each discovery and score it
+// Two-tier approach:
+// 1. Haiku 4 - Fast initial filter (all discoveries)
+// 2. Opus 4.6 - Deep analysis (only INVESTIGATE tier)
 
-export async function evaluateDiscovery(discovery, anthropicApiKey) {
+export async function initialFilter(discovery, anthropicApiKey) {
+  // Tier 1: Haiku does quick relevance check
+  const prompt = `Quick evaluation - is this tool relevant to business intelligence/AI agents/automation?
+
+Tool: ${discovery.title}
+Description: ${discovery.description}
+Tags: ${discovery.tags.join(', ')}
+
+Answer in JSON (no markdown):
+{
+  "relevance_score": 0-10,
+  "quick_verdict": "relevant|maybe|noise",
+  "one_line_reason": "..."
+}`
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicApiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-20250514', // Cheap, fast
+        max_tokens: 256,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      })
+    })
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+    return JSON.parse(data.content[0].text)
+  } catch (error) {
+    console.error('Haiku filter error:', error)
+    return null
+  }
+}
+
+export async function deepEvaluation(discovery, anthropicApiKey) {
+  // Tier 2: Opus does full analysis (only for relevant tools)
   const prompt = `You are Scout Agent - an AI system that evaluates new tools/repos for a business intelligence platform called Founder Engine.
 
 Founder Engine builds AI agents that understand SME businesses across 8 domains:
@@ -58,7 +104,7 @@ Output format (JSON only, no markdown):
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-opus-4-20250514', // Top model for deep analysis
         max_tokens: 1024,
         messages: [{
           role: 'user',

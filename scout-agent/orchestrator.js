@@ -4,7 +4,7 @@
 import { scrapeGitHubTrending } from './scrapers/github-trending.js'
 import { scrapeProductHunt } from './scrapers/producthunt.js'
 import { scrapeHackerNews } from './scrapers/hackernews.js'
-import { evaluateDiscovery } from './evaluators/llm-evaluator.js'
+import { initialFilter, deepEvaluation } from './evaluators/llm-evaluator.js'
 
 export async function runScoutAgent(supabase, anthropicApiKey) {
   console.log('[Scout Agent] Starting daily run...')
@@ -67,20 +67,49 @@ export async function runScoutAgent(supabase, anthropicApiKey) {
   
   console.log(`[Scout Agent] Stored ${newDiscoveries.length} new discoveries`)
   
-  // Evaluate each new discovery with LLM
+  // Two-tier evaluation process
   const evaluations = []
+  let haikuCalls = 0
+  let opusCalls = 0
   
   for (const discovery of newDiscoveries) {
-    console.log(`[Scout Agent] Evaluating: ${discovery.title}`)
+    console.log(`[Scout Agent] Quick filter: ${discovery.title}`)
     
-    const evaluation = await evaluateDiscovery(discovery, anthropicApiKey)
+    // Tier 1: Haiku does quick relevance check ($0.0003/call)
+    const filter = await initialFilter(discovery, anthropicApiKey)
+    haikuCalls++
     
-    if (!evaluation) {
-      console.error(`[Scout Agent] Failed to evaluate: ${discovery.title}`)
+    if (!filter || filter.quick_verdict === 'noise') {
+      console.log(`[Scout Agent] ❌ Filtered out: ${discovery.title}`)
+      
+      // Store minimal evaluation for 'noise' items
+      await supabase.from('scout_evaluations').insert({
+        discovery_id: discovery.id,
+        relevance_score: filter?.relevance_score || 0,
+        reputation_score: 0,
+        safety_score: 0,
+        maturity_score: 0,
+        use_case: 'Not relevant',
+        domain: 'general',
+        recommendation: 'IGNORE',
+        reasoning: filter?.one_line_reason || 'Failed initial filter',
+        evaluated_by: 'claude-haiku-4'
+      })
       continue
     }
     
-    // Store evaluation
+    console.log(`[Scout Agent] ✅ Relevant - deep analysis: ${discovery.title}`)
+    
+    // Tier 2: Opus does full analysis ($0.015/call - only for relevant tools)
+    const evaluation = await deepEvaluation(discovery, anthropicApiKey)
+    opusCalls++
+    
+    if (!evaluation) {
+      console.error(`[Scout Agent] Failed deep evaluation: ${discovery.title}`)
+      continue
+    }
+    
+    // Store full evaluation
     const { error } = await supabase
       .from('scout_evaluations')
       .insert(evaluation)
@@ -94,12 +123,18 @@ export async function runScoutAgent(supabase, anthropicApiKey) {
   }
   
   console.log(`[Scout Agent] Completed ${evaluations.length} evaluations`)
+  console.log(`[Scout Agent] Cost: ${haikuCalls} Haiku calls (~$${(haikuCalls * 0.0003).toFixed(3)}), ${opusCalls} Opus calls (~$${(opusCalls * 0.015).toFixed(2)})`)
   
   return {
     discoveries: newDiscoveries.length,
     evaluations: evaluations.length,
     investigate: evaluations.filter(e => e.recommendation === 'INVESTIGATE').length,
     watch: evaluations.filter(e => e.recommendation === 'WATCH').length,
-    ignore: evaluations.filter(e => e.recommendation === 'IGNORE').length
+    ignore: evaluations.filter(e => e.recommendation === 'IGNORE').length,
+    cost: {
+      haiku_calls: haikuCalls,
+      opus_calls: opusCalls,
+      estimated_usd: (haikuCalls * 0.0003) + (opusCalls * 0.015)
+    }
   }
 }

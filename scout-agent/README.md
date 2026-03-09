@@ -22,18 +22,27 @@ Weekly digests are posted to #agent-builder Discord channel.
          │
          ▼
 ┌─────────────────┐
-│  LLM Evaluator  │ ← Claude Sonnet scores each discovery
+│ Haiku 4 Filter  │ ← Quick relevance check (all discoveries)
 └────────┬────────┘
          │
-         ▼
-┌─────────────────┐
-│   Evaluations   │ ← scout_evaluations table
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Weekly Digest   │ ← Posted to Discord every Monday
-└─────────────────┘
+    ┌────┴────┐
+    │         │
+ Noise    Relevant
+    │         │
+    ▼         ▼
+ IGNORE  ┌─────────────────┐
+         │ Opus 4.6 Review │ ← Deep analysis (only relevant ~30%)
+         └────────┬────────┘
+                  │
+                  ▼
+         ┌─────────────────┐
+         │   Evaluations   │ ← scout_evaluations table
+         └────────┬────────┘
+                  │
+                  ▼
+         ┌─────────────────┐
+         │ Weekly Digest   │ ← Posted to Discord every Monday
+         └─────────────────┘
 ```
 
 ---
@@ -169,9 +178,49 @@ SELECT cron.schedule(
 
 ---
 
+## Two-Tier Evaluation Pipeline
+
+Scout Agent uses a cost-optimized two-tier approach:
+
+### Tier 1: Haiku 4 Quick Filter (~$0.0003/call)
+
+**Purpose:** Fast relevance check on ALL discoveries
+**Question:** Is this tool related to business intelligence, AI agents, or automation?
+
+**Output:**
+```json
+{
+  "relevance_score": 0-10,
+  "quick_verdict": "relevant|maybe|noise",
+  "one_line_reason": "..."
+}
+```
+
+**Decision:**
+- `noise` → Store as IGNORE, skip Tier 2
+- `relevant` or `maybe` → Send to Tier 2 for deep analysis
+
+**Expected filter rate:** 70% noise, 30% pass to Tier 2
+
+---
+
+### Tier 2: Opus 4.6 Deep Analysis (~$0.015/call)
+
+**Purpose:** Comprehensive evaluation ONLY for relevant tools
+**Question:** How good is this tool across 4 dimensions?
+
+**Output:** Full evaluation (see Evaluation Criteria below)
+
+**Why Opus 4.6:**
+- 20-30% better reasoning vs Sonnet (learned from BrokerAgent experience)
+- Only runs on ~6 tools/day (the relevant ones)
+- $0.09/day for Opus quality on high-value finds
+
+---
+
 ## Evaluation Criteria
 
-Claude Sonnet scores each discovery across 4 dimensions:
+Opus 4.6 scores each relevant discovery across 4 dimensions:
 
 ### 1. Relevance (0-10)
 
@@ -343,19 +392,26 @@ Edit `evaluators/llm-evaluator.js` → prompt section to:
 
 ## Cost Estimate
 
+**Two-tier evaluation approach:**
+1. **Haiku 4** - Quick filter (all discoveries): $0.0003/call
+2. **Opus 4.6** - Deep analysis (only relevant ~30%): $0.015/call
+
 **Daily run:**
 - GitHub API: Free
 - Product Hunt API: Free (with token)
 - Hacker News API: Free
-- Claude Sonnet evaluations: ~20 discoveries/day × $0.003/call = **$0.06/day**
-- **Monthly cost: ~$2 USD**
+- Haiku filter: ~20 discoveries/day × $0.0003 = **$0.006/day**
+- Opus analysis: ~6 relevant/day × $0.015 = **$0.09/day**
+- **Total LLM cost: ~$0.096/day = $2.88/month**
 
 **Storage:**
 - ~600 discoveries/month × 2KB = 1.2 MB/month
 - Supabase free tier: 500 MB
 - **Storage cost: $0**
 
-**Total monthly cost: ~$2 USD** (just Claude API)
+**Total monthly cost: ~$3 USD** (mostly Opus calls on high-quality finds)
+
+**Cost savings vs single-tier Sonnet:** 70% cheaper (was ~$2/month with Sonnet for everything, now ~$3/month but with Opus quality on relevant tools)
 
 ---
 
