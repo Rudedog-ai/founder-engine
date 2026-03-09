@@ -9,6 +9,39 @@
 
 ---
 
+## Priority 0: Finance (Non-YC but Critical)
+
+### **Nume.ai** - AI CFO ⭐⭐⭐ (Ruari's Find)
+**What:** AI CFO for startups/SMEs - instant financial insights, proactive monitoring  
+**Funding:** £3M (Oct 2025, Circle Rock Capital) - NOT YC but perfect fit  
+**Traction:** 500+ companies, 30+ CFOs on team  
+**Perfect For:** Finance domain agent  
+**Pricing:** $50/month Pro, $200/month Teams  
+**Features:**
+- Connects to QuickBooks, Xero, 10,000+ banks (Open Banking)
+- Proactive Slack alerts (cash flow shifts, expense spikes, SaaS overspend)
+- Automated reports (daily cash, weekly AP, monthly summaries)
+- Instant answers ("What's our runway?" → "8.3 months")
+- SOC-2 compliant, no hallucinations, read-only access
+
+**Why Perfect:** Solves 80% of Finance Agent requirements. Built by 30 CFOs, proven with 500+ companies.
+
+**Integration:** 
+- Option A: API integration (if available)
+- Option B: Monitor Slack alerts → Extract finance facts
+- Option C: White-label partnership (Nume backend, FE UI)
+- Option D: Referral model (FE recommends, get commission)
+
+**Next Steps:**
+- Sign up for 14-day free trial (no credit card)
+- Test with OYNB/personal data
+- Partnership conversation with Nume team
+- Revenue share discussion
+
+**Research:** docs/NUME-RESEARCH.md (14KB complete analysis)
+
+---
+
 ## Priority 1: Operations & Voice AI
 
 ### 1. **HappyRobot** (W24) - HIGHEST PRIORITY ⭐⭐⭐
