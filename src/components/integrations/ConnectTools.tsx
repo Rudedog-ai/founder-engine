@@ -18,7 +18,8 @@ interface Integration {
 }
 
 const APPS: ComposioApp[] = [
-  { key: 'xero', name: 'Xero', logo: LOGOS.xero, description: 'Accounting & financials' },
+  // TEMPORARILY DISABLED: Composio has reached Xero connection limit
+  // { key: 'xero', name: 'Xero', logo: LOGOS.xero, description: 'Accounting & financials' },
   { key: 'hubspot', name: 'HubSpot', logo: LOGOS.hubspot, description: 'CRM & sales pipeline' },
   { key: 'slack', name: 'Slack', logo: LOGOS.slack, description: 'Team communication' },
   { key: 'google_drive', name: 'Google Drive', logo: LOGOS.google_drive, description: 'Documents & files' },
