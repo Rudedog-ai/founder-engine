@@ -1,4 +1,4 @@
-// App v6 — add BroadcastChannel for integration callback cross-tab sync
+// App v7 — add Scrapling test + INGEST dashboard routes
 import { useState, useEffect } from 'react'
 import { useAuth } from './contexts/AuthContext'
 import { supabase } from './supabase'
@@ -14,10 +14,14 @@ import CallsScreen from './screens/CallsScreen'
 import MoreScreen from './screens/MoreScreen'
 import AngusChat from './components/AngusChat'
 import AuthCallbackScreen from './screens/AuthCallbackScreen'
+import ScraplingTest from './pages/ScraplingTest'
+import IngestDashboard from './components/dashboard/IngestDashboard'
 
 type Route = 'loading' | 'welcome' | 'onboarding' | 'dashboard'
 
 const isAuthCallback = window.location.pathname === '/auth/callback'
+const isScraplingTest = window.location.pathname === '/scrapling-test'
+const isIngestDashboard = window.location.pathname === '/ingest-dashboard'
 
 export default function App() {
   const { user, loading: authLoading, companyId, setCompanyId } = useAuth()
@@ -26,7 +30,7 @@ export default function App() {
 
   // Handle Composio integration callback — notify original tab via BroadcastChannel
   useEffect(() => {
-    if (isAuthCallback) return
+    if (isAuthCallback || isScraplingTest || isIngestDashboard) return
     if (window.location.pathname === '/integrations/callback') {
       try {
         const bc = new BroadcastChannel('fe-integration-connected')
@@ -40,7 +44,7 @@ export default function App() {
 
   // Resolve route after auth loads
   useEffect(() => {
-    if (isAuthCallback) return
+    if (isAuthCallback || isScraplingTest || isIngestDashboard) return
 
     // Still waiting for auth
     if (authLoading) { setRoute('loading'); return }
@@ -112,9 +116,17 @@ export default function App() {
     }
   }, [authLoading, user, companyId])
 
-  // Auth callback — render AFTER all hooks are called (React hooks ordering rule)
+  // Special routes — render AFTER all hooks (React hooks ordering rule)
   if (isAuthCallback) {
     return <AuthCallbackScreen />
+  }
+
+  if (isScraplingTest) {
+    return <ScraplingTest />
+  }
+
+  if (isIngestDashboard) {
+    return <IngestDashboard />
   }
 
   if (route === 'loading') {
