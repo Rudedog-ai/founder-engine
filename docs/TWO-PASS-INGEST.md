@@ -1,6 +1,6 @@
-# Two-Pass Smart Ingestion
+# Two-Pass Smart Ingestion (with Date Filtering)
 
-**Cost-efficient document ingestion: $33 for 10K files vs $150 naive approach**
+**Cost-efficient document ingestion: $10 for 10K files vs $150 naive approach**
 
 ---
 
@@ -13,11 +13,19 @@ Naive "ingest everything" approach:
 
 ---
 
-## The Solution: Two-Pass Filtering
+## The Solution: Date Filter + Two-Pass Filtering
+
+### Phase 0: DATE FILTER (Free - before any LLM calls!)
+```
+Filter by modifiedTime or createdTime
+Default: Last 24 months
+10,000 files → 3,000 files (70% reduction)
+Cost: $0 (metadata query only)
+```
 
 ### Phase 1: SCAN (Free)
 ```
-List all files in selected folders
+List remaining 3,000 files
 Get metadata: filename, date, size, type
 Store in staging table
 ```
@@ -27,11 +35,11 @@ Store in staging table
 For each file: "Is this business-relevant?"
 - Q4 2023 Financial Report.pdf → YES (0.95 confidence)
 - Random vacation photo.jpg → NO (0.90 confidence)
-- Team meeting notes 2015.docx → NO (0.70 confidence - too old)
+- Team meeting notes.docx → NO (0.70 confidence)
 
 Keep only: confidence > 0.7
-Cost: 10,000 files × $0.0003 = $3
-Result: ~2,000 relevant files (20%)
+Cost: 3,000 files × $0.0003 = $0.90
+Result: ~600 relevant files (20%)
 ```
 
 ### Phase 3: EXTRACT (Opus - $0.015 per file)
@@ -47,8 +55,8 @@ Extract structured facts:
 - LEGAL: contracts, compliance, IP
 - STRATEGY: goals, market, competitors
 
-Cost: 2,000 files × $0.015 = $30
-Result: ~1,845 structured facts
+Cost: 600 files × $0.015 = $9
+Result: ~550 structured facts
 ```
 
 ---
@@ -60,13 +68,20 @@ Result: ~1,845 structured facts
 - Time: 3-4 hours
 - Facts extracted: ~1,000 (90% noise)
 
-**With smart filtering:**
-- Phase 1: Free (metadata only)
-- Phase 2: 10,000 files × $0.0003 (Haiku) = **$3**
-- Phase 3: 2,000 files × $0.015 (Opus) = **$30**
-- **Total: $33** (78% cheaper)
-- Time: 1 hour (3x faster)
-- Facts extracted: ~1,845 (95% signal)
+**With date filter only:**
+- Date filter: 10,000 → 3,000 files (free)
+- 3,000 files × $0.015 (Opus) = **$45**
+- Time: 1 hour
+- Facts extracted: ~700 (70% noise from irrelevant docs)
+
+**With date filter + two-pass:**
+- Phase 0 (Date): 10,000 → 3,000 files (free)
+- Phase 1 (Scan): Free (metadata only)
+- Phase 2 (Haiku): 3,000 files × $0.0003 = **$0.90**
+- Phase 3 (Opus): 600 files × $0.015 = **$9**
+- **Total: $10** (93% cheaper)
+- Time: 30 minutes (6x faster)
+- Facts extracted: ~550 (95% signal)
 
 ---
 

@@ -15,11 +15,13 @@ interface DomainScore {
 
 interface IngestionProgress {
   source: string;
+  total_files_before_date: number;
   total_files: number;
   scanned_files: number;
   relevant_files: number;
   facts_extracted: number;
   estimated_cost: number;
+  date_filter_months: number;
   status: string;
 }
 
@@ -96,11 +98,13 @@ export default function IngestDashboard() {
           data.forEach((p: any) => {
             progressMap[p.source] = {
               source: p.source,
+              total_files_before_date: p.total_files_before_date || 0,
               total_files: p.total_files || 0,
               scanned_files: p.scanned_files || 0,
               relevant_files: p.relevant_files || 0,
               facts_extracted: p.facts_extracted || 0,
               estimated_cost: p.estimated_cost || 0,
+              date_filter_months: p.date_filter_months || 24,
               status: p.status || 'pending',
             };
           });
@@ -146,11 +150,13 @@ export default function IngestDashboard() {
             ...prev,
             [payload.new.source]: {
               source: payload.new.source,
+              total_files_before_date: payload.new.total_files_before_date || 0,
               total_files: payload.new.total_files || 0,
               scanned_files: payload.new.scanned_files || 0,
               relevant_files: payload.new.relevant_files || 0,
               facts_extracted: payload.new.facts_extracted || 0,
               estimated_cost: payload.new.estimated_cost || 0,
+              date_filter_months: payload.new.date_filter_months || 24,
               status: payload.new.status || 'pending',
             }
           }));
@@ -231,6 +237,12 @@ export default function IngestDashboard() {
             Processing {activeIngestion.source}...
           </div>
           <div style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>
+            {activeIngestion.total_files_before_date > 0 && (
+              <>
+                Date filter: {activeIngestion.total_files_before_date} → {activeIngestion.total_files} files ({activeIngestion.total_files_before_date > 0 ? Math.round((1 - activeIngestion.total_files / activeIngestion.total_files_before_date) * 100) : 0}% skipped, last {activeIngestion.date_filter_months} months)
+                <br />
+              </>
+            )}
             Scanned: {activeIngestion.scanned_files}/{activeIngestion.total_files} files •{' '}
             Relevant: {activeIngestion.relevant_files} ({activeIngestion.total_files > 0 ? Math.round((activeIngestion.relevant_files / activeIngestion.total_files) * 100) : 0}%) •{' '}
             Facts: {activeIngestion.facts_extracted} •{' '}

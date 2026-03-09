@@ -40,13 +40,17 @@ CREATE TABLE IF NOT EXISTS ingestion_progress (
   source TEXT NOT NULL, -- google_drive, gmail, etc.
   
   -- Progress metrics
-  total_files INTEGER DEFAULT 0,
+  total_files_before_date INTEGER DEFAULT 0, -- Before date filter
+  total_files INTEGER DEFAULT 0, -- After date filter
   scanned_files INTEGER DEFAULT 0,
   relevant_files INTEGER DEFAULT 0,
   facts_extracted INTEGER DEFAULT 0,
   
   -- Cost tracking
   estimated_cost NUMERIC DEFAULT 0,
+  
+  -- Date filter settings
+  date_filter_months INTEGER DEFAULT 24, -- How many months back
   
   -- Status
   status TEXT DEFAULT 'pending', -- pending, scanning, filtering, extracting, complete, failed

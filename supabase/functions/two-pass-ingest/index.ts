@@ -134,7 +134,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { company_id, source, folder_ids } = await req.json()
+    const { company_id, source, folder_ids, date_filter } = await req.json()
 
     if (!company_id || !source) {
       return new Response(
@@ -142,6 +142,12 @@ serve(async (req) => {
         { status: 400, headers: corsHeaders }
       )
     }
+
+    // Date filter options
+    const dateFilterMonths = date_filter?.months || 24 // Default: last 24 months
+    const useModifiedDate = date_filter?.use_modified !== false // Default: use modifiedTime
+    const minDate = new Date()
+    minDate.setMonth(minDate.getMonth() - dateFilterMonths)
 
     // Get OAuth token for this source
     const { data: integration } = await supabase
@@ -158,8 +164,15 @@ serve(async (req) => {
       )
     }
 
-    // PHASE 1: SCAN - List all files
-    console.log('PHASE 1: Scanning files...')
+    // Track stats
+    let totalBeforeDate = 0
+    let totalAfterDate = 0
+    let relevantCount = 0
+    let totalCost = 0
+    let factsExtracted = 0
+    
+    // PHASE 0: DATE FILTER (Free - before any LLM calls!)
+    console.log(`PHASE 0: Date filtering (last ${dateFilterMonths} months)...`)
     
     // For Google Drive
     if (source === 'google_drive') {
@@ -168,21 +181,41 @@ serve(async (req) => {
         ? folder_ids.map((id: string) => `'${id}' in parents`).join(' or ')
         : null
 
-      const query = folderQuery || "mimeType!='application/vnd.google-apps.folder'"
+      // Build date query (use modifiedTime or createdTime)
+      const dateField = useModifiedDate ? 'modifiedTime' : 'createdTime'
+      const dateQuery = `${dateField} > '${minDate.toISOString()}'`
       
-      // TODO: Use Composio to list files
-      // For now, mock response
-      const files = [
-        { id: '1', name: 'Q4 2023 Financials.pdf', mimeType: 'application/pdf', modifiedTime: '2023-12-01' },
-        { id: '2', name: 'Random Notes.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', modifiedTime: '2015-01-01' },
+      // Combine queries
+      const baseQuery = folderQuery || "mimeType!='application/vnd.google-apps.folder'"
+      const query = `${baseQuery} and ${dateQuery}`
+      
+      console.log(`Query: ${query}`)
+      
+      // TODO: Use Composio to list files with date filter
+      // For now, mock response with date filtering
+      const allFiles = [
+        { id: '1', name: 'Q4 2023 Financials.pdf', mimeType: 'application/pdf', modifiedTime: '2023-12-01', createdTime: '2023-11-15' },
+        { id: '2', name: 'Random Notes.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', modifiedTime: '2015-01-01', createdTime: '2014-12-01' },
+        { id: '3', name: 'Q1 2024 Board Deck.pdf', mimeType: 'application/pdf', modifiedTime: '2024-03-15', createdTime: '2024-03-10' },
       ]
-
-      let relevantCount = 0
-      let totalCost = 0
-      let factsExtracted = 0
+      
+      // Apply date filter (Google Drive API should do this, but fallback filter here)
+      const files = allFiles.filter(file => {
+        const fileDate = new Date(useModifiedDate ? file.modifiedTime : file.createdTime)
+        return fileDate >= minDate
+      })
+      
+      totalBeforeDate = allFiles.length
+      totalAfterDate = files.length
+      
+      const dateReduction = totalBeforeDate > 0 ? Math.round((1 - totalAfterDate / totalBeforeDate) * 100) : 0
+      console.log(`Date filter: ${totalBeforeDate} total → ${totalAfterDate} after filter (${dateReduction}% reduction)`)
+      
+    // PHASE 1: SCAN - List remaining files
+    console.log('PHASE 1: Scanning filtered files...')
 
       // PHASE 2: FILTER - Haiku relevance check
-      console.log(`PHASE 2: Filtering ${files.length} files...`)
+      console.log(`PHASE 2: Filtering ${files.length} files (${totalBeforeDate - totalAfterDate} skipped by date)...`)
       
       for (const file of files) {
         // Get first 500 chars of content (via Composio)
@@ -224,11 +257,13 @@ serve(async (req) => {
         await supabase.from('ingestion_progress').upsert({
           company_id,
           source,
-          total_files: files.length,
+          total_files_before_date: totalBeforeDate,
+          total_files: totalAfterDate,
           scanned_files: files.indexOf(file) + 1,
           relevant_files: relevantCount,
           facts_extracted: factsExtracted,
           estimated_cost: totalCost,
+          date_filter_months: dateFilterMonths,
           status: 'processing',
           updated_at: new Date().toISOString(),
         }, { onConflict: 'company_id,source' })
@@ -238,23 +273,33 @@ serve(async (req) => {
       await supabase.from('ingestion_progress').upsert({
         company_id,
         source,
-        total_files: files.length,
-        scanned_files: files.length,
+        total_files_before_date: totalBeforeDate,
+        total_files: totalAfterDate,
+        scanned_files: totalAfterDate,
         relevant_files: relevantCount,
         facts_extracted: factsExtracted,
         estimated_cost: totalCost,
+        date_filter_months: dateFilterMonths,
         status: 'complete',
+        completed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'company_id,source' })
+
+      const dateReduction = totalBeforeDate > 0 ? Math.round((1 - totalAfterDate / totalBeforeDate) * 100) : 0
+      const relevanceRate = totalAfterDate > 0 ? (relevantCount / totalAfterDate) * 100 : 0
 
       return new Response(
         JSON.stringify({
           status: 'complete',
-          total_files: files.length,
+          total_files_before_date: totalBeforeDate,
+          total_files_after_date: totalAfterDate,
+          date_filter_reduction: `${dateReduction}%`,
+          date_filter_months: dateFilterMonths,
           relevant_files: relevantCount,
-          relevance_rate: (relevantCount / files.length) * 100,
+          relevance_rate: `${relevanceRate.toFixed(1)}%`,
           facts_extracted: factsExtracted,
-          total_cost: totalCost.toFixed(2),
+          total_cost: `$${totalCost.toFixed(2)}`,
+          cost_savings: `$${((totalBeforeDate - totalAfterDate) * 0.0003 + (totalBeforeDate - totalAfterDate) * 0.015 * 0.2).toFixed(2)}`,
         }),
         { headers: corsHeaders }
       )
