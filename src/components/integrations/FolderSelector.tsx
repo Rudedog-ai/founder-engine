@@ -58,7 +58,7 @@ export default function FolderSelector({ companyId, onFolderSelected }: Props) {
       if (targetFolder) {
         await saveFolderId(targetFolder.id, targetFolder.name)
       } else {
-        showToast('Create a folder called "Founder Engine Data" in Google Drive first', 'info')
+        showToast('Create a folder called "Founder Engine Data" in Google Drive first', 'error')
       }
     } catch (err: any) {
       showToast(err.message || 'Failed to load folders', 'error')
