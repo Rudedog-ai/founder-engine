@@ -166,19 +166,22 @@ serve(async (req) => {
     minDate.setMonth(minDate.getMonth() - dateFilterMonths)
 
     // Get OAuth token for this source
-    const { data: integration } = await supabase
-      .from('integrations')
+    const { data: driveSource, error: driveError } = await supabase
+      .from('connected_sources')
       .select('*')
       .eq('company_id', company_id)
-      .eq('toolkit', source)
+      .eq('source_type', source)
+      .eq('is_active', true)
       .single()
 
-    if (!integration || !integration.composio_connection_id) {
+    if (driveError || !driveSource) {
       return new Response(
-        JSON.stringify({ error: 'Source not connected' }),
+        JSON.stringify({ error: 'Google Drive not connected' }),
         { status: 400, headers: corsHeaders }
       )
     }
+
+    const accessToken = driveSource.oauth_token
 
     // Track stats
     let totalBeforeDate = 0
@@ -193,35 +196,54 @@ serve(async (req) => {
     // For Google Drive
     if (source === 'google_drive') {
       // Build folder query
-      const folderQuery = folder_ids && folder_ids.length > 0
-        ? folder_ids.map((id: string) => `'${id}' in parents`).join(' or ')
-        : null
+      let folderQuery = ''
+      if (folder_ids && folder_ids.length > 0) {
+        folderQuery = folder_ids.map((id: string) => `'${id}' in parents`).join(' or ')
+      } else {
+        folderQuery = "mimeType!='application/vnd.google-apps.folder'"
+      }
 
       // Build date query (use modifiedTime or createdTime)
       const dateField = useModifiedDate ? 'modifiedTime' : 'createdTime'
       const dateQuery = `${dateField} > '${minDate.toISOString()}'`
       
       // Combine queries
-      const baseQuery = folderQuery || "mimeType!='application/vnd.google-apps.folder'"
-      const query = `${baseQuery} and ${dateQuery}`
+      const query = `(${folderQuery}) and ${dateQuery} and trashed=false`
       
       console.log(`Query: ${query}`)
       
-      // TODO: Use Composio to list files with date filter
-      // For now, mock response with date filtering
-      const allFiles = [
-        { id: '1', name: 'Q4 2023 Financials.pdf', mimeType: 'application/pdf', modifiedTime: '2023-12-01', createdTime: '2023-11-15' },
-        { id: '2', name: 'Random Notes.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', modifiedTime: '2015-01-01', createdTime: '2014-12-01' },
-        { id: '3', name: 'Q1 2024 Board Deck.pdf', mimeType: 'application/pdf', modifiedTime: '2024-03-15', createdTime: '2024-03-10' },
-      ]
+      // List ALL files first (to get count before date filter)
+      const allFilesQuery = folder_ids && folder_ids.length > 0
+        ? `(${folderQuery}) and trashed=false`
+        : "mimeType!='application/vnd.google-apps.folder' and trashed=false"
       
-      // Apply date filter (Google Drive API should do this, but fallback filter here)
-      const files = allFiles.filter(file => {
-        const fileDate = new Date(useModifiedDate ? file.modifiedTime : file.createdTime)
-        return fileDate >= minDate
+      const allFilesUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(allFilesQuery)}&fields=files(id)&pageSize=1000`
+      
+      const allFilesResponse = await fetch(allFilesUrl, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
       })
       
-      totalBeforeDate = allFiles.length
+      if (!allFilesResponse.ok) {
+        throw new Error(`Failed to list all files: ${allFilesResponse.statusText}`)
+      }
+      
+      const allFilesData = await allFilesResponse.json()
+      totalBeforeDate = allFilesData.files?.length || 0
+      
+      // Now list files WITH date filter
+      const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,mimeType,modifiedTime,createdTime,size)&pageSize=1000`
+      
+      const listResponse = await fetch(listUrl, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      })
+      
+      if (!listResponse.ok) {
+        throw new Error(`Failed to list Drive files: ${listResponse.statusText}`)
+      }
+      
+      const listData = await listResponse.json()
+      const files = listData.files || []
+      
       totalAfterDate = files.length
       
       const dateReduction = totalBeforeDate > 0 ? Math.round((1 - totalAfterDate / totalBeforeDate) * 100) : 0
@@ -234,8 +256,22 @@ serve(async (req) => {
       console.log(`PHASE 2: Filtering ${files.length} files (${totalBeforeDate - totalAfterDate} skipped by date)...`)
       
       for (const file of files) {
-        // Get first 500 chars of content (via Composio)
-        const snippet = `Sample content for ${file.name}...` // TODO: Fetch real content
+        // Download first 2000 chars for relevance check
+        const exportUrl = file.mimeType.includes('google-apps')
+          ? `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/plain`
+          : `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`
+
+        const contentResponse = await fetch(exportUrl, {
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        })
+
+        if (!contentResponse.ok) {
+          console.error(`Failed to download file: ${file.name}`)
+          continue
+        }
+
+        const fullContent = await contentResponse.text()
+        const snippet = fullContent.slice(0, 2000) // First 2K chars for relevance check
         
         const { relevant, confidence, reason } = await isRelevant(file.name, snippet, file.mimeType)
         totalCost += 0.0003 // Haiku cost per call
@@ -246,7 +282,6 @@ serve(async (req) => {
           // PHASE 3: EXTRACT - Opus fact extraction
           console.log(`PHASE 3: Extracting facts from ${file.name}...`)
           
-          const fullContent = `Full content for ${file.name}...` // TODO: Fetch real content
           const facts = await extractFacts(file.name, fullContent, file.mimeType)
           totalCost += 0.015 // Opus cost per call
 
@@ -263,6 +298,7 @@ serve(async (req) => {
               source: source,
               source_id: file.id,
               source_name: file.name,
+              document_date: file.modifiedTime || file.createdTime,
               created_at: new Date().toISOString(),
             })
             factsExtracted++
@@ -270,17 +306,19 @@ serve(async (req) => {
         }
 
         // Update progress in real-time
+        const currentIndex = files.indexOf(file) + 1
         await supabase.from('ingestion_progress').upsert({
           company_id,
           source,
           total_files_before_date: totalBeforeDate,
           total_files: totalAfterDate,
-          scanned_files: files.indexOf(file) + 1,
+          scanned_files: currentIndex,
           relevant_files: relevantCount,
           facts_extracted: factsExtracted,
           estimated_cost: totalCost,
           date_filter_months: dateFilterMonths,
           status: 'processing',
+          started_at: currentIndex === 1 ? new Date().toISOString() : undefined,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'company_id,source' })
       }
