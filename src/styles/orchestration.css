@@ -1,0 +1,263 @@
+/* Orchestration View Styles - Ocean Theme Consistent */
+
+.orchestration-view {
+  padding: var(--gap);
+}
+
+.orchestration-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: calc(var(--gap) * 2);
+}
+
+.orchestration-header h2 {
+  margin-bottom: 4px;
+}
+
+.orchestration-header p {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* Angus Card */
+.orchestrator-card {
+  background: linear-gradient(135deg, var(--abyss) 0%, var(--ocean) 100%);
+  border: 2px solid var(--wave);
+  border-radius: var(--radius);
+  padding: calc(var(--gap) * 1.5);
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  margin-bottom: calc(var(--gap) * 2);
+  position: relative;
+  overflow: hidden;
+}
+
+.orchestrator-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.agent-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.agent-icon.orchestrator {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(34, 209, 195, 0.2));
+  border: 2px solid var(--glow);
+}
+
+.agent-info {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.agent-info h3 {
+  margin-bottom: 4px;
+  font-size: 1.2rem;
+}
+
+.agent-title {
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.agent-stats {
+  display: flex;
+  gap: calc(var(--gap) * 1.5);
+  font-size: 0.85rem;
+}
+
+.stat {
+  color: var(--text-dim);
+}
+
+.agent-status {
+  position: relative;
+  z-index: 1;
+}
+
+/* Domain Agents Grid */
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--gap);
+  margin-bottom: calc(var(--gap) * 2);
+}
+
+.agent-card {
+  background: var(--abyss);
+  border: 1px solid var(--sea);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  transition: all 0.2s ease;
+}
+
+.agent-card:hover {
+  border-color: var(--wave);
+  transform: translateY(-2px);
+}
+
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--gap);
+}
+
+/* Domain-specific colors */
+.agent-icon.finance { background: rgba(255, 183, 77, 0.1); color: #FFB74D; }
+.agent-icon.sales { background: rgba(129, 199, 132, 0.1); color: #81C784; }
+.agent-icon.marketing { background: rgba(186, 104, 200, 0.1); color: #BA68C8; }
+.agent-icon.operations { background: rgba(77, 182, 172, 0.1); color: #4DB6AC; }
+.agent-icon.people { background: rgba(240, 98, 146, 0.1); color: #F06292; }
+.agent-icon.product { background: rgba(100, 181, 246, 0.1); color: #64B5F6; }
+.agent-icon.legal { background: rgba(255, 138, 101, 0.1); color: #FF8A65; }
+.agent-icon.strategy { background: rgba(149, 117, 205, 0.1); color: #9575CD; }
+
+.agent-icon:not(.orchestrator) {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.agent-card h4 {
+  margin-bottom: 4px;
+  font-size: 1rem;
+}
+
+.agent-role {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: var(--gap);
+}
+
+.agent-metrics {
+  display: flex;
+  gap: calc(var(--gap) * 1.5);
+  margin-bottom: var(--gap);
+}
+
+.metric {
+  text-align: center;
+}
+
+.metric-value {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--glow);
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.agent-budget {
+  margin-top: auto;
+}
+
+.budget-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.budget-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.budget-text {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+/* Recommendations */
+.recommendations-section {
+  background: linear-gradient(135deg, var(--abyss) 0%, var(--ocean) 100%);
+  border: 1px solid var(--sea);
+  border-radius: var(--radius);
+  padding: calc(var(--gap) * 1.5);
+}
+
+.recommendations-section h3 {
+  margin-bottom: var(--gap);
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--gap);
+  background: var(--deep);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--sea);
+}
+
+.recommendation-rank {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--wave);
+  min-width: 40px;
+}
+
+.recommendation-content {
+  flex: 1;
+}
+
+.recommendation-content h4 {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.recommendation-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cost {
+  color: var(--sand);
+  font-size: 0.85rem;
+}
+
+.value {
+  color: var(--biolum);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

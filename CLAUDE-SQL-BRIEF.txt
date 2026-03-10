@@ -1,0 +1,65 @@
+CLAUDE SQL EXECUTION BRIEF - PAPERCLIP ARCHITECTURE DEPLOYMENT
+=============================================================
+
+PROJECT: Founder Engine
+SUPABASE PROJECT ID: qzlicsovnldozbnmahsa
+PURPOSE: Deploy Paperclip-inspired multi-agent orchestration tables
+
+MIGRATION FILES TO RUN (IN ORDER):
+1. 20260310111600_paperclip_architecture.sql (17KB)
+2. 20260310112000_atomic_checkout_function.sql (3KB)
+
+WHAT THESE MIGRATIONS DO:
+- Add 6 new tables for agent orchestration
+- Update companies table with budget fields
+- Create atomic checkout function
+- Add triggers for auto-budget enforcement
+- Enable RLS policies
+
+TABLES CREATED:
+1. domain_agents - AI agents as "employees" with budgets
+2. transformation_goals - Hierarchical goals (Company → Domain → Actions)
+3. analysis_tasks - Task queue with atomic checkout
+4. api_cost_events - Track every Anthropic API call cost
+5. transformation_log - Immutable audit trail
+6. domain_agent_heartbeats - Agent execution logs
+
+KEY FEATURES:
+- Multi-company support
+- Per-agent budget limits (auto-pause when exceeded)
+- Hierarchical goal tracking
+- Atomic task checkout (prevents double-work)
+- Real-time cost tracking
+- SOC-2 ready audit trail
+
+VERIFICATION QUERIES AFTER MIGRATION:
+
+-- Check tables created
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name IN ('domain_agents', 'transformation_goals', 'analysis_tasks', 
+                   'api_cost_events', 'transformation_log', 'domain_agent_heartbeats');
+
+-- Check company columns added
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'companies' 
+AND column_name LIKE '%budget%' OR column_name = 'status';
+
+-- Verify atomic checkout function
+SELECT routine_name FROM information_schema.routines 
+WHERE routine_name = 'checkout_analysis_task';
+
+EXPECTED RESULT:
+- 6 new tables
+- 4 new columns on companies table
+- 1 atomic checkout function
+- Multiple triggers and indexes
+
+ACTION REQUIRED:
+1. Run migration 1 (paperclip_architecture.sql)
+2. Run migration 2 (atomic_checkout_function.sql)
+3. Verify with queries above
+4. Report success/failure
+
+NOTE: Service role required for RLS policies to work correctly.
