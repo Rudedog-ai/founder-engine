@@ -1,6 +1,8 @@
-// two-pass-ingest
+// two-pass-ingest v2.0 | 12 March 2026
 // Smart filtering: Haiku relevance check → Opus fact extraction
 // Cost-efficient: ~$33 for 10K files vs $150 naive approach
+// Fixed: gets OAuth token from Composio (not dead connected_sources table)
+// Fixed: uses google_drive_folder_id column name
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -165,23 +167,75 @@ serve(async (req) => {
     const minDate = new Date()
     minDate.setMonth(minDate.getMonth() - dateFilterMonths)
 
-    // Get OAuth token for this source
-    const { data: driveSource, error: driveError } = await supabase
-      .from('connected_sources')
-      .select('*')
+    // Get OAuth token via Composio connected account
+    const composioApiKey = Deno.env.get('COMPOSIO_API_KEY')
+    if (!composioApiKey) {
+      return new Response(
+        JSON.stringify({ error: 'COMPOSIO_API_KEY not configured' }),
+        { status: 500, headers: corsHeaders }
+      )
+    }
+
+    // Look up integration record for this source
+    const toolkitMap: Record<string, string> = {
+      google_drive: 'google_drive',
+      gmail: 'gmail',
+    }
+    const toolkit = toolkitMap[source] || source
+
+    const { data: integration, error: integrationError } = await supabase
+      .from('integrations')
+      .select('composio_connection_id')
       .eq('company_id', company_id)
-      .eq('source_type', source)
-      .eq('is_active', true)
+      .eq('toolkit', toolkit)
+      .eq('status', 'connected')
       .single()
 
-    if (driveError || !driveSource) {
+    if (integrationError || !integration?.composio_connection_id) {
       return new Response(
-        JSON.stringify({ error: 'Google Drive not connected' }),
+        JSON.stringify({ error: `${source} not connected. Connect via Settings first.` }),
         { status: 400, headers: corsHeaders }
       )
     }
 
-    const accessToken = driveSource.oauth_token
+    // Fetch OAuth token from Composio connected account
+    console.log(`Fetching token from Composio for ${integration.composio_connection_id}`)
+    const composioRes = await fetch(
+      `https://backend.composio.dev/api/v3/connected_accounts/${integration.composio_connection_id}`,
+      { headers: { 'x-api-key': composioApiKey } }
+    )
+
+    if (!composioRes.ok) {
+      const errText = await composioRes.text()
+      console.error('Composio token fetch failed:', errText)
+      return new Response(
+        JSON.stringify({ error: 'Failed to get Drive access token from Composio' }),
+        { status: 500, headers: corsHeaders }
+      )
+    }
+
+    const composioAccount = await composioRes.json()
+
+    // Extract access token from Composio response
+    // Composio stores tokens in connectionParams or authParams
+    const accessToken = composioAccount?.connectionParams?.access_token
+      || composioAccount?.connectionParams?.accessToken
+      || composioAccount?.authParams?.access_token
+      || composioAccount?.auth_params?.access_token
+      || null
+
+    if (!accessToken) {
+      console.error('Composio account data:', JSON.stringify(composioAccount))
+      return new Response(
+        JSON.stringify({
+          error: 'No access token found in Composio account. Try reconnecting Google Drive.',
+          composio_status: composioAccount?.status
+        }),
+        { status: 400, headers: corsHeaders }
+      )
+    }
+
+    console.log(`Got access token (${accessToken.slice(0, 10)}...) from Composio`)
 
     // Track stats
     let totalBeforeDate = 0

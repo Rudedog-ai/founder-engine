@@ -1,6 +1,7 @@
 // create-google-drive-folder
-// v1.0 | 9 March 2026
+// v2.0 | 12 March 2026
 // Create "Founder Engine Data" folder in user's Google Drive
+// Fixed: uses composio_connection_id (not connected_account_id)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -54,7 +55,7 @@ serve(async (req) => {
         'X-API-Key': composioApiKey
       },
       body: JSON.stringify({
-        connectedAccountId: integration.connected_account_id,
+        connectedAccountId: integration.composio_connection_id,
         appName: 'google_drive',
         actionName: 'GOOGLE_DRIVE_LIST_FILES',
         input: {
@@ -101,7 +102,7 @@ serve(async (req) => {
         'X-API-Key': composioApiKey
       },
       body: JSON.stringify({
-        connectedAccountId: integration.connected_account_id,
+        connectedAccountId: integration.composio_connection_id,
         appName: 'google_drive',
         actionName: 'GOOGLE_DRIVE_CREATE_FILE',
         input: {
