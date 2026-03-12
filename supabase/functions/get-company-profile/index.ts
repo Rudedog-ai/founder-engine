@@ -1,4 +1,6 @@
-// get-company-profile v20 — Fetch full company profile with resilient per-table queries
+// get-company-profile v21 — Fetch full company profile with resilient per-table queries
+// v21.0 | 12 March 2026
+// Fixed: reads knowledge_elements (not dead knowledge_base table)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
@@ -63,8 +65,8 @@ Deno.serve(async (req: Request) => {
   // Run all queries in parallel — each wrapped so a missing table doesn't kill the request
   const [knowledgeRaw, gaps, sessions, team, recommendations, documents, recentActivity] =
     await Promise.all([
-      safeQuery('knowledge_base', () =>
-        supabase.from('knowledge_base').select('*').eq('company_id', cid), []),
+      safeQuery('knowledge_elements', () =>
+        supabase.from('knowledge_elements').select('*').eq('company_id', cid), []),
       safeQuery('gap_analysis', () =>
         supabase.from('gap_analysis').select('*').eq('company_id', cid), []),
       safeQuery('sessions', () =>
@@ -83,12 +85,12 @@ Deno.serve(async (req: Request) => {
           .order('created_at', { ascending: false }).limit(20), []),
     ])
 
-  // Group knowledge by topic
+  // Group knowledge by domain
   const knowledge: Record<string, unknown[]> = {}
   for (const entry of knowledgeRaw as Record<string, unknown>[]) {
-    const topic = (entry.topic as string) || 'general'
-    if (!knowledge[topic]) knowledge[topic] = []
-    knowledge[topic].push(entry)
+    const domain = (entry.domain as string) || 'general'
+    if (!knowledge[domain]) knowledge[domain] = []
+    knowledge[domain].push(entry)
   }
 
   // Parse domain_scores from company record

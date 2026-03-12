@@ -1,4 +1,6 @@
-// reset-company v3 — Full nuclear delete: all data + company row + auth user
+// reset-company v4 — Full nuclear delete: all data + company row + auth user
+// v4.0 | 12 March 2026
+// Fixed: added domain_scores, ingestion_progress, ingest_log, integrations to nuclear delete
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
@@ -38,7 +40,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // Delete all intelligence data (tables may not exist yet — that's fine)
-  const tables = ['knowledge_base', 'knowledge_chunks', 'knowledge_corrections', 'knowledge_elements', 'onboarding_questions']
+  const tables = ['knowledge_base', 'knowledge_chunks', 'knowledge_corrections', 'knowledge_elements', 'onboarding_questions', 'domain_scores', 'ingestion_progress', 'ingest_log', 'integrations']
   await Promise.all(tables.map(t =>
     supabase.from(t).delete().eq('company_id', company_id)
   ))

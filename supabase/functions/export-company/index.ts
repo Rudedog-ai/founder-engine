@@ -1,4 +1,6 @@
-// export-company v2 — Download everything Angus knows as structured text
+// export-company v3 — Download everything Angus knows as structured text
+// v3.0 | 12 March 2026
+// Fixed: reads knowledge_elements (not dead knowledge_base table)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
@@ -28,10 +30,10 @@ Deno.serve(async (req: Request) => {
     supabase.from('companies')
       .select('name, website, intelligence_score, domain_scores, created_at')
       .eq('id', company_id).eq('user_id', user.id).single(),
-    supabase.from('knowledge_base')
-      .select('data_type, value, source, confidence, created_at')
+    supabase.from('knowledge_elements')
+      .select('domain, fact_type, value, text, confidence, source_name, created_at')
       .eq('company_id', company_id)
-      .order('data_type'),
+      .order('domain'),
     supabase.from('knowledge_corrections')
       .select('element_label, original_value, corrected_value, applied_at')
       .eq('company_id', company_id)
@@ -71,10 +73,10 @@ Deno.serve(async (req: Request) => {
     strategy: 'Strategy       ',
   }
 
-  // Group knowledge by data_type
+  // Group knowledge by domain
   const byDomain: Record<string, typeof knowledge> = {}
   for (const item of knowledge) {
-    const d = item.data_type || 'general'
+    const d = item.domain || 'general'
     if (!byDomain[d]) byDomain[d] = []
     byDomain[d].push(item)
   }
@@ -99,7 +101,7 @@ Deno.serve(async (req: Request) => {
     for (const [domain, items] of Object.entries(byDomain)) {
       text += `\n[${domain.toUpperCase()}]\n`
       for (const item of items) {
-        text += `  \u2022 ${item.value} [Source: ${item.source || 'unknown'}]\n`
+        text += `  \u2022 ${item.text || item.value} [Source: ${item.source_name || 'unknown'}]\n`
       }
     }
     text += `\n`

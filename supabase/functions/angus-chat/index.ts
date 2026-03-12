@@ -1,4 +1,6 @@
-// angus-chat v1 — Text chat with Angus, grounded in company knowledge
+// angus-chat v2 — Text chat with Angus, grounded in company knowledge
+// v2.0 | 12 March 2026
+// Fixed: reads knowledge_elements (not dead knowledge_base table)
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
@@ -54,10 +56,10 @@ Deno.serve(async (req: Request) => {
     })
   }
 
-  // Gather context: knowledge base entries
+  // Gather context: knowledge elements (extracted facts)
   const { data: knowledge } = await supabase
-    .from('knowledge_base')
-    .select('topic, key, value, source, confidence')
+    .from('knowledge_elements')
+    .select('domain, fact_type, entity, value, text, confidence, source_name')
     .eq('company_id', company_id)
     .order('confidence', { ascending: false })
     .limit(50)
@@ -83,13 +85,14 @@ Deno.serve(async (req: Request) => {
 
   if (knowledge && knowledge.length > 0) {
     knowledgeContext += 'COMPANY KNOWLEDGE BASE:\n'
-    const byTopic: Record<string, string[]> = {}
+    const byDomain: Record<string, string[]> = {}
     knowledge.forEach(k => {
-      if (!byTopic[k.topic]) byTopic[k.topic] = []
-      byTopic[k.topic].push(`${k.key}: ${k.value} [source: ${k.source || 'unknown'}]`)
+      const d = k.domain || 'general'
+      if (!byDomain[d]) byDomain[d] = []
+      byDomain[d].push(`${k.fact_type}: ${k.text} [source: ${k.source_name || 'unknown'}]`)
     })
-    Object.entries(byTopic).forEach(([topic, entries]) => {
-      knowledgeContext += `\n[${topic}]\n`
+    Object.entries(byDomain).forEach(([domain, entries]) => {
+      knowledgeContext += `\n[${domain.toUpperCase()}]\n`
       entries.forEach(e => { knowledgeContext += `- ${e}\n` })
     })
   }
