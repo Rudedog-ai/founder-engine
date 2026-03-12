@@ -1,7 +1,7 @@
 // IngestDashboard.tsx - Real-time two-pass ingestion progress
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../Toast';
 
 interface DomainScore {

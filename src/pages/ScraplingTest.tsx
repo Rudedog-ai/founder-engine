@@ -1,6 +1,6 @@
 // ScraplingTest.tsx - With mock data fallback
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../supabase';
 
 interface ScraplingResult {
   company: string;

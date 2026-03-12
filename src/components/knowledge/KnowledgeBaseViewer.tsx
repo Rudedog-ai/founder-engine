@@ -2,8 +2,8 @@
 // NOT a chat interface - an ARCHIVE/INVENTORY of what the agent knows
 
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface KnowledgeFact {
   id: string;

@@ -2,7 +2,7 @@
 // Helps user see exactly which files the agent is processing
 
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../supabase';
 
 interface ScannedFile {
   id: string;

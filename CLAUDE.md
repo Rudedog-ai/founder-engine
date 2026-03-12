@@ -43,7 +43,7 @@ and update the docs when decisions change.
 
 ## Core Rules — Never Break These
 
-- No file over 200 lines. Split into components.
+- 500-line soft limit per file. Only split when a file is doing two unrelated jobs.
 - One edge function per job. Never combine responsibilities.
 - DO NOT store client documents in Supabase Storage. Read from Google Drive only.
 - DO NOT write back to Xero, HubSpot, or any connected tool. Read only.
