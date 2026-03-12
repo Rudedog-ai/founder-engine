@@ -1,161 +1,130 @@
-// create-google-drive-folder
-// v2.0 | 12 March 2026
-// Create "Founder Engine Data" folder in user's Google Drive
-// Fixed: uses composio_connection_id (not connected_account_id)
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// create-google-drive-folder v3
+// v3.0 | 12 March 2026
+// Fixed: uses direct Google Drive API (not Composio Actions v2 which fails)
+// Gets OAuth token from Composio v3, calls Drive API directly
+import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import { createClient } from "jsr:@supabase/supabase-js@2"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Type': 'application/json',
 }
 
-serve(async (req) => {
+async function getComposioToken(composioConnectionId: string): Promise<string> {
+  const composioApiKey = Deno.env.get('COMPOSIO_API_KEY')
+  if (!composioApiKey) throw new Error('COMPOSIO_API_KEY not configured')
+
+  const res = await fetch(
+    `https://backend.composio.dev/api/v3/connected_accounts/${composioConnectionId}`,
+    { headers: { 'x-api-key': composioApiKey } }
+  )
+  if (!res.ok) throw new Error(`Composio API error: ${res.status}`)
+
+  const account = await res.json()
+  const token = account?.connectionParams?.access_token
+    || account?.connectionParams?.accessToken
+    || account?.authParams?.access_token
+    || account?.auth_params?.access_token
+  if (!token) throw new Error('No access token found in Composio account')
+  return token
+}
+
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const { company_id, folder_name = 'Founder Engine Data' } = await req.json()
-
-    if (!company_id) {
-      throw new Error('Missing company_id')
-    }
+    if (!company_id) throw new Error('Missing company_id')
 
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
     // Get Google Drive integration
-    const { data: integration, error: integrationError } = await supabase
+    const { data: integration, error: intErr } = await supabase
       .from('integrations')
-      .select('*')
+      .select('composio_connection_id')
       .eq('company_id', company_id)
       .eq('toolkit', 'google_drive')
       .eq('status', 'connected')
       .single()
 
-    if (integrationError || !integration) {
-      throw new Error('Google Drive not connected')
-    }
+    if (intErr || !integration) throw new Error('Google Drive not connected')
 
-    // Check if folder already exists
-    const composioApiKey = Deno.env.get('COMPOSIO_API_KEY')
-    if (!composioApiKey) {
-      throw new Error('COMPOSIO_API_KEY not configured')
-    }
+    // Get OAuth token from Composio
+    const accessToken = await getComposioToken(integration.composio_connection_id)
 
-    // First, search for existing folder
-    const searchResponse = await fetch('https://backend.composio.dev/api/v2/actions/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': composioApiKey
-      },
-      body: JSON.stringify({
-        connectedAccountId: integration.composio_connection_id,
-        appName: 'google_drive',
-        actionName: 'GOOGLE_DRIVE_LIST_FILES',
-        input: {
-          q: `name='${folder_name}' AND mimeType='application/vnd.google-apps.folder' AND trashed=false`,
-          pageSize: 1,
-          fields: 'files(id,name)'
-        }
-      })
+    // Search for existing folder first
+    const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(
+      `name='${folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`
+    )}&fields=files(id,name)&pageSize=1`
+
+    const searchRes = await fetch(searchUrl, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
     })
 
-    if (searchResponse.ok) {
-      const searchResult = await searchResponse.json()
-      const existingFolders = searchResult.data?.files || []
-      
-      if (existingFolders.length > 0) {
-        // Folder already exists, return it
-        const existingFolder = existingFolders[0]
-        
-        // Save to database
-        await supabase
-          .from('companies')
-          .update({
-            google_drive_folder_id: existingFolder.id,
-            google_drive_folder_name: existingFolder.name
-          })
-          .eq('id', company_id)
+    if (searchRes.ok) {
+      const searchData = await searchRes.json()
+      if (searchData.files && searchData.files.length > 0) {
+        const existing = searchData.files[0]
+        // Save to DB
+        await supabase.from('companies').update({
+          google_drive_folder_id: existing.id,
+          google_drive_folder_name: existing.name,
+        }).eq('id', company_id)
 
-        return new Response(
-          JSON.stringify({ 
-            folder_id: existingFolder.id,
-            folder_name: existingFolder.name,
-            existed: true
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        return new Response(JSON.stringify({
+          folder_id: existing.id,
+          folder_name: existing.name,
+          existed: true,
+        }), { headers: corsHeaders })
       }
     }
 
-    // Create new folder
-    const createResponse = await fetch('https://backend.composio.dev/api/v2/actions/execute', {
+    // Create new folder via Google Drive API
+    const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
-        'X-API-Key': composioApiKey
       },
       body: JSON.stringify({
-        connectedAccountId: integration.composio_connection_id,
-        appName: 'google_drive',
-        actionName: 'GOOGLE_DRIVE_CREATE_FILE',
-        input: {
-          name: folder_name,
-          mimeType: 'application/vnd.google-apps.folder'
-        }
-      })
+        name: folder_name,
+        mimeType: 'application/vnd.google-apps.folder',
+      }),
     })
 
-    if (!createResponse.ok) {
-      const errorText = await createResponse.text()
-      console.error('Composio API error:', errorText)
-      throw new Error(`Failed to create folder: ${createResponse.statusText}`)
+    if (!createRes.ok) {
+      const errText = await createRes.text()
+      console.error('Google Drive API error:', errText)
+      throw new Error(`Failed to create folder: ${createRes.status}`)
     }
 
-    const createResult = await createResponse.json()
-    const newFolder = createResult.data
-
-    if (!newFolder?.id) {
-      throw new Error('Folder created but no ID returned')
-    }
+    const newFolder = await createRes.json()
+    if (!newFolder?.id) throw new Error('Folder created but no ID returned')
 
     // Save folder ID to companies table
-    const { error: updateError } = await supabase
-      .from('companies')
-      .update({
-        google_drive_folder_id: newFolder.id,
-        google_drive_folder_name: folder_name
-      })
-      .eq('id', company_id)
+    await supabase.from('companies').update({
+      google_drive_folder_id: newFolder.id,
+      google_drive_folder_name: folder_name,
+    }).eq('id', company_id)
 
-    if (updateError) {
-      console.error('Failed to save folder ID:', updateError)
-      // Don't throw - folder is created, just log warning
-    }
+    return new Response(JSON.stringify({
+      folder_id: newFolder.id,
+      folder_name: folder_name,
+      existed: false,
+    }), { headers: corsHeaders })
 
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error creating folder:', msg)
     return new Response(
-      JSON.stringify({ 
-        folder_id: newFolder.id,
-        folder_name: folder_name,
-        existed: false
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
-  } catch (error: any) {
-    console.error('Error creating folder:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ error: msg }),
+      { status: 500, headers: corsHeaders }
     )
   }
 })
