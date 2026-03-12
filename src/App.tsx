@@ -68,11 +68,13 @@ export default function App() {
       .single()
       .then(({ data, error }) => {
         if (error || !data) {
-          setRoute('onboarding')
-        } else {
-          const s = data.onboarding_status
-          setRoute(s === 'complete' || s === 'active' ? 'dashboard' : 'onboarding')
+          // Stale companyId in localStorage — clear it and re-find
+          console.warn('[App] companyId lookup failed, clearing stale ID and re-finding')
+          setCompanyId(null)
+          return
         }
+        const s = data.onboarding_status
+        setRoute(s === 'complete' || s === 'active' ? 'dashboard' : 'onboarding')
       })
 
     async function findCompany() {

@@ -44,10 +44,12 @@ export default function AuthCallbackScreen() {
         
         if (data.session) {
           console.log('[AuthCallback] Session established, redirecting to /')
-          // Give mobile browsers time to persist session
+          // Store company lookup hint so App.tsx doesn't race
+          localStorage.removeItem('fe_company_id')
+          // Mobile browsers need more time to persist session to localStorage
           setTimeout(() => {
             window.location.replace('/')
-          }, 100)
+          }, 500)
         } else {
           console.error('Exchange returned no error but no session either')
           setErrorMsg('Sign-in succeeded but no session was returned. Please clear cookies and try again.')
