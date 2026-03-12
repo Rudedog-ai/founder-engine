@@ -173,11 +173,7 @@ export default function ConnectTools({ companyId, compact }: Props) {
       }}>
         {connectedCount} of {displayApps.length} connected
       </div>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-        gap: '10px',
-      }}>
+      <div className="connect-tools-grid">
         {displayApps.map(app => {
           const integration = integrations[app.key]
           const isConnected = integration?.status === 'connected' || integration?.status === 'active'

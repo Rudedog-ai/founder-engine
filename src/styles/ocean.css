@@ -53,6 +53,7 @@ body { display: flex; flex-direction: column; }
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
+    padding-bottom: 80px;
 }
 
 .content::-webkit-scrollbar { width: 4px; }
@@ -947,12 +948,33 @@ input::placeholder, textarea::placeholder {
 
 .pull-to-refresh.active { height: 60px; }
 
-/* Responsive */
+/* Responsive — Mobile */
 @media (max-width: 600px) {
     .screen-content { padding: 1rem; }
     h1 { font-size: 1.5rem; }
     .header-bar { padding: 1rem; }
     .topic-grid { flex-direction: column; }
+
+    .score-value { font-size: 2.8rem; }
+    .score-card { padding: 16px; }
+
+    .toast-container { left: 16px; right: 16px; top: 12px; }
+    .toast { min-width: unset; }
+
+    .modal { padding: 16px; margin: 12px; }
+}
+
+/* Connect Tools Grid */
+.connect-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+@media (min-width: 600px) {
+    .connect-tools-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
 }
 
 /* Status indicator */
