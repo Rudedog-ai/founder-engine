@@ -1,4 +1,4 @@
-// FolderSelector v2 — Rewritten to use ocean.css (no Tailwind)
+// FolderSelector v3 — Rewritten to use ocean.css (no Tailwind)
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
 import { useToast } from '../Toast'
@@ -36,6 +36,7 @@ export default function FolderSelector({ companyId, onFolderSelected }: Props) {
         body: { company_id: companyId }
       })
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
       if (!data?.folders || data.folders.length === 0) {
         showToast('No folders found in Google Drive', 'error')
         setSelecting(false)
@@ -65,9 +66,12 @@ export default function FolderSelector({ companyId, onFolderSelected }: Props) {
         body: { company_id: companyId, folder_name: 'Founder Engine Data' }
       })
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
       if (data?.folder_id) {
         await saveFolderId(data.folder_id, 'Founder Engine Data')
         showToast('Folder created successfully!', 'success')
+      } else {
+        showToast('Unexpected response — no folder ID returned', 'error')
       }
     } catch (err: any) {
       showToast(err.message || 'Failed to create folder', 'error')

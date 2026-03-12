@@ -58,6 +58,7 @@ export default function TranscribeAnswerMode({ questionId, companyId, onAnswered
         body: { company_id: companyId, question_id: questionId, answer_text: transcript.trim(), answer_mode: 'transcribe' },
       })
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
       const pts = data?.data_points_extracted || 0
       setSuccess(`${pts} data point${pts !== 1 ? 's' : ''} extracted`)
       setTimeout(onAnswered, 1500)

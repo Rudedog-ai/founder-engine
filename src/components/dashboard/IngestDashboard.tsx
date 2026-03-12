@@ -186,6 +186,9 @@ export default function IngestDashboard() {
       if (error) {
         console.error('Ingest error:', error);
         showToast(`Ingestion failed: ${error.message}`, 'error');
+      } else if (data?.error) {
+        console.error('Ingest response error:', data.error);
+        showToast(`Ingestion failed: ${data.error}`, 'error');
       } else {
         showToast(`${domainKey.toUpperCase()} agent activated! Processing files...`, 'success');
       }

@@ -81,6 +81,11 @@ export default function ScraplingTest() {
         setUsedMock(true);
         await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate delay
         setResults(getMockResults(companyName, website));
+      } else if (data?.error) {
+        console.log('Edge function returned error, using mock data:', data.error);
+        setUsedMock(true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setResults(getMockResults(companyName, website));
       } else {
         setResults(data);
       }

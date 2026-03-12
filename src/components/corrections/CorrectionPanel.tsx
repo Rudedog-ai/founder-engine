@@ -26,7 +26,7 @@ export default function CorrectionPanel({
     if (!correctedValue.trim() || saving) return
     setSaving(true)
     try {
-      const { error } = await supabase.functions.invoke('apply-correction', {
+      const { data, error } = await supabase.functions.invoke('apply-correction', {
         body: {
           company_id: companyId,
           element_key: elementKey,
@@ -39,6 +39,7 @@ export default function CorrectionPanel({
         },
       })
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
       onCorrected()
       onClose()
     } catch (err) {

@@ -21,6 +21,7 @@ export default function WrittenAnswerMode({ questionId, companyId, question, onA
         body: { company_id: companyId, question_id: questionId, answer_text: text.trim(), answer_mode: 'written' },
       })
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
       const pts = data?.data_points_extracted || 0
       setSuccess(`${pts} data point${pts !== 1 ? 's' : ''} extracted`)
       setTimeout(onAnswered, 1500)
