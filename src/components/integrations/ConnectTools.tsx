@@ -1,4 +1,4 @@
-// ConnectTools v9 — Added Reconnect link for connected integrations
+// ConnectTools v10 — Google Drive uses native OAuth (bypasses Composio)
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../../supabase'
 import { useToast } from '../Toast'
@@ -113,14 +113,45 @@ export default function ConnectTools({ companyId, compact }: Props) {
     const params = new URLSearchParams(window.location.search)
     if (params.get('integration_connected')) {
       syncPendingStatuses()
+      refreshIntegrations()
       window.history.replaceState({}, '', window.location.pathname)
     }
-  }, [syncPendingStatuses])
+  }, [syncPendingStatuses, refreshIntegrations])
+
+  // Tools that use native OAuth instead of Composio
+  const NATIVE_OAUTH_TOOLS = ['google_drive']
 
   async function handleConnect(appKey: string) {
     if (connecting) return
     setConnecting(appKey)
     try {
+      // Google Drive uses native OAuth (bypasses Composio)
+      if (NATIVE_OAUTH_TOOLS.includes(appKey)) {
+        const { data, error } = await supabase.functions.invoke('google-drive-oauth', {
+          body: { company_id: companyId },
+        })
+        if (error) {
+          showToast(error.message || 'Could not start connection', 'error')
+          setConnecting(null)
+          return
+        }
+        if (data?.error) {
+          showToast(data.error, 'error')
+          setConnecting(null)
+          return
+        }
+        if (!data?.redirect_url) {
+          showToast('No redirect URL returned', 'error')
+          setConnecting(null)
+          return
+        }
+        window.open(data.redirect_url, '_blank')
+        refreshIntegrations()
+        setConnecting(null)
+        return
+      }
+
+      // All other tools use Composio
       const { data, error } = await supabase.functions.invoke('connect-integration', {
         body: {
           company_id: companyId,
