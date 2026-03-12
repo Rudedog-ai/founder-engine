@@ -34,7 +34,7 @@ export default function ResearchBanner({ companyId, onComplete }: Props) {
       if (s === 'researching') {
         wasResearching.current = true
         const { count } = await supabase
-          .from('knowledge_base')
+          .from('knowledge_elements')
           .select('id', { count: 'exact', head: true })
           .eq('company_id', companyId)
         setDataPoints(count ?? 0)
