@@ -1,4 +1,4 @@
-// ConnectTools v8 — Auto-sync pending statuses via check-integration-status
+// ConnectTools v9 — Added Reconnect link for connected integrations
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../../supabase'
 import { useToast } from '../Toast'
@@ -209,6 +209,18 @@ export default function ConnectTools({ companyId, compact }: Props) {
                       {points} data point{points !== 1 ? 's' : ''}
                     </div>
                   )}
+                  <button
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '0.65rem', color: 'var(--text-muted)',
+                      marginTop: '4px', padding: 0,
+                      textDecoration: 'underline', opacity: 0.7,
+                    }}
+                    disabled={!!connecting}
+                    onClick={() => handleConnect(app.key)}
+                  >
+                    {connecting === app.key ? 'Reconnecting...' : 'Reconnect'}
+                  </button>
                 </div>
               ) : (
                 <button
