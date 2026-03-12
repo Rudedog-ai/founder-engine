@@ -6,6 +6,13 @@
 
 ## March 2026
 
+**[12 Mar 2026] — Mobile auth: localStorage timing hack (REVISIT)**
+Context: Mobile Google OAuth login always landed on onboarding instead of dashboard. Two root causes: (1) AuthCallback redirected after 100ms — too fast for mobile browsers to persist session to localStorage. (2) Stale `fe_company_id` in localStorage from a previous session caused RLS query to fail, routing to onboarding instead of re-finding the company.
+Decision: Increased redirect delay to 500ms. Added stale companyId detection — if RLS lookup fails, clear the ID and re-find instead of dumping to onboarding.
+Rationale: Quick fix that unblocks mobile login. The real fix is replacing `window.location.replace` with a React state transition so we never rely on localStorage timing.
+Impact: AuthCallbackScreen.tsx, App.tsx routing logic.
+Status: ACTIVE — **REVISIT**: Replace page reload auth flow with in-memory session handoff. No localStorage race condition that way.
+
 **[Mar 2026] — Core positioning: total transformation, not subscription tool**
 Context: Early builds focused on intelligence subscription tiers.
 Decision: Founder Engine is a total business transformation partner. Ingest → Diagnose → Deploy → Train → Leave.
