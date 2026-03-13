@@ -1,4 +1,15 @@
 node_modules
 dist
 .env.local
+.env
 .vercel
+
+# Supabase CLI temp files
+supabase/.temp/
+
+# Generated data / scraper output
+scripts/oynb_crawl_results.json
+tools/scraper/ajdunlop_kb.json
+
+# Binary media
+*.mp3

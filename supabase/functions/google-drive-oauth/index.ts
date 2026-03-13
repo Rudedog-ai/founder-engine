@@ -14,7 +14,7 @@ const APP_URL = 'https://founder-engine-seven.vercel.app'
 const REDIRECT_URI = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-drive-oauth`
 
 const SCOPES = [
-  'https://www.googleapis.com/auth/drive.file',
+  'https://www.googleapis.com/auth/drive.readonly',
 ].join(' ')
 
 const corsHeaders = {

@@ -9,7 +9,7 @@
 1. **Angus synthesises, never originates.** Every fact cites a certified source tool.
 2. **Client owns their data.** We read it, never copy or store it. Google Drive folder is theirs.
 3. **Corrections always win.** Priority order: corrections > voice sessions > source of truth doc > connected tools > uploaded documents > auto-research.
-4. **Small functions. Small components.** One job each. No file over 200 lines.
+4. **Small functions. Small components.** One job each. 200-line soft limit per file.
 5. **Read only from all tools.** Never write back to Xero, HubSpot, Rippling, or anything.
 
 ---
@@ -18,7 +18,7 @@
 
 | Layer | What It Does | Technology |
 |-------|-------------|------------|
-| Data Ingestion | Reads from client Google Drive folder. Reads from connected tools via OAuth. Never stores copies. | Google Drive API (drive.file scope), Xero OAuth, HubSpot OAuth. Read-only. |
+| Data Ingestion | Reads from client Google Drive folder. Reads from connected tools via OAuth. Never stores copies. | Google Drive API (drive.readonly scope, native OAuth), Xero OAuth (via Composio). Read-only. |
 | Company Brain | Structured knowledge base. 7 domains. Confidence scores and source tags on every entry. | Supabase PostgreSQL + pgvector. Semantic chunking. |
 | RAG Layer | Hybrid retrieval for Angus queries. Semantic vector search + BM25 keyword. Cross-encoder reranking. | pgvector (Supabase). Top 3–8 chunks to Claude. |
 | Correction Layer | Sits between raw data and Angus context. Corrections always override source. | knowledge_corrections table. Priority checked on every Angus read. |
@@ -155,23 +155,31 @@ CREATE POLICY company_isolation ON onboarding_questions
 
 ## Google Drive Integration
 
-**OAuth scope:** `https://www.googleapis.com/auth/drive.file` — NOT full drive access.
+**OAuth:** Native Google OAuth (Composio removed for Drive). Scope: `drive.readonly`.
+**Tokens:** Stored in companies table (`google_access_token`, `google_refresh_token`). Auto-refreshed by shared `_shared/google-token.ts` module.
 
 **Folder creation:** On successful OAuth, create "Founder Engine" folder in client's Drive root. Store `folder_id` in companies table.
 
-**Document flow:**
+**Two-pass ingestion flow:**
 ```
-Doc added to Drive folder
-→ webhook fires (or poll every 5 min as fallback)
-→ fetch file content from Drive API
-→ semantic chunking (400–600 tokens, 50-token overlap)
-→ domain classification (Claude Haiku)
-→ embed (pgvector)
-→ age detection (google_modified_time)
-→ store in knowledge_chunks
-→ recalculate domain scores
-→ update Intelligence Score
-→ notify frontend via Supabase Realtime
+Trigger two-pass-ingest with company_id + source
+→ Phase 0: Date filter (free — last 24 months by default)
+→ Phase 1: List files from selected folder via Drive API
+→ Phase 2: Haiku relevance check per file ($0.0003/doc)
+→ Phase 3: Opus fact extraction for relevant files ($0.015/doc)
+→ Store facts in knowledge_elements
+→ Update ingestion_progress in real-time
+→ Recalculate domain scores
+```
+
+**Sync flow (webhook / manual):**
+```
+sync-google-drive receives webhook or manual trigger
+→ Get native OAuth token (auto-refresh if expired)
+→ List files from selected folder
+→ Haiku relevance check → Opus extraction
+→ Store in knowledge_elements
+→ Log to ingest_log
 ```
 
 **Age thresholds:**
@@ -220,44 +228,27 @@ Never let a new document ingest overwrite an active correction.
 
 ---
 
-## Edge Functions — Full List
+## Edge Functions — 25 Deployed
 
-| Function | Sprint | Status |
-|----------|--------|--------|
-| google-drive-oauth | 2 | TO BUILD |
-| google-drive-webhook | 2 | TO BUILD |
-| process-drive-document | 2 | TO BUILD |
-| calculate-domain-scores | 3 | TO BUILD |
-| generate-source-of-truth | 3 | TO BUILD |
-| update-source-of-truth | 3 | TO BUILD |
-| apply-correction | 4 | TO BUILD |
-| generate-onboarding-questions | 5 | TO BUILD |
-| process-inbound-email | 5 | TO BUILD |
-| send-questions-email | 5 | TO BUILD |
-| refresh-google-tokens | 2 | TO BUILD |
-| onboard-company | 1 | UPDATE |
-| process-transcript | 5 | UPDATE |
+See CLAUDE.md for the full table with descriptions.
+
+**Shared modules:** `_shared/google-token.ts` — Google OAuth token retrieval + auto-refresh, used by all Drive functions.
+
+**Key architectural notes:**
+- Google Drive functions use native OAuth (tokens in companies table)
+- Xero/Gmail still use Composio for OAuth
+- Scout Agent has 4 cron-driven functions (scrape, nudge, digest, report)
+- Two-pass ingestion uses Haiku for filtering + Opus for extraction
 
 ---
 
-## Frontend Components — Full List
+## Frontend — Key Components
 
-| Component | Sprint | Status |
-|-----------|--------|--------|
-| OnboardingFlow.tsx | 1 | TO BUILD |
-| ConnectToolsScreen.tsx | 1 | TO BUILD |
-| IntelligenceBuilder.tsx | 3 | TO BUILD |
-| IntelligenceSlider.tsx | 3 | TO BUILD |
-| DocumentChecklist.tsx | 3 | TO BUILD |
-| SourceOfTruth.tsx | 3 | TO BUILD |
-| KnowledgeCard.tsx | 4 | TO BUILD |
-| CorrectionPanel.tsx | 4 | TO BUILD |
-| StaleDocAlert.tsx | 4 | TO BUILD |
-| QuestionBatch.tsx | 5 | TO BUILD |
-| VoiceAnswerMode.tsx | 5 | TO BUILD |
-| TranscribeAnswerMode.tsx | 5 | TO BUILD |
-| WrittenAnswerMode.tsx | 5 | TO BUILD |
-| EmailAnswerMode.tsx | 5 | TO BUILD |
-| Dashboard.tsx | 3 | UPDATE |
-| AngusWidget.tsx | 4 | UPDATE |
+**Onboarding (3 stages):** `src/screens/onboarding/` — OnboardingFlow, ConnectToolsStage, GoogleDriveStage, QuestionsStage, ProgressIndicator
+**Integrations:** `src/components/integrations/` — ConnectTools, FolderSelector
+**Intelligence:** `src/components/intelligence/` — IntelligenceBuilder, IntelligenceSlider, KnowledgeCard, SourceOfTruth, DocumentChecklist
+**Corrections:** `src/components/corrections/` — CorrectionPanel, CorrectionHistory, StaleDocAlert
+**Questions:** `src/components/questions/` — QuestionBatch, QuestionItem, ModeSelector, WrittenAnswerMode, VoiceAnswerMode, TranscribeAnswerMode, EmailAnswerMode
+**Core:** `src/components/` — AngusChat, BottomNav, ErrorBoundary, ResearchBanner, Toast
+**Screens:** `src/screens/` — Dashboard, Knowledge, More, Voice, Welcome, Calls, AuthCallback
 

@@ -1,24 +1,26 @@
 # CLAUDE.md — Founder Engine
 ## Read this before every session. Update it after every build.
 
-**Repo:** github.com/Rudedog-ai/founder-engine
+**Repo:** github.com/Rudedog-ai/founder-engine (PUBLIC)
 **Prod:** founder-engine-seven.vercel.app
 **Working docs folder:** Google Drive `1rFvmIe0dQuPLEluh36u6gBNqvFIv0rT1`
 
 ---
 
-## Current State — March 2026
+## Current State — 13 March 2026
 
-**All 6 sprints complete. 3 commits ahead of origin. Zero build errors.**
+**All 6 original sprints complete. Pushed to origin. Zero build errors.**
 
-To go live: `git push origin main` then set 5 secrets in Supabase.
+Post-sprint additions: Scout Agent, two-pass ingestion pipeline, native Google Drive OAuth (Composio removed for Drive), 3-stage onboarding redesign.
 
-**5 secrets needed:**
+**Secrets needed in Supabase (some may already be set):**
 - GOOGLE_CLIENT_ID
 - GOOGLE_CLIENT_SECRET
-- GOOGLE_REDIRECT_URI
+- ANTHROPIC_API_KEY
+- COMPOSIO_API_KEY (for Xero/Gmail — not Drive)
 - STRIPE_SECRET_KEY
 - STRIPE_WEBHOOK_SECRET
+- RESEND_API_KEY (Scout Agent emails)
 
 ---
 
@@ -43,11 +45,10 @@ and update the docs when decisions change.
 
 ## Core Rules — Never Break These
 
-- 500-line soft limit per file. Only split when a file is doing two unrelated jobs.
+- 200-line soft limit per file. Only split when a file is doing two unrelated jobs.
 - One edge function per job. Never combine responsibilities.
 - DO NOT store client documents in Supabase Storage. Read from Google Drive only.
 - DO NOT write back to Xero, HubSpot, or any connected tool. Read only.
-- DO NOT remove old Supabase document upload until Google Drive pipeline is through at least one live client engagement.
 - Corrections in knowledge_corrections table always override source documents. A new document ingest never overwrites an active correction.
 - RLS on every new table. No exceptions.
 - Increment version numbers in header comments on every file you touch.
@@ -61,52 +62,81 @@ and update the docs when decisions change.
 - Supabase — auth (RLS active), PostgreSQL, pgvector, edge functions, realtime
 - ElevenLabs Conversational AI — Angus voice agent
 - Deepgram — STT for transcription mode
-- Google Drive API — document storage (client-controlled folders, drive.file scope only)
-- Xero OAuth 2.0 — financial data (read only)
-- Claude Sonnet — LLM for Angus advisory and processing
+- Google Drive API — native OAuth (drive.readonly scope), tokens in companies table
+- Xero OAuth 2.0 via Composio — financial data (read only)
+- Claude Haiku — relevance filtering (two-pass ingest phase 1)
+- Claude Opus — deep fact extraction (two-pass ingest phase 2)
+- Claude Sonnet — Angus advisory and processing
 - Stripe — payments
-- Perplexity API — company research at onboarding + Market Intelligence RAG (to build)
+- Resend — Scout Agent email delivery
+- Perplexity API — company research at onboarding
 
 ---
 
-## 21 Edge Functions — All Deployed
+## 25 Edge Functions
 
 | Function | Purpose |
 |----------|---------|
-| google-drive-oauth | Handle OAuth callback, create folder, store tokens, setup webhook |
-| refresh-google-tokens | Cron: refresh expiring tokens, renew Drive webhooks |
-| google-drive-webhook | Receive Drive push notification, trigger document processing |
-| process-drive-document | Chunk, classify domain, embed, age-detect, store, update scores |
-| calculate-domain-scores (v3) | Recalculate all 6 domain scores, update Intelligence Score |
-| generate-source-of-truth | Synthesise knowledge chunks into structured doc at 25% score |
-| apply-correction | Store correction, update knowledge_elements, update Google Doc |
-| generate-onboarding-questions | Generate 5–8 questions from brain gaps, fires at 25% |
-| process-question-answer | Store answers, update knowledge base, recalculate scores |
-| create-checkout | Stripe checkout session creation |
-| stripe-webhook | Handle Stripe events (payment success, subscription changes) |
-| + 10 pre-existing functions | Auth, company profile, Angus, Xero, etc. |
+| **Google Drive (native OAuth)** | |
+| google-drive-oauth | Full OAuth flow — consent URL + callback, stores tokens in companies table |
+| create-google-drive-folder | Create/find "Founder Engine" folder in client's Drive |
+| list-google-drive-folders | List all folders for folder picker |
+| sync-google-drive | Webhook handler + manual sync for Drive file changes |
+| two-pass-ingest | Smart 2-phase ingestion: Haiku filter → Opus extraction |
+| **Ingestion & Intelligence** | |
+| classify-document | Domain classification |
+| calculate-domain-scores | Recalculate all 6 domain scores |
+| generate-source-of-truth | Synthesise knowledge into structured doc |
+| start-domain-ingest | Trigger ingestion pipeline |
+| initial-enrichment | Perplexity research at onboarding |
+| **Composio integrations (Xero/Gmail)** | |
+| connect-integration | Composio OAuth flow for non-Drive tools |
+| check-integration-status | Poll Composio connection status |
+| sync-xero | Fetch Xero financial data via Composio |
+| sync-composio-drive | Legacy Drive sync via Composio (superseded) |
+| sync-composio-gmail | Gmail sync via Composio |
+| **Scout Agent** | |
+| scout-daily-run | Daily tool discovery scrape (6am UTC cron) |
+| scout-daily-nudge | Email nudge with new discoveries (9am UTC cron) |
+| scout-weekly-digest | Weekly summary generation |
+| scout-weekly-report | Email weekly report (Mon 8am UTC cron) |
+| **Core** | |
+| angus-chat | Angus text chat endpoint |
+| get-company-profile | Fetch company profile data |
+| export-company | Export full company brain as .txt |
+| reset-company | Erase all data, reset to Stage 1 |
+| process-finance-data | Process financial documents |
+| run-scrapling | Web scraping via Scrapling |
+
+**Shared modules:** `_shared/google-token.ts` — Google OAuth token retrieval + auto-refresh
 
 ---
 
-## Key Components
+## Onboarding Flow (3 stages)
 
-**Onboarding:** OnboardingFlow, ConnectToolsStage, IntelligenceBuilder, IntelligenceSlider, DocumentChecklist
-**Source of Truth:** SourceOfTruth, KnowledgeCard, CorrectionPanel, CorrectionHistory, StaleDocAlert
-**Questions:** QuestionBatch, QuestionItem, ModeSelector, WrittenAnswerMode, VoiceAnswerMode, TranscribeAnswerMode, EmailAnswerMode
-**Infrastructure:** ErrorBoundary, ResearchBanner
-**Settings:** Billing section, Drive connect
+```
+/src/screens/onboarding/OnboardingFlow.tsx  — router
+/src/screens/onboarding/ConnectToolsStage.tsx — connect Drive, Xero, Gmail
+/src/screens/onboarding/GoogleDriveStage.tsx  — folder selection + ingestion
+/src/screens/onboarding/QuestionsStage.tsx    — smart questions at 25% score
+/src/screens/onboarding/ProgressIndicator.tsx — step indicator
+```
 
 ---
 
 ## Key File Locations
 
 ```
-/src/components/onboarding/    — all onboarding components
-/src/components/dashboard/     — dashboard components
-/src/components/angus/         — Angus widget and voice components
-/src/components/knowledge/     — SourceOfTruth, KnowledgeCard, CorrectionPanel
+/src/screens/onboarding/       — 3-stage onboarding flow
+/src/components/integrations/  — ConnectTools, FolderSelector
+/src/components/intelligence/  — IntelligenceBuilder, Sliders, KnowledgeCard, SourceOfTruth
+/src/components/corrections/   — CorrectionPanel, CorrectionHistory, StaleDocAlert
 /src/components/questions/     — QuestionBatch and answer mode components
+/src/components/dashboard/     — IngestDashboard
+/src/components/               — AngusChat, BottomNav, ErrorBoundary, ResearchBanner
+/src/screens/                  — Dashboard, Knowledge, More, Voice, Welcome, etc.
 /supabase/functions/           — edge functions (one folder per function)
+/supabase/functions/_shared/   — shared modules (google-token.ts)
 /supabase/migrations/          — database migrations
 ```
 
@@ -114,9 +144,12 @@ and update the docs when decisions change.
 
 ## Database Tables
 
-**Existing:** companies, knowledge_base, profiles
-**New (all with RLS):** knowledge_chunks (pgvector), knowledge_corrections, knowledge_elements, onboarding_questions
-**Stripe columns added to:** companies table
+**Core:** companies, profiles
+**Knowledge:** knowledge_elements, knowledge_chunks (pgvector), knowledge_corrections
+**Onboarding:** onboarding_questions
+**Ingestion:** ingestion_progress, ingest_log, domain_scores
+**Integrations:** integrations
+**Scout Agent:** scout_discoveries, scout_evaluations, scout_manual_reviews, scout_digests
 
 ---
 
@@ -130,7 +163,7 @@ Overall = weighted average of 6 domains (0–100 each):
 - Team & People 15% — org chart + team bios
 - Strategy & Investors 15% — pitch deck + investor updates
 
-Stage 4 (questions) and Source of Truth generation both unlock at 25%.
+Questions stage and Source of Truth generation both unlock at 25%.
 
 ## Correction Priority
 
@@ -144,13 +177,14 @@ When Angus reads any knowledge element:
 
 ---
 
-## Next Tasks (Post Push)
+## Next Tasks
 
 1. Run Chocolate and Love onboarding — client zero, free engagement
-2. Build email inbound pipeline (answers@founderengine.ai) — Sprint 5 follow-up
-3. Build Market Intelligence RAG crawl — see Market-Intelligence-RAG-Sources.md
-4. Build bidirectional Google Doc sync — Sprint 6 follow-up
-5. scripts/sync-docs.ts — write updated docs back to this Drive folder after each session
+2. Users who connect Google Drive must re-auth (scope changed from drive.file to drive.readonly)
+3. Build email inbound pipeline (answers@founderengine.ai)
+4. Build Market Intelligence RAG crawl — see Market-Intelligence-RAG-Sources.md
+5. Build bidirectional Google Doc sync
+6. scripts/sync-docs.ts — write updated docs back to this Drive folder after each session
 
 ---
 
@@ -158,30 +192,3 @@ When Angus reads any knowledge element:
 
 Architect: Ruari Fairbairns — rfairbairns@gmail.com
 Prod Drive docs folder: `1rFvmIe0dQuPLEluh36u6gBNqvFIv0rT1`
-
-
----
-
-## Working Docs Updated 06 March 2026
-
-New documents added to the working docs folder:
-
-- **Vision.md** — Full product vision, methodology, Angus personality, 12-month targets
-- **Partner-Integration-Strategy.md** — The Frigate Model, full integration map, partner channel model, build sequence
-- **Market-Intelligence-RAG-Sources.md** — 30 curated sources for the daily RAG crawl
-
-Key decisions from Session 8:
-
-- **The Frigate Model:** Don't build cannons, bolt them on. Every domain uses a best-in-class third-party tool via API/agency licence.
-- **Two-Job Rule:** Every integration must serve both onboarding enrichment AND ongoing founder usage.
-- **Partner Channel:** Agency licence during engagement → client takes own subscription at LEAVE → Founder Engine earns rev share passively.
-- **Integration priority:** DataForSEO + NewsAPI + Listen Notes (Sprint 3) → Mention API (Sprint 4) → Xero (Sprint 5) → HubSpot + SearchAtlas agency (Sprint 6+)
-- **Scrape loading indicator:** Post-signup loading screen showing real API progress. Not yet built. High priority.
-- **The pitch is "Cancel your agencies," not "AI analyst."**
-
-Supabase secrets to add when ready:
-- `DATAFORSEO_LOGIN`
-- `DATAFORSEO_PASSWORD`
-- `NEWSAPI_KEY`
-- `LISTENNOTES_KEY`
-- `MENTION_API_KEY` (Sprint 4)

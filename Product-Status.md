@@ -4,18 +4,15 @@
 
 ---
 
-## STATUS: ALL 6 SPRINTS COMPLETE — READY TO PUSH TO PROD
+## STATUS: ALL 6 SPRINTS COMPLETE — PUSHED TO PROD
 
-```
-git push origin main
-Then set 5 secrets in Supabase (Google Drive + Stripe). That's it.
-```
+Code is live on origin/main. Post-sprint work since: Scout Agent, two-pass ingestion, native Google OAuth, 3-stage onboarding, mobile CSS fixes.
 
 ---
 
 ## Before First Client Checklist
 
-- [ ] `git push origin main`
+- [x] `git push origin main` — done
 - [ ] Set GOOGLE_CLIENT_ID in Supabase secrets
 - [ ] Set GOOGLE_CLIENT_SECRET in Supabase secrets
 - [ ] Set GOOGLE_REDIRECT_URI in Supabase secrets
@@ -115,22 +112,14 @@ Then set 5 secrets in Supabase (Google Drive + Stripe). That's it.
 
 ---
 
-## Full Edge Function Registry — 21 Deployed
+## Full Edge Function Registry — 25 Deployed
 
-| Function | Sprint | Status |
-|----------|--------|--------|
-| google-drive-oauth | 2 | ✅ SHIPPED |
-| refresh-google-tokens | 2 | ✅ SHIPPED |
-| google-drive-webhook | 2 | ✅ SHIPPED |
-| process-drive-document | 2 | ✅ SHIPPED |
-| calculate-domain-scores (v3) | 3 | ✅ SHIPPED |
-| generate-source-of-truth | 3 | ✅ SHIPPED |
-| apply-correction | 4 | ✅ SHIPPED |
-| generate-onboarding-questions | 5 | ✅ SHIPPED |
-| process-question-answer | 5 | ✅ SHIPPED |
-| create-checkout | 6 | ✅ SHIPPED |
-| stripe-webhook | 6 | ✅ SHIPPED |
-| + 10 pre-existing functions | — | ✅ LIVE |
+See CLAUDE.md for the complete table with descriptions. Key additions since original sprints:
+- **Native Google OAuth** — google-drive-oauth, create-google-drive-folder, list-google-drive-folders (Composio removed for Drive)
+- **Two-pass ingestion** — two-pass-ingest, sync-google-drive, start-domain-ingest, classify-document
+- **Scout Agent** — scout-daily-run, scout-daily-nudge, scout-weekly-digest, scout-weekly-report
+- **Composio integrations** — connect-integration, check-integration-status, sync-xero, sync-composio-gmail
+- **Shared modules** — _shared/google-token.ts
 
 ---
 
@@ -142,7 +131,7 @@ Then set 5 secrets in Supabase (Google Drive + Stripe). That's it.
 | Company profile creation + Perplexity research | ✅ LIVE |
 | Angus voice agent (ElevenLabs) | ✅ LIVE |
 | Xero OAuth (surfaced in onboarding) | ✅ LIVE |
-| 5-stage onboarding flow | ✅ SHIPPED |
+| 3-stage onboarding flow (ConnectTools → GoogleDrive → Questions) | ✅ SHIPPED |
 | Google Drive OAuth + folder creation | ✅ SHIPPED (needs secrets) |
 | Document ingestion + age detection | ✅ SHIPPED |
 | Intelligence Score + domain sliders | ✅ SHIPPED |
@@ -178,7 +167,7 @@ These are queued after the first client engagement produces real data:
 
 ---
 
-*3 commits ahead of origin. Zero build errors. Push when secrets are set.*
+*Pushed to origin. Zero build errors. Set remaining secrets and onboard first client.*
 
 
 ---
@@ -200,9 +189,9 @@ These are queued after the first client engagement produces real data:
 | Export All — single click .txt download of full brain | ✅ LIVE |
 | Landing page brief for Lovable | ✅ BRIEF WRITTEN |
 
-### Edge Functions Live (23 total)
+### Edge Functions Live (25 total)
 
-onboard-company, process-transcript, get-company-profile, upload-document, process-email, invite-team-member, generate-recommendations, test-api-key, scrape-business, whatsapp-call-handler, google-drive-oauth, refresh-google-tokens, process-drive-document, google-drive-webhook, calculate-domain-scores, generate-source-of-truth, generate-onboarding-questions, process-question-answer, apply-correction, create-checkout, stripe-webhook, reset-company, export-company
+angus-chat, calculate-domain-scores, check-integration-status, classify-document, connect-integration, create-google-drive-folder, export-company, generate-source-of-truth, get-company-profile, google-drive-oauth, initial-enrichment, list-google-drive-folders, process-finance-data, reset-company, run-scrapling, scout-daily-nudge, scout-daily-run, scout-weekly-digest, scout-weekly-report, start-domain-ingest, sync-composio-drive, sync-composio-gmail, sync-google-drive, sync-xero, two-pass-ingest
 
 ### What's NOT Yet Built
 

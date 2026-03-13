@@ -1,12 +1,10 @@
-// sync-google-drive
-// v2.0 | 12 March 2026
+// sync-google-drive v3.0 | 13 March 2026
 // Webhook handler + manual sync for Google Drive file changes
-// Fixed: Composio for OAuth tokens (not dead connected_sources table)
-// Fixed: webhook lookup from companies table (not connected_sources)
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// v3: Uses native Google OAuth (Composio removed)
+import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import { createClient } from "jsr:@supabase/supabase-js@2"
 import Anthropic from 'npm:@anthropic-ai/sdk@0.20.9'
+import { getGoogleToken } from '../_shared/google-token.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,39 +14,6 @@ const corsHeaders = {
 const anthropic = new Anthropic({
   apiKey: Deno.env.get('ANTHROPIC_API_KEY'),
 })
-
-// Get Composio OAuth token for a company's toolkit
-async function getComposioToken(supabase: any, companyId: string, toolkit: string): Promise<string> {
-  const composioApiKey = Deno.env.get('COMPOSIO_API_KEY')
-  if (!composioApiKey) throw new Error('COMPOSIO_API_KEY not configured')
-
-  const { data: integration, error } = await supabase
-    .from('integrations')
-    .select('composio_connection_id')
-    .eq('company_id', companyId)
-    .eq('toolkit', toolkit)
-    .eq('status', 'connected')
-    .single()
-
-  if (error || !integration?.composio_connection_id) {
-    throw new Error(`${toolkit} not connected. Connect via Settings first.`)
-  }
-
-  const res = await fetch(
-    `https://backend.composio.dev/api/v3/connected_accounts/${integration.composio_connection_id}`,
-    { headers: { 'x-api-key': composioApiKey } }
-  )
-  if (!res.ok) throw new Error('Failed to get token from Composio')
-
-  const account = await res.json()
-  const token = account?.connectionParams?.access_token
-    || account?.connectionParams?.accessToken
-    || account?.authParams?.access_token
-    || account?.auth_params?.access_token
-
-  if (!token) throw new Error('No access token in Composio account. Try reconnecting.')
-  return token
-}
 
 // Haiku relevance check ($0.0003 per doc)
 async function isRelevant(filename: string, snippet: string, mimeType: string) {
@@ -83,7 +48,7 @@ async function extractFacts(filename: string, content: string, mimeType: string)
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -126,8 +91,8 @@ serve(async (req) => {
       if (!company_id) throw new Error('Missing company_id')
     }
 
-    // Get OAuth token from Composio
-    const accessToken = await getComposioToken(supabase, company_id, 'google_drive')
+    // Get OAuth token via native Google OAuth (from companies table)
+    const accessToken = await getGoogleToken(supabase, company_id)
 
     // Get folder scope from companies table
     const { data: companyData } = await supabase

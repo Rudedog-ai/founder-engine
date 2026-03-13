@@ -1,12 +1,11 @@
-// two-pass-ingest v2.0 | 12 March 2026
+// two-pass-ingest v3.0 | 13 March 2026
 // Smart filtering: Haiku relevance check → Opus fact extraction
 // Cost-efficient: ~$33 for 10K files vs $150 naive approach
-// Fixed: gets OAuth token from Composio (not dead connected_sources table)
-// Fixed: uses google_drive_folder_id column name
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// v3: Uses native Google OAuth (Composio removed)
+import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import { createClient } from "jsr:@supabase/supabase-js@2"
 import Anthropic from 'npm:@anthropic-ai/sdk@0.20.9'
+import { getGoogleToken } from '../_shared/google-token.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -125,7 +124,7 @@ Rules:
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -152,7 +151,7 @@ serve(async (req) => {
         .select('google_drive_folder_id')
         .eq('id', company_id)
         .single()
-      
+
       if (company?.google_drive_folder_id) {
         folder_ids = [company.google_drive_folder_id]
         console.log(`Using founder-selected folder: ${company.google_drive_folder_id}`)
@@ -167,75 +166,8 @@ serve(async (req) => {
     const minDate = new Date()
     minDate.setMonth(minDate.getMonth() - dateFilterMonths)
 
-    // Get OAuth token via Composio connected account
-    const composioApiKey = Deno.env.get('COMPOSIO_API_KEY')
-    if (!composioApiKey) {
-      return new Response(
-        JSON.stringify({ error: 'COMPOSIO_API_KEY not configured' }),
-        { status: 500, headers: corsHeaders }
-      )
-    }
-
-    // Look up integration record for this source
-    const toolkitMap: Record<string, string> = {
-      google_drive: 'google_drive',
-      gmail: 'gmail',
-    }
-    const toolkit = toolkitMap[source] || source
-
-    const { data: integration, error: integrationError } = await supabase
-      .from('integrations')
-      .select('composio_connection_id')
-      .eq('company_id', company_id)
-      .eq('toolkit', toolkit)
-      .eq('status', 'connected')
-      .single()
-
-    if (integrationError || !integration?.composio_connection_id) {
-      return new Response(
-        JSON.stringify({ error: `${source} not connected. Connect via Settings first.` }),
-        { status: 400, headers: corsHeaders }
-      )
-    }
-
-    // Fetch OAuth token from Composio connected account
-    console.log(`Fetching token from Composio for ${integration.composio_connection_id}`)
-    const composioRes = await fetch(
-      `https://backend.composio.dev/api/v3/connected_accounts/${integration.composio_connection_id}`,
-      { headers: { 'x-api-key': composioApiKey } }
-    )
-
-    if (!composioRes.ok) {
-      const errText = await composioRes.text()
-      console.error('Composio token fetch failed:', errText)
-      return new Response(
-        JSON.stringify({ error: 'Failed to get Drive access token from Composio' }),
-        { status: 500, headers: corsHeaders }
-      )
-    }
-
-    const composioAccount = await composioRes.json()
-
-    // Extract access token from Composio response
-    // Composio stores tokens in connectionParams or authParams
-    const accessToken = composioAccount?.connectionParams?.access_token
-      || composioAccount?.connectionParams?.accessToken
-      || composioAccount?.authParams?.access_token
-      || composioAccount?.auth_params?.access_token
-      || null
-
-    if (!accessToken) {
-      console.error('Composio account data:', JSON.stringify(composioAccount))
-      return new Response(
-        JSON.stringify({
-          error: 'No access token found in Composio account. Try reconnecting Google Drive.',
-          composio_status: composioAccount?.status
-        }),
-        { status: 400, headers: corsHeaders }
-      )
-    }
-
-    console.log(`Got access token (${accessToken.slice(0, 10)}...) from Composio`)
+    // Get OAuth token via native Google OAuth (from companies table)
+    const accessToken = await getGoogleToken(supabase, company_id)
 
     // Track stats
     let totalBeforeDate = 0
@@ -243,10 +175,10 @@ serve(async (req) => {
     let relevantCount = 0
     let totalCost = 0
     let factsExtracted = 0
-    
+
     // PHASE 0: DATE FILTER (Free - before any LLM calls!)
     console.log(`PHASE 0: Date filtering (last ${dateFilterMonths} months)...`)
-    
+
     // For Google Drive
     if (source === 'google_drive') {
       // Build folder query
@@ -260,55 +192,55 @@ serve(async (req) => {
       // Build date query (use modifiedTime or createdTime)
       const dateField = useModifiedDate ? 'modifiedTime' : 'createdTime'
       const dateQuery = `${dateField} > '${minDate.toISOString()}'`
-      
+
       // Combine queries
       const query = `(${folderQuery}) and ${dateQuery} and trashed=false`
-      
+
       console.log(`Query: ${query}`)
-      
+
       // List ALL files first (to get count before date filter)
       const allFilesQuery = folder_ids && folder_ids.length > 0
         ? `(${folderQuery}) and trashed=false`
         : "mimeType!='application/vnd.google-apps.folder' and trashed=false"
-      
+
       const allFilesUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(allFilesQuery)}&fields=files(id)&pageSize=1000`
-      
+
       const allFilesResponse = await fetch(allFilesUrl, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       })
-      
+
       if (!allFilesResponse.ok) {
         throw new Error(`Failed to list all files: ${allFilesResponse.statusText}`)
       }
-      
+
       const allFilesData = await allFilesResponse.json()
       totalBeforeDate = allFilesData.files?.length || 0
-      
+
       // Now list files WITH date filter
       const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,mimeType,modifiedTime,createdTime,size)&pageSize=1000`
-      
+
       const listResponse = await fetch(listUrl, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       })
-      
+
       if (!listResponse.ok) {
         throw new Error(`Failed to list Drive files: ${listResponse.statusText}`)
       }
-      
+
       const listData = await listResponse.json()
       const files = listData.files || []
-      
+
       totalAfterDate = files.length
-      
+
       const dateReduction = totalBeforeDate > 0 ? Math.round((1 - totalAfterDate / totalBeforeDate) * 100) : 0
       console.log(`Date filter: ${totalBeforeDate} total → ${totalAfterDate} after filter (${dateReduction}% reduction)`)
-      
+
     // PHASE 1: SCAN - List remaining files
     console.log('PHASE 1: Scanning filtered files...')
 
       // PHASE 2: FILTER - Haiku relevance check
       console.log(`PHASE 2: Filtering ${files.length} files (${totalBeforeDate - totalAfterDate} skipped by date)...`)
-      
+
       for (const file of files) {
         // Download first 2000 chars for relevance check
         const exportUrl = file.mimeType.includes('google-apps')
@@ -326,16 +258,16 @@ serve(async (req) => {
 
         const fullContent = await contentResponse.text()
         const snippet = fullContent.slice(0, 2000) // First 2K chars for relevance check
-        
+
         const { relevant, confidence, reason } = await isRelevant(file.name, snippet, file.mimeType)
         totalCost += 0.0003 // Haiku cost per call
 
         if (relevant && confidence > 0.7) {
           relevantCount++
-          
+
           // PHASE 3: EXTRACT - Opus fact extraction
           console.log(`PHASE 3: Extracting facts from ${file.name}...`)
-          
+
           const facts = await extractFacts(file.name, fullContent, file.mimeType)
           totalCost += 0.015 // Opus cost per call
 
@@ -393,7 +325,7 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'company_id,source' })
 
-      const dateReduction = totalBeforeDate > 0 ? Math.round((1 - totalAfterDate / totalBeforeDate) * 100) : 0
+      const dateReduction2 = totalBeforeDate > 0 ? Math.round((1 - totalAfterDate / totalBeforeDate) * 100) : 0
       const relevanceRate = totalAfterDate > 0 ? (relevantCount / totalAfterDate) * 100 : 0
 
       return new Response(
@@ -401,7 +333,7 @@ serve(async (req) => {
           status: 'complete',
           total_files_before_date: totalBeforeDate,
           total_files_after_date: totalAfterDate,
-          date_filter_reduction: `${dateReduction}%`,
+          date_filter_reduction: `${dateReduction2}%`,
           date_filter_months: dateFilterMonths,
           relevant_files: relevantCount,
           relevance_rate: `${relevanceRate.toFixed(1)}%`,
@@ -421,8 +353,8 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Internal server error' 
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Internal server error'
       }),
       { status: 500, headers: corsHeaders }
     )
